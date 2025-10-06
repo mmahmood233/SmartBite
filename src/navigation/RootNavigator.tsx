@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import SplashScreen from '../screens/SplashScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import HomeScreen from '../screens/HomeScreen';
+import RestaurantDetailScreen from '../screens/RestaurantDetailScreen';
 import AuthNavigator from './AuthNavigator';
 import { RootStackParamList } from '../types';
 
@@ -10,7 +11,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 /**
  * Wajba Root Navigator
- * Flow: Splash → Onboarding → Auth (Login/Signup)
+ * Flow: Splash → Onboarding → Auth (Login/Signup) → Home → RestaurantDetail
  */
 const RootNavigator: React.FC = () => {
   return (
@@ -23,6 +24,7 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>
   );

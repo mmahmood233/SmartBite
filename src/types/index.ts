@@ -9,6 +9,10 @@ export type RootStackParamList = {
   Home: undefined;
   Login: undefined;
   Signup: undefined;
+  RestaurantDetail: {
+    restaurantId: string;
+    restaurantName: string;
+  };
 };
 
 export type AuthStackParamList = {

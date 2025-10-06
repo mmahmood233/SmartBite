@@ -1,9 +1,14 @@
 import React from 'react';
-import { View, Image, Text, StyleSheet, ViewStyle, ImageSourcePropType, Dimensions } from 'react-native';
+import { View, Image, Text, StyleSheet, ViewStyle, ImageSourcePropType, Dimensions, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 import { colors } from '../theme/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH * 0.9 - 16) / 2; // 90% width minus gap, divided by 2
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface RestaurantCardProps {
   image: ImageSourcePropType;
@@ -13,14 +18,23 @@ interface RestaurantCardProps {
   eta?: string;
   price?: string;
   style?: ViewStyle;
+  restaurantId?: string;
 }
 
-const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rating = 4.8, eta = '15 min', price = '$$', style }) => {
+const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rating = 4.8, eta = '15 min', price = '$$', style, restaurantId = '1' }) => {
+  const navigation = useNavigation<NavigationProp>();
   const isFoodImage = image === require('../../assets/food.png');
   const isLogoImage = !isFoodImage;
   
+  const handlePress = () => {
+    navigation.navigate('RestaurantDetail', {
+      restaurantId,
+      restaurantName: name,
+    });
+  };
+  
   return (
-    <View style={[styles.card, style]}>
+    <TouchableOpacity style={[styles.card, style]} onPress={handlePress} activeOpacity={0.8}>
       <View style={styles.imageContainer}>
         {isLogoImage && <View style={styles.logoBackground} />}
         <Image source={image} style={[styles.image, isLogoImage && styles.logoImage]} />
@@ -35,7 +49,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rati
         <Text style={styles.dot}>•</Text>
         <Text style={styles.meta}>{price}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

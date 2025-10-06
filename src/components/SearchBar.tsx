@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextInput, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 
 interface SearchBarProps {
@@ -17,13 +17,13 @@ const SearchBar: React.FC<SearchBarProps> = ({ placeholder = 'Search restaurants
       end={{ x: 0, y: 1 }}
       style={[styles.container, style]}
     >
-      <Icon name="search-outline" size={20} color={colors.primary} style={styles.iconLeft} />
+      <Icon name="search" size={20} color={colors.primary} style={styles.iconLeft} />
       <TextInput
         placeholder={placeholder}
         placeholderTextColor="#8A8A8A"
         style={styles.input}
       />
-      <Icon name="options-outline" size={20} color={colors.primary} style={styles.iconRight} />
+      <Icon name="sliders" size={20} color={colors.primary} style={styles.iconRight} />
     </LinearGradient>
   );
 };

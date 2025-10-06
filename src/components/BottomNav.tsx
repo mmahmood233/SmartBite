@@ -1,20 +1,20 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 
 interface BottomNavProps {
   active?: 'Home' | 'Chat' | 'Orders' | 'Profile';
 }
 
-const getIconName = (label: string, isActive: boolean): string => {
+const getIconName = (label: string): string => {
   const icons = {
-    Home: isActive ? 'home' : 'home-outline',
-    Chat: isActive ? 'chatbubble' : 'chatbubble-outline',
-    Orders: isActive ? 'bag-handle' : 'bag-handle-outline',
-    Profile: isActive ? 'person' : 'person-outline',
+    Home: 'home',
+    Chat: 'message-circle',
+    Orders: 'shopping-bag',
+    Profile: 'user',
   };
-  return icons[label as keyof typeof icons] || 'home-outline';
+  return icons[label as keyof typeof icons] || 'home';
 };
 
 const BottomNav: React.FC<BottomNavProps> = ({ active = 'Home' }) => {
@@ -22,8 +22,8 @@ const BottomNav: React.FC<BottomNavProps> = ({ active = 'Home' }) => {
     <TouchableOpacity activeOpacity={0.8} style={styles.tab}>
       <View style={[styles.pill, isActive && styles.pillActive]}>
         <Icon 
-          name={getIconName(label, isActive)} 
-          size={24} 
+          name={getIconName(label)} 
+          size={isActive ? 25 : 24} 
           color={isActive ? colors.primary : '#555555'}
           style={styles.icon}
         />

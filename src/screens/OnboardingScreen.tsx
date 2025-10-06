@@ -6,6 +6,8 @@ import {
   FlatList,
   Dimensions,
   ViewToken,
+  Image,
+  ImageSourcePropType,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { GradientButton } from '../components';
@@ -28,7 +30,8 @@ interface OnboardingSlide {
   id: string;
   title: string;
   subtitle: string;
-  emoji: string;
+  emoji?: string;
+  image?: ImageSourcePropType;
   backgroundColor: string;
 }
 
@@ -37,21 +40,21 @@ const slides: OnboardingSlide[] = [
     id: '1',
     title: 'Discover local flavors with AI-powered recommendations',
     subtitle: 'Skip the endless scrolling — Wajba finds what fits your craving',
-    emoji: '🔍',
+    image: require('../../assets/SC_Search_logo.png'),
     backgroundColor: '#F8F9FB',
   },
   {
     id: '2',
     title: 'Personalize your meals based on your mood and taste',
     subtitle: 'Our AI learns what you love — whether it\'s spicy, sweet, or healthy',
-    emoji: '🤖',
+    image: require('../../assets/SC_Thinking.png'),
     backgroundColor: '#F8F9FB',
   },
   {
     id: '3',
     title: 'Enjoy Middle Eastern warmth, delivered to your door',
     subtitle: 'Fast delivery, real flavor — Wajba brings your favorite dishes home',
-    emoji: '🏡',
+    image: require('../../assets/wajba_logo.png'),
     backgroundColor: '#F8F9FB',
   },
 ];
@@ -91,10 +94,14 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
   const renderSlide = ({ item }: { item: OnboardingSlide }) => (
     <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
-      {/* Illustration placeholder */}
+      {/* Illustration */}
       <View style={styles.illustrationContainer}>
-        <View style={styles.emojiCircle}>
-          <Text style={styles.emoji}>{item.emoji}</Text>
+        <View style={styles.illustrationCircle}>
+          {item.image ? (
+            <Image source={item.image} style={styles.illustrationImage} resizeMode="contain" />
+          ) : (
+            <Text style={styles.emoji}>{item.emoji}</Text>
+          )}
         </View>
       </View>
 
@@ -167,7 +174,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: tokens.spacing.huge,
   },
-  emojiCircle: {
+  illustrationCircle: {
     width: 200,
     height: 200,
     borderRadius: 100,
@@ -175,6 +182,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...tokens.shadows.card,
+  },
+  illustrationImage: {
+    width: 140,
+    height: 140,
   },
   emoji: {
     fontSize: 80,

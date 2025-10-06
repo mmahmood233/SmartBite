@@ -174,6 +174,11 @@ const RestaurantDetailScreen: React.FC = () => {
     </View>
   );
 
+  const handleAddReview = () => {
+    // TODO: Navigate to review submission screen or open modal
+    console.log('Add review tapped');
+  };
+
   const renderReviewsSection = () => (
     <View style={styles.reviewsSection}>
       <View style={styles.ratingHeader}>
@@ -237,6 +242,20 @@ const RestaurantDetailScreen: React.FC = () => {
         <Text style={styles.reviewText}>
           Great authentic flavors. Delivery was quick and food arrived hot. Will order again!
         </Text>
+      </View>
+
+      {/* Add Review CTA */}
+      <View style={styles.addReviewContainer}>
+        <TouchableOpacity 
+          style={styles.addReviewButton}
+          onPress={handleAddReview}
+          activeOpacity={0.97}
+        >
+          <Icon name="edit-3" size={18} color={colors.primary} style={{ marginRight: 8 }} />
+          <Text style={styles.addReviewText}>Write a Review</Text>
+          <Icon name="arrow-right" size={16} color={colors.primary} style={{ marginLeft: 'auto' }} />
+        </TouchableOpacity>
+        <Text style={styles.addReviewSubtext}>Help others discover great meals!</Text>
       </View>
     </View>
   );
@@ -759,6 +778,35 @@ const styles = StyleSheet.create({
   filterChipTextActive: {
     color: '#FFFFFF',
     fontWeight: '600',
+  },
+  addReviewContainer: {
+    marginTop: 20,
+  },
+  addReviewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F7F5',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 126, 115, 0.15)',
+  },
+  addReviewText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  addReviewSubtext: {
+    fontSize: 13,
+    color: '#9E9E9E',
+    textAlign: 'center',
+    marginTop: 8,
+    fontWeight: '400',
   },
   stickyBar: {
     position: 'absolute',

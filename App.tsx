@@ -4,12 +4,17 @@ import { Provider as PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import AuthNavigator from './src/navigation/AuthNavigator';
-import { SmartBiteTheme } from './src/theme/theme';
+import { WajbaLightTheme } from './src/theme/theme';
+
+/**
+ * Wajba App Root Component
+ * Brand: Middle Eastern warmth meets intelligent personalization
+ */
 
 const App: React.FC = () => {
   return (
     <SafeAreaProvider>
-      <PaperProvider theme={SmartBiteTheme}>
+      <PaperProvider theme={WajbaLightTheme}>
         <NavigationContainer>
           <StatusBar style="dark" />
           <AuthNavigator />

@@ -1,6 +1,9 @@
-# SmartBite
+# Wajba (SmartBite)
 
 An AI-powered delivery platform for food, groceries, and essentials.
+
+**Brand**: Middle Eastern warmth meets intelligent personalization  
+**Keywords**: authentic • smart • local • appetizing • trustworthy
 
 ## Setup
 
@@ -60,7 +63,9 @@ npm run android
 ## Project Structure
 
 ```
-SmartBite/
+Wajba/
+├── assets/
+│   └── wajba_logo.png          # Wajba brand logo
 ├── src/
 │   ├── types/
 │   │   └── index.ts              # All TypeScript type definitions
@@ -68,7 +73,7 @@ SmartBite/
 │   │   ├── GradientButton.tsx
 │   │   ├── Input.tsx
 │   │   ├── Link.tsx
-│   │   ├── AnimatedLogo.tsx
+│   │   ├── AnimatedLogo.tsx    # Uses wajba_logo.png
 │   │   ├── SocialButton.tsx
 │   │   └── index.ts             # Centralized exports
 │   ├── screens/                 # Screen components
@@ -81,25 +86,33 @@ SmartBite/
 │       ├── typography.ts       # Type scale
 │       └── theme.ts            # React Native Paper theme + tokens
 ├── App.tsx                     # Root component
+├── app.json                    # Expo configuration (Wajba branding)
 ├── tsconfig.json               # TypeScript configuration
+├── WAJBA_THEME.md              # Wajba Design System
 ├── DESIGN_SYSTEM.md            # Complete design guide
 ├── COMPONENT_LIBRARY.md        # Component documentation
 ├── TYPESCRIPT_GUIDE.md         # TypeScript best practices
 └── package.json
 ```
 
-## Design System
+## Design System (Wajba)
 
-- **Primary**: #3BC8A4 (Mint Teal) - trust & freshness
-- **Accent**: #8E7CFF (Soft Violet) - AI interactions
-- **Gradient**: Teal → Violet (135°) for AI features
-- **Typography**: Poppins 600 (headings) + Inter 400 (body)
+- **Primary**: #14776F (Wajba Teal) - brand logo, buttons, icons
+- **Primary Light**: #3BC8A4 (Mint Accent) - highlights, gradients
+- **Accent**: #8E7CFF (AI Glow) - AI features, glows
+- **Gradient**: Wajba Teal → Mint (90°) for buttons
+- **Typography**: Poppins SemiBold (headings) + Inter Regular (body)
 - **Border Radius**: 12px (consistent across all components)
-- **Shadows**: Layered elevation system (input: 1dp, button: 4dp, logo: 6dp)
+- **Shadows**: Card (0 2px 4px), Button (0 4px 8px), Logo (24px blur)
 
 ## Documentation
 
+- **[DEVELOPMENT_WORKFLOW.md](./DEVELOPMENT_WORKFLOW.md)** - 🔥 **Core workflow & best practices** (READ FIRST!)
+- **[WAJBA_THEME.md](./WAJBA_THEME.md)** - 🎨 **Wajba Design System & Theme** (Complete spec)
+- **[PACKAGES.md](./PACKAGES.md)** - Complete package documentation (all 16 packages explained)
+- **[DESIGN_SPEC.md](./DESIGN_SPEC.md)** - Complete Figma-style design specification
 - **[DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)** - Colors, typography, spacing, animations
 - **[COMPONENT_LIBRARY.md](./COMPONENT_LIBRARY.md)** - Component API reference with examples
 - **[TYPESCRIPT_GUIDE.md](./TYPESCRIPT_GUIDE.md)** - TypeScript patterns, best practices, common errors
+- **[TYPESCRIPT_MIGRATION.md](./TYPESCRIPT_MIGRATION.md)** - TypeScript migration summary
 - **[QUICK_START.md](./QUICK_START.md)** - Quick reference for building new screens

@@ -1,14 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { tokens } from '../theme/theme';
 import { AnimatedLogoProps } from '../types';
 
 const AnimatedLogo: React.FC<AnimatedLogoProps> = ({ 
-  emoji = '🍽️', 
+  emoji, 
   size = 80 
 }) => {
+  // Use Wajba logo by default
+  const useImage = !emoji;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -28,18 +30,18 @@ const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
       }),
     ]).start();
 
-    // Continuous subtle pulse animation
+    // Wajba spec: Logo glow pulse (2.5s loop)
     const startPulse = () => {
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
             toValue: 1.06,
-            duration: 2000,
+            duration: 1250, // 2.5s / 2 = 1.25s
             useNativeDriver: true,
           }),
           Animated.timing(pulseAnim, {
             toValue: 1,
-            duration: 2000,
+            duration: 1250,
             useNativeDriver: true,
           }),
         ])
@@ -99,7 +101,15 @@ const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
           tokens.shadows.logo,
         ]}
       >
-        <Text style={[styles.logoText, { fontSize: size / 2 }]}>{emoji}</Text>
+        {useImage ? (
+          <Image
+            source={require('../../assets/wajba_logo.png')}
+            style={[styles.logoImage, { width: size * 0.7, height: size * 0.7 }]}
+            resizeMode="contain"
+          />
+        ) : (
+          <Text style={[styles.logoText, { fontSize: size / 2 }]}>{emoji}</Text>
+        )}
       </View>
     </Animated.View>
   );
@@ -122,6 +132,9 @@ const styles = StyleSheet.create({
   },
   logoText: {
     // fontSize set dynamically
+  },
+  logoImage: {
+    // width and height set dynamically
   },
 });
 

@@ -1,38 +1,44 @@
 import { ColorPalette } from '../types';
 
+/**
+ * Wajba Design System - Color Palette
+ * Brand: Middle Eastern warmth meets intelligent personalization
+ * Keywords: authentic • smart • local • appetizing • trustworthy
+ */
+
 export const colors: ColorPalette = {
-  // Primary Colors
-  primary: '#3BC8A4',
-  primaryDark: '#009E83',
+  // Primary Colors (Wajba Teal)
+  primary: '#14776F',           // Brand logo, buttons, icons
+  primaryDark: '#0E5A55',       // Hover states, dark accents
   
-  // Accent (AI)
-  accent: '#8E7CFF',
+  // Accent Colors
+  accent: '#8E7CFF',            // AI features, glows
   
   // Backgrounds
-  backgroundLight: '#F8F9FB',
-  backgroundDark: '#121417',
+  backgroundLight: '#F8F9FB',   // App background (light mode)
+  backgroundDark: '#0F1113',    // App background (dark mode)
   
   // Surface (Cards)
-  surfaceLight: '#FFFFFF',
-  surfaceDark: '#1C1F24',
+  surfaceLight: '#FFFFFF',      // Cards, inputs (light mode)
+  surfaceDark: '#1C1F24',       // Cards, inputs (dark mode)
   
   // Text
-  textPrimary: '#1B1B1B',
-  textSecondary: '#666E75',
-  textLight: '#EAEAEA',
-  textMuted: '#9097A2',
+  textPrimary: '#1B1B1B',       // Headlines, main text (light)
+  textSecondary: '#666E75',     // Subtext, helper text
+  textLight: '#EAEAEA',         // Text (dark mode)
+  textMuted: '#A0A5B1',         // Disabled, placeholders (dark mode)
   
   // Status
-  success: '#4ECB71',
-  error: '#E74C3C',
+  success: '#4ECB71',           // Success, confirmations
+  error: '#E74C3C',             // Validation, error states
   
-  // Dividers
-  divider: '#E3E6EA',
+  // Dividers & Disabled
+  divider: '#E3E6EA',           // Borders, separators
   
   // Gradients (for linear gradient)
-  gradientStart: '#3BC8A4',
-  gradientEnd: '#8E7CFF',
-  gradientBannerEnd: '#5DE2D8',  // Enhanced contrast for CTA
+  gradientStart: '#14776F',     // Primary gradient start (Wajba Teal)
+  gradientEnd: '#3BC8A4',       // Primary gradient end (Mint Accent)
+  gradientBannerEnd: '#3BC8A4', // Button gradient end
 };
 
 export const lightTheme = {

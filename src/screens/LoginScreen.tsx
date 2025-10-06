@@ -66,9 +66,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       >
         {/* Logo/Brand Section */}
         <View style={styles.headerSection}>
-          <AnimatedLogo emoji="🍽️" size={80} />
-          <Text style={styles.brandName}>SmartBite</Text>
-          <Text style={styles.tagline}>SmartBite learns your taste. Let's get you in.</Text>
+          <AnimatedLogo size={80} />
+          <Text style={styles.brandName}>Wajba</Text>
+          <Text style={styles.tagline}>Middle Eastern warmth meets intelligent personalization</Text>
         </View>
 
         {/* Form Section */}

@@ -1,32 +1,29 @@
 {
   "expo": {
-    "name": "SmartBite",
-    "slug": "smartbite",
+    "name": "Wajba",
+    "slug": "wajba",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/wajba_logo.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/wajba_logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#3BC8A4"
+      "backgroundColor": "#14776F"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.smartbite.app"
+      "bundleIdentifier": "com.wajba.app"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#3BC8A4"
+        "foregroundImage": "./assets/wajba_logo.png",
+        "backgroundColor": "#14776F"
       },
-      "package": "com.smartbite.app"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "package": "com.wajba.app"
     }
   }
 }

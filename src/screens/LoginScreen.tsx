@@ -19,7 +19,9 @@ import {
   AnimatedLogo, 
   SocialButton 
 } from '../components';
-import { AuthStackParamList } from '../types';
+import { AuthStackParamList, RootStackParamList } from '../types';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp as RootNav } from '@react-navigation/native-stack';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -31,13 +33,15 @@ interface LoginScreenProps {
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const rootNav = useNavigation<RootNav<RootStackParamList>>();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleSignIn = (): void => {
-    // TODO: Implement sign in logic
+    // TODO: Replace with real auth; for now, go to Home
     console.log('Sign in with:', email, password);
+    rootNav.reset({ index: 0, routes: [{ name: 'Home' }] });
   };
 
   const handleForgotPassword = (): void => {

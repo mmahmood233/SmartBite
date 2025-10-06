@@ -3,6 +3,9 @@ import { TextInputProps } from 'react-native-paper';
 
 // ==================== Navigation Types ====================
 export type RootStackParamList = {
+  Splash: undefined;
+  Onboarding: undefined;
+  Auth: undefined;
   Login: undefined;
   Signup: undefined;
 };

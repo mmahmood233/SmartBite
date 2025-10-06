@@ -77,10 +77,13 @@ Wajba/
 │   │   ├── SocialButton.tsx
 │   │   └── index.ts             # Centralized exports
 │   ├── screens/                 # Screen components
+│   │   ├── SplashScreen.tsx    # Logo animation (2.5s)
+│   │   ├── OnboardingScreen.tsx # 3 swipeable slides
 │   │   ├── LoginScreen.tsx
 │   │   └── SignupScreen.tsx
 │   ├── navigation/              # Navigation setup
-│   │   └── AuthNavigator.tsx
+│   │   ├── RootNavigator.tsx   # Splash → Onboarding → Auth
+│   │   └── AuthNavigator.tsx   # Login ↔ Signup
 │   └── theme/                  # Design system
 │       ├── colors.ts           # Color palette
 │       ├── typography.ts       # Type scale
@@ -108,7 +111,9 @@ Wajba/
 ## Documentation
 
 - **[DEVELOPMENT_WORKFLOW.md](./DEVELOPMENT_WORKFLOW.md)** - 🔥 **Core workflow & best practices** (READ FIRST!)
+- **[ONBOARDING_FLOW.md](./ONBOARDING_FLOW.md)** - 🌊 **Complete onboarding documentation** (Splash + 3 screens)
 - **[WAJBA_THEME.md](./WAJBA_THEME.md)** - 🎨 **Wajba Design System & Theme** (Complete spec)
+- **[LOGO_INTEGRATION.md](./LOGO_INTEGRATION.md)** - 📦 **Logo usage guide** (Implementation & specs)
 - **[PACKAGES.md](./PACKAGES.md)** - Complete package documentation (all 16 packages explained)
 - **[DESIGN_SPEC.md](./DESIGN_SPEC.md)** - Complete Figma-style design specification
 - **[DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)** - Colors, typography, spacing, animations

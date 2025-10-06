@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FAFAFA' },
   scroll: { paddingBottom: 120 },
   appBar: {
-    paddingTop: 42,
+    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 16,
     flexDirection: 'row',

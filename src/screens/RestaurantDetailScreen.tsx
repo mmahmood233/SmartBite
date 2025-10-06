@@ -97,6 +97,13 @@ const RestaurantDetailScreen: React.FC = () => {
     setDishModalVisible(true);
   };
 
+  const handleQuickAdd = (item: MenuItem, event: any) => {
+    event.stopPropagation(); // Prevent card click
+    setCartItems(prev => prev + 1);
+    setCartTotal(prev => prev + item.price);
+    // TODO: Add success toast animation
+  };
+
   const handleAddToCart = (quantity: number, addOns: any[], totalPrice: number) => {
     setCartItems(prev => prev + quantity);
     setCartTotal(prev => prev + totalPrice);
@@ -133,9 +140,13 @@ const RestaurantDetailScreen: React.FC = () => {
         )}
         <Text style={styles.menuItemPrice}>BD {item.price.toFixed(2)}</Text>
       </View>
-      <View style={styles.addButton}>
+      <TouchableOpacity 
+        style={styles.addButton}
+        onPress={(e) => handleQuickAdd(item, e)}
+        activeOpacity={0.7}
+      >
         <Icon name="plus" size={20} color="#FFFFFF" />
-      </View>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 

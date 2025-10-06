@@ -10,6 +10,7 @@ import {
   ScrollView,
   PanResponder,
   Animated,
+  TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
@@ -49,6 +50,7 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [specialRequest, setSpecialRequest] = useState('');
   const [addOns, setAddOns] = useState<AddOn[]>([
     { id: '1', name: 'Extra Chicken', price: 1.0, selected: false },
     { id: '2', name: 'Salad', price: 0.5, selected: false },
@@ -148,7 +150,7 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
                 resizeMode="cover" 
               />
               <LinearGradient
-                colors={['transparent', 'rgba(255,255,255,0.9)']}
+                colors={['transparent', 'rgba(255,255,255,0.95)']}
                 style={styles.imageGradient}
               />
               
@@ -172,16 +174,6 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
                 <Text style={styles.dishName}>{dish.name}</Text>
                 <Text style={styles.dishPrice}>BD {dish.price.toFixed(2)}</Text>
               </View>
-
-              {/* Rating (if available) */}
-              {dish.rating && (
-                <View style={styles.ratingRow}>
-                  <Icon name="star" size={14} color="#FFB800" />
-                  <Text style={styles.ratingText}>
-                    {dish.rating} · {dish.reviewCount || 0} reviews
-                  </Text>
-                </View>
-              )}
 
               <Text style={styles.description}>{dish.description}</Text>
 
@@ -241,6 +233,25 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
                     <Icon name="plus" size={18} color={colors.primary} />
                   </TouchableOpacity>
                 </View>
+              </View>
+
+              <View style={styles.divider} />
+
+              {/* Special Request */}
+              <View style={styles.specialRequestSection}>
+                <Text style={styles.sectionTitle}>Special Request (Optional)</Text>
+                <TextInput
+                  style={styles.specialRequestInput}
+                  placeholder="e.g., No onions, extra spicy, contactless delivery..."
+                  placeholderTextColor="#9E9E9E"
+                  value={specialRequest}
+                  onChangeText={setSpecialRequest}
+                  multiline
+                  numberOfLines={3}
+                  maxLength={200}
+                  textAlignVertical="top"
+                />
+                <Text style={styles.characterCount}>{specialRequest.length}/200</Text>
               </View>
 
               {/* Spacing for sticky footer */}
@@ -360,7 +371,7 @@ const styles = StyleSheet.create({
   dishPrice: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.primary,
+    color: '#00796B',
   },
   ratingRow: {
     flexDirection: 'row',
@@ -376,7 +387,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6C6C6C',
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -413,6 +424,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   addOnLeft: {
     flexDirection: 'row',
@@ -471,6 +491,26 @@ const styles = StyleSheet.create({
     minWidth: 30,
     textAlign: 'center',
   },
+  specialRequestSection: {
+    marginTop: 0,
+  },
+  specialRequestInput: {
+    backgroundColor: '#F9F9F9',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    padding: 12,
+    fontSize: 14,
+    color: '#212121',
+    minHeight: 80,
+    maxHeight: 120,
+  },
+  characterCount: {
+    fontSize: 12,
+    color: '#9E9E9E',
+    textAlign: 'right',
+    marginTop: 6,
+  },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -481,10 +521,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.08)',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: -4 },
-    elevation: 10,
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: -6 },
+    elevation: 12,
   },
   footerLeft: {
     flex: 1,

@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { TextInput, Checkbox } from 'react-native-paper';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { tokens } from '../theme/theme';
@@ -17,19 +18,46 @@ import {
   Link, 
   SocialButton 
 } from '../components';
+import { AuthStackParamList } from '../types';
 
-const SignupScreen = ({ navigation }) => {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
+type SignupScreenNavigationProp = NativeStackNavigationProp<
+  AuthStackParamList,
+  'Signup'
+>;
+
+interface SignupScreenProps {
+  navigation: SignupScreenNavigationProp;
+}
+
+const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
+  const [fullName, setFullName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [agreeToTerms, setAgreeToTerms] = useState<boolean>(false);
 
   // Check if form is valid
-  const isFormValid = fullName && email && password && confirmPassword && agreeToTerms;
+  const isFormValid: boolean = Boolean(
+    fullName && email && password && confirmPassword && agreeToTerms
+  );
+
+  const handleSignUp = (): void => {
+    // TODO: Implement sign up logic
+    console.log('Sign up with:', { fullName, email, phone, password });
+  };
+
+  const handleAppleSignUp = (): void => {
+    // TODO: Implement Apple sign up
+    console.log('Apple sign up');
+  };
+
+  const handleGoogleSignUp = (): void => {
+    // TODO: Implement Google sign up
+    console.log('Google sign up');
+  };
 
   return (
     <KeyboardAvoidingView
@@ -128,7 +156,7 @@ const SignupScreen = ({ navigation }) => {
           {/* Sign Up Button */}
           <GradientButton
             title="Create Account"
-            onPress={() => {}}
+            onPress={handleSignUp}
             disabled={!isFormValid}
             accessibilityLabel="Create your SmartBite account"
           />
@@ -145,13 +173,13 @@ const SignupScreen = ({ navigation }) => {
             <SocialButton
               icon="🍎"
               label="Apple"
-              onPress={() => {}}
+              onPress={handleAppleSignUp}
               accessibilityLabel="Sign up with Apple"
             />
             <SocialButton
               icon="🔍"
               label="Google"
-              onPress={() => {}}
+              onPress={handleGoogleSignUp}
               accessibilityLabel="Sign up with Google"
             />
           </View>
@@ -190,13 +218,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   welcomeText: {
-    ...typography.headline,
     fontSize: 28,
+    fontWeight: '600', // Poppins 600
     color: colors.textPrimary,
     marginBottom: 4,
   },
   subtitleText: {
-    ...typography.body,
+    fontSize: 16,
+    fontWeight: '400', // Inter 400
     color: colors.textSecondary,
     marginTop: 4,
   },
@@ -230,6 +259,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 1,
     backgroundColor: colors.divider,
+    opacity: 0.3, // Lighter divider lines
   },
   dividerText: {
     ...typography.caption,
@@ -248,7 +278,8 @@ const styles = StyleSheet.create({
     marginBottom: tokens.spacing.xl,
   },
   loginText: {
-    ...typography.body,
+    fontSize: 16,
+    fontWeight: '400', // Inter 400
     color: colors.textSecondary,
   },
 });

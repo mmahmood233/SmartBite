@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { TextInput } from 'react-native-paper';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { tokens } from '../theme/theme';
@@ -18,11 +19,41 @@ import {
   AnimatedLogo, 
   SocialButton 
 } from '../components';
+import { AuthStackParamList } from '../types';
 
-const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+type LoginScreenNavigationProp = NativeStackNavigationProp<
+  AuthStackParamList,
+  'Login'
+>;
+
+interface LoginScreenProps {
+  navigation: LoginScreenNavigationProp;
+}
+
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const handleSignIn = (): void => {
+    // TODO: Implement sign in logic
+    console.log('Sign in with:', email, password);
+  };
+
+  const handleForgotPassword = (): void => {
+    // TODO: Implement forgot password logic
+    console.log('Forgot password');
+  };
+
+  const handleAppleSignIn = (): void => {
+    // TODO: Implement Apple sign in
+    console.log('Apple sign in');
+  };
+
+  const handleGoogleSignIn = (): void => {
+    // TODO: Implement Google sign in
+    console.log('Google sign in');
+  };
 
   return (
     <KeyboardAvoidingView
@@ -70,7 +101,7 @@ const LoginScreen = ({ navigation }) => {
 
           {/* Forgot Password */}
           <Link 
-            onPress={() => {}}
+            onPress={handleForgotPassword}
             style={styles.forgotPassword}
             accessibilityLabel="Forgot Password"
           >
@@ -80,7 +111,7 @@ const LoginScreen = ({ navigation }) => {
           {/* Login Button */}
           <GradientButton
             title="Sign In"
-            onPress={() => {}}
+            onPress={handleSignIn}
             accessibilityLabel="Sign in to SmartBite"
           />
 
@@ -96,13 +127,13 @@ const LoginScreen = ({ navigation }) => {
             <SocialButton
               icon="🍎"
               label="Apple"
-              onPress={() => {}}
+              onPress={handleAppleSignIn}
               accessibilityLabel="Sign in with Apple"
             />
             <SocialButton
               icon="🔍"
               label="Google"
-              onPress={() => {}}
+              onPress={handleGoogleSignIn}
               accessibilityLabel="Sign in with Google"
             />
           </View>
@@ -139,7 +170,7 @@ const styles = StyleSheet.create({
   },
   brandName: {
     fontSize: 22,
-    fontWeight: '600',
+    fontWeight: '600', // Poppins 600
     color: colors.textPrimary,
     marginTop: tokens.spacing.lg,
   },
@@ -154,13 +185,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   welcomeText: {
-    ...typography.headline,
     fontSize: 24,
+    fontWeight: '500', // Poppins 500
     color: colors.textPrimary,
     marginBottom: 4,
   },
   subtitleText: {
-    ...typography.body,
+    fontSize: 16,
+    fontWeight: '400', // Inter 400
     color: colors.textSecondary,
     marginBottom: 24,
   },
@@ -177,6 +209,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 1,
     backgroundColor: colors.divider,
+    opacity: 0.3, // Lighter divider lines
   },
   dividerText: {
     ...typography.caption,
@@ -195,7 +228,8 @@ const styles = StyleSheet.create({
     marginBottom: tokens.spacing.xl,
   },
   signupText: {
-    ...typography.body,
+    fontSize: 16,
+    fontWeight: '400', // Inter 400
     color: colors.textSecondary,
   },
 });

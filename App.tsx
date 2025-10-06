@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import AuthNavigator from './src/navigation/AuthNavigator';
 import { SmartBiteTheme } from './src/theme/theme';
 
-export default function App() {
+const App: React.FC = () => {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={SmartBiteTheme}>
@@ -17,4 +17,6 @@ export default function App() {
       </PaperProvider>
     </SafeAreaProvider>
   );
-}
+};
+
+export default App;

@@ -122,8 +122,7 @@ const CartScreen: React.FC = () => {
   };
 
   const handleCheckout = () => {
-    // TODO: Navigate to checkout screen
-    console.log('Proceeding to checkout...');
+    navigation.navigate('Checkout');
   };
 
   if (cartItems.length === 0) {

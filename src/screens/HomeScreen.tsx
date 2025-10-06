@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
@@ -7,6 +7,10 @@ import SearchBar from '../components/SearchBar';
 import Chip from '../components/Chip';
 import RestaurantCard from '../components/RestaurantCard';
 import BottomNav from '../components/BottomNav';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const AI_CARD_WIDTH = SCREEN_WIDTH * 0.55; // 55% of screen width for AI cards
+const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
 
 const chips = ['🥙 Nearby', '🔥 Offers', '⏱️ Fast', '🌿 Vegetarian', '⭐ Top Rated', '🍰 Desserts'];
 
@@ -150,8 +154,8 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FAFAFA' },
   scroll: { paddingBottom: 120 },
   appBar: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
+    paddingTop: STATUS_BAR_HEIGHT + 16,
+    paddingHorizontal: SCREEN_WIDTH * 0.05,
     paddingBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -167,15 +171,15 @@ const styles = StyleSheet.create({
   headerGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 120, zIndex: 1 },
 
   sectionContainer: { paddingVertical: 20, marginTop: 8 },
-  sectionHeader: { paddingHorizontal: 20, marginBottom: 16 },
-  sectionHeaderRow: { paddingHorizontal: 20, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sectionHeader: { paddingHorizontal: SCREEN_WIDTH * 0.05, marginBottom: 16 },
+  sectionHeaderRow: { paddingHorizontal: SCREEN_WIDTH * 0.05, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   seeAllContainer: { flexDirection: 'row', alignItems: 'center' },
   sectionTitle: { fontSize: 20, fontWeight: '600', color: colors.textPrimary },
   sectionSub: { fontSize: 14, color: '#555555', marginTop: 4 },
 
-  aiCard: { width: 200, height: 260, borderRadius: 16, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, marginVertical: 12, overflow: 'hidden', elevation: 3 },
-  imageContainer: { position: 'relative', width: 200, height: 140 },
-  aiImage: { width: 200, height: 140, borderTopLeftRadius: 16, borderTopRightRadius: 16, resizeMode: 'cover' },
+  aiCard: { width: AI_CARD_WIDTH, height: AI_CARD_WIDTH * 1.3, borderRadius: 16, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, marginVertical: 12, overflow: 'hidden', elevation: 3 },
+  imageContainer: { position: 'relative', width: AI_CARD_WIDTH, height: AI_CARD_WIDTH * 0.7 },
+  aiImage: { width: AI_CARD_WIDTH, height: AI_CARD_WIDTH * 0.7, borderTopLeftRadius: 16, borderTopRightRadius: 16, resizeMode: 'cover' },
   tealOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(20, 119, 111, 0.25)', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
   logoBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#E6F3F1', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
   logoImage: { opacity: 0.9 },
@@ -186,13 +190,13 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 11, color: '#555555' },
   metaDot: { marginHorizontal: 4, color: '#555555', fontSize: 11 },
 
-  moodBanner: { marginTop: 16, marginHorizontal: 20, borderRadius: 16, paddingVertical: 24, paddingHorizontal: 20, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
+  moodBanner: { marginTop: 16, marginHorizontal: SCREEN_WIDTH * 0.05, borderRadius: 16, paddingVertical: 24, paddingHorizontal: 20, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
   moodIcon: { fontSize: 20, color: '#FFFFFF', marginBottom: 6 },
   moodTitle: { fontSize: 18, fontWeight: '600', color: '#FFFFFF' },
   moodButton: { borderRadius: 24, paddingHorizontal: 20, paddingVertical: 14, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
   moodButtonText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
 
-  gridWrap: { paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 12 },
+  gridWrap: { paddingHorizontal: SCREEN_WIDTH * 0.05, flexDirection: 'row', flexWrap: 'wrap', gap: SCREEN_WIDTH * 0.04, marginTop: 12 },
   gridItem: { },
   link: { color: colors.primary, fontWeight: '600', fontSize: 14, letterSpacing: 0.3 },
 });

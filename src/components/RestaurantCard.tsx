@@ -1,6 +1,9 @@
 import React from 'react';
-import { View, Image, Text, StyleSheet, ViewStyle, ImageSourcePropType } from 'react-native';
+import { View, Image, Text, StyleSheet, ViewStyle, ImageSourcePropType, Dimensions } from 'react-native';
 import { colors } from '../theme/colors';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = (SCREEN_WIDTH * 0.9 - 16) / 2; // 90% width minus gap, divided by 2
 
 interface RestaurantCardProps {
   image: ImageSourcePropType;
@@ -38,7 +41,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rati
 
 const styles = StyleSheet.create({
   card: {
-    width: 160,
+    width: CARD_WIDTH,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
     padding: 8,
@@ -52,12 +55,12 @@ const styles = StyleSheet.create({
   imageContainer: {
     position: 'relative',
     width: '100%',
-    height: 120,
+    height: CARD_WIDTH * 0.75,
     marginBottom: 8,
   },
   image: {
     width: '100%',
-    height: 120,
+    height: CARD_WIDTH * 0.75,
     borderRadius: 12,
     resizeMode: 'cover',
   },

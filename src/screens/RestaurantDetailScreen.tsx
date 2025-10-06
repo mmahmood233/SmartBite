@@ -15,6 +15,7 @@ import { RootStackParamList } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import DishDetailModal from './DishDetailModal';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -29,6 +30,9 @@ interface MenuItem {
   image?: any;
   category: string;
   isPopular?: boolean;
+  rating?: number;
+  reviewCount?: number;
+  tags?: string[];
 }
 
 const mockMenuItems: MenuItem[] = [
@@ -78,11 +82,25 @@ const RestaurantDetailScreen: React.FC = () => {
   const scrollY = new Animated.Value(0);
   const scrollViewRef = useRef<any>(null);
   const categoryRefs = useRef<{ [key: string]: number }>({});
+  
+  // Dish Detail Modal State
+  const [dishModalVisible, setDishModalVisible] = useState(false);
+  const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
 
-  const handleAddToCart = (item: MenuItem) => {
-    setCartItems(prev => prev + 1);
-    setCartTotal(prev => prev + item.price);
-    // TODO: Add animation feedback
+  const handleDishPress = (item: MenuItem) => {
+    setSelectedDish({
+      ...item,
+      rating: 4.8,
+      reviewCount: 127,
+      tags: item.isPopular ? ['🔥 Popular', '🌶️ Spicy'] : ['🥗 Healthy'],
+    });
+    setDishModalVisible(true);
+  };
+
+  const handleAddToCart = (quantity: number, addOns: any[], totalPrice: number) => {
+    setCartItems(prev => prev + quantity);
+    setCartTotal(prev => prev + totalPrice);
+    // TODO: Add success toast animation
   };
 
   const groupedMenu = mockMenuItems.reduce((acc, item) => {
@@ -94,7 +112,12 @@ const RestaurantDetailScreen: React.FC = () => {
   }, {} as Record<string, MenuItem[]>);
 
   const renderMenuItem = (item: MenuItem) => (
-    <View key={item.id} style={styles.menuItem}>
+    <TouchableOpacity
+      key={item.id}
+      style={styles.menuItem}
+      onPress={() => handleDishPress(item)}
+      activeOpacity={0.7}
+    >
       <View style={styles.menuItemImageContainer}>
         <Image source={item.image} style={styles.menuItemImage} />
         {item.isPopular && (
@@ -110,14 +133,10 @@ const RestaurantDetailScreen: React.FC = () => {
         )}
         <Text style={styles.menuItemPrice}>BD {item.price.toFixed(2)}</Text>
       </View>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => handleAddToCart(item)}
-        activeOpacity={0.7}
-      >
+      <View style={styles.addButton}>
         <Icon name="plus" size={20} color="#FFFFFF" />
-      </TouchableOpacity>
-    </View>
+      </View>
+    </TouchableOpacity>
   );
 
   const handleCategoryPress = (category: string) => {
@@ -450,6 +469,16 @@ const RestaurantDetailScreen: React.FC = () => {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+      )}
+
+      {/* Dish Detail Modal */}
+      {selectedDish && (
+        <DishDetailModal
+          visible={dishModalVisible}
+          onClose={() => setDishModalVisible(false)}
+          dish={selectedDish}
+          onAddToCart={handleAddToCart}
+        />
       )}
     </View>
   );

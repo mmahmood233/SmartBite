@@ -1,0 +1,522 @@
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+  Modal,
+  ScrollView,
+  PanResponder,
+  Animated,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Icon from 'react-native-vector-icons/Feather';
+import { colors } from '../theme/colors';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const IMAGE_HEIGHT = 240;
+
+interface AddOn {
+  id: string;
+  name: string;
+  price: number;
+  selected: boolean;
+}
+
+interface DishDetailModalProps {
+  visible: boolean;
+  onClose: () => void;
+  dish: {
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    image?: any;
+    rating?: number;
+    reviewCount?: number;
+    tags?: string[];
+  };
+  onAddToCart: (quantity: number, addOns: AddOn[], totalPrice: number) => void;
+}
+
+const DishDetailModal: React.FC<DishDetailModalProps> = ({
+  visible,
+  onClose,
+  dish,
+  onAddToCart,
+}) => {
+  const [quantity, setQuantity] = useState(1);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [addOns, setAddOns] = useState<AddOn[]>([
+    { id: '1', name: 'Extra Chicken', price: 1.0, selected: false },
+    { id: '2', name: 'Salad', price: 0.5, selected: false },
+    { id: '3', name: 'Garlic Sauce', price: 0.3, selected: false },
+  ]);
+
+  const pan = useRef(new Animated.Value(0)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return gestureState.dy > 5; // Only respond to downward drags
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          pan.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 100) {
+          // If dragged down more than 100px, close
+          onClose();
+        } else {
+          // Otherwise, spring back
+          Animated.spring(pan, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  const toggleAddOn = (id: string) => {
+    setAddOns(prev =>
+      prev.map(addon =>
+        addon.id === id ? { ...addon, selected: !addon.selected } : addon
+      )
+    );
+  };
+
+  const calculateTotal = () => {
+    const basePrice = dish.price * quantity;
+    const addOnsPrice = addOns
+      .filter(addon => addon.selected)
+      .reduce((sum, addon) => sum + addon.price * quantity, 0);
+    return basePrice + addOnsPrice;
+  };
+
+  const handleAddToCart = () => {
+    const total = calculateTotal();
+    onAddToCart(quantity, addOns.filter(a => a.selected), total);
+    onClose();
+  };
+
+  const incrementQuantity = () => setQuantity(prev => prev + 1);
+  const decrementQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+        
+        <Animated.View 
+          style={[
+            styles.modalContainer,
+            {
+              transform: [{ translateY: pan }],
+            },
+          ]}
+        >
+          {/* Drag Handle */}
+          <View style={styles.dragHandleContainer} {...panResponder.panHandlers}>
+            <View style={styles.dragHandle} />
+          </View>
+
+          <ScrollView
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+          >
+            {/* Hero Image */}
+            <View style={styles.imageContainer}>
+              <Image 
+                source={dish.image || require('../../assets/food.png')} 
+                style={styles.dishImage} 
+                resizeMode="cover" 
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(255,255,255,0.9)']}
+                style={styles.imageGradient}
+              />
+              
+              {/* Favorite Button */}
+              <TouchableOpacity
+                style={styles.favoriteButton}
+                onPress={() => setIsFavorite(!isFavorite)}
+                activeOpacity={0.8}
+              >
+                <Icon
+                  name="heart"
+                  size={20}
+                  color={isFavorite ? '#E74C3C' : '#FFFFFF'}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Info Block */}
+            <View style={styles.infoBlock}>
+              <View style={styles.headerRow}>
+                <Text style={styles.dishName}>{dish.name}</Text>
+                <Text style={styles.dishPrice}>BD {dish.price.toFixed(2)}</Text>
+              </View>
+
+              {/* Rating (if available) */}
+              {dish.rating && (
+                <View style={styles.ratingRow}>
+                  <Icon name="star" size={14} color="#FFB800" />
+                  <Text style={styles.ratingText}>
+                    {dish.rating} · {dish.reviewCount || 0} reviews
+                  </Text>
+                </View>
+              )}
+
+              <Text style={styles.description}>{dish.description}</Text>
+
+              {/* Tags */}
+              {dish.tags && dish.tags.length > 0 && (
+                <View style={styles.tagsContainer}>
+                  {dish.tags.map((tag, index) => (
+                    <View key={index} style={styles.tag}>
+                      <Text style={styles.tagText}>{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              <View style={styles.divider} />
+
+              {/* Add-ons Section */}
+              <Text style={styles.sectionTitle}>Choose your add-ons (Optional)</Text>
+              {addOns.map(addon => (
+                <TouchableOpacity
+                  key={addon.id}
+                  style={styles.addOnItem}
+                  onPress={() => toggleAddOn(addon.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.addOnLeft}>
+                    <View style={[styles.checkbox, addon.selected && styles.checkboxActive]}>
+                      {addon.selected && (
+                        <Icon name="check" size={14} color="#FFFFFF" />
+                      )}
+                    </View>
+                    <Text style={styles.addOnName}>{addon.name}</Text>
+                  </View>
+                  <Text style={styles.addOnPrice}>+BD {addon.price.toFixed(2)}</Text>
+                </TouchableOpacity>
+              ))}
+
+              <View style={styles.divider} />
+
+              {/* Quantity Selector */}
+              <View style={styles.quantitySection}>
+                <Text style={styles.sectionTitle}>Quantity</Text>
+                <View style={styles.quantityControls}>
+                  <TouchableOpacity
+                    style={styles.quantityButton}
+                    onPress={decrementQuantity}
+                    activeOpacity={0.7}
+                  >
+                    <Icon name="minus" size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                  <Text style={styles.quantityText}>{quantity}</Text>
+                  <TouchableOpacity
+                    style={styles.quantityButton}
+                    onPress={incrementQuantity}
+                    activeOpacity={0.7}
+                  >
+                    <Icon name="plus" size={18} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Spacing for sticky footer */}
+              <View style={{ height: 100 }} />
+            </View>
+          </ScrollView>
+
+          {/* Sticky Footer CTA */}
+          <View style={styles.footer}>
+            <View style={styles.footerLeft}>
+              <Text style={styles.footerQuantity}>{quantity} Item{quantity > 1 ? 's' : ''}</Text>
+              <Text style={styles.footerTotal}>BD {calculateTotal().toFixed(2)}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={handleAddToCart}
+              activeOpacity={0.9}
+            >
+              <LinearGradient
+                colors={['#00897B', '#26A69A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.addButtonGradient}
+              >
+                <Text style={styles.addButtonText}>Add to Order</Text>
+                <Icon name="arrow-right" size={18} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+};
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    height: SCREEN_HEIGHT * 0.9,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 20,
+  },
+  dragHandleContainer: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  dragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#CFCFCF',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: IMAGE_HEIGHT,
+  },
+  dishImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imageGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '40%',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  infoBlock: {
+    padding: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  dishName: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1A4D47',
+    letterSpacing: -0.3,
+    marginRight: 12,
+  },
+  dishPrice: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  ratingText: {
+    fontSize: 14,
+    color: '#6D6D6D',
+    marginLeft: 4,
+  },
+  description: {
+    fontSize: 14,
+    color: '#6C6C6C',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  tag: {
+    backgroundColor: '#F3F7F5',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 126, 115, 0.15)',
+  },
+  tagText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.primary,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#EAEAEA',
+    marginVertical: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A4D47',
+    marginBottom: 12,
+  },
+  addOnItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  addOnLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#CFCFCF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  checkboxActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  addOnName: {
+    fontSize: 15,
+    color: '#212121',
+    fontWeight: '500',
+  },
+  addOnPrice: {
+    fontSize: 15,
+    color: '#6D6D6D',
+    fontWeight: '500',
+  },
+  quantitySection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  quantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  quantityButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quantityText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#212121',
+    marginHorizontal: 20,
+    minWidth: 30,
+    textAlign: 'center',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.08)',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 10,
+  },
+  footerLeft: {
+    flex: 1,
+  },
+  footerQuantity: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6D6D6D',
+  },
+  footerTotal: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#212121',
+    marginTop: 2,
+  },
+  addButton: {
+    flex: 1.5,
+    marginLeft: 12,
+  },
+  addButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  addButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+});
+
+export default DishDetailModal;

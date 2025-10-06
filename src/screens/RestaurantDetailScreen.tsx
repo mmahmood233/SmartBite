@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -71,10 +71,13 @@ const mockMenuItems: MenuItem[] = [
 const RestaurantDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [activeTab, setActiveTab] = useState<'menu' | 'about' | 'reviews'>('menu');
+  const [activeCategory, setActiveCategory] = useState<string>('Mains');
   const [isFavorite, setIsFavorite] = useState(false);
   const [cartItems, setCartItems] = useState<number>(0);
   const [cartTotal, setCartTotal] = useState<number>(0);
   const scrollY = new Animated.Value(0);
+  const scrollViewRef = useRef<any>(null);
+  const categoryRefs = useRef<{ [key: string]: number }>({});
 
   const handleAddToCart = (item: MenuItem) => {
     setCartItems(prev => prev + 1);
@@ -117,8 +120,50 @@ const RestaurantDetailScreen: React.FC = () => {
     </View>
   );
 
+  const handleCategoryPress = (category: string) => {
+    setActiveCategory(category);
+    // Smooth scroll to category section would be implemented here
+    // For now, just update active state
+  };
+
+  const renderCategoryBar = () => {
+    const categories = Object.keys(groupedMenu);
+    
+    return (
+      <View style={styles.categoryBarContainer}>
+        <Animated.ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryBar}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={styles.categoryButton}
+              onPress={() => handleCategoryPress(category)}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.categoryButtonText,
+                  activeCategory === category && styles.categoryButtonTextActive,
+                ]}
+              >
+                {category}
+              </Text>
+              {activeCategory === category && (
+                <View style={styles.categoryIndicator} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </Animated.ScrollView>
+      </View>
+    );
+  };
+
   const renderMenuSection = () => (
     <View style={styles.menuSection}>
+      {renderCategoryBar()}
       {Object.entries(groupedMenu).map(([category, items]) => (
         <View key={category} style={styles.menuCategory}>
           <Text style={styles.categoryHeader}>{category}</Text>
@@ -318,6 +363,26 @@ const RestaurantDetailScreen: React.FC = () => {
         <View style={styles.infoCard}>
           <Text style={styles.restaurantName}>Al Qariah</Text>
           <Text style={styles.cuisineType}>Saudi • Home-Style • Grill</Text>
+          
+          {/* Key Stats Row */}
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Icon name="star" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+              <Text style={styles.statTextBold}>4.8</Text>
+              <Text style={styles.statText}> (127)</Text>
+            </View>
+            <Text style={styles.statDivider}>•</Text>
+            <View style={styles.statItem}>
+              <Icon name="clock" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+              <Text style={styles.statText}>25 min</Text>
+            </View>
+            <Text style={styles.statDivider}>•</Text>
+            <View style={styles.statItem}>
+              <Icon name="truck" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+              <Text style={styles.statText}>BD 0.5 Delivery</Text>
+            </View>
+          </View>
+
           <View style={styles.locationRow}>
             <Icon name="map-pin" size={14} color="#9E9E9E" />
             <Text style={styles.locationText}>1.2 km away • Manama</Text>
@@ -411,14 +476,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: '40%',
+    height: '50%',
   },
   heroBottomFade: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: '40%',
+    height: '30%',
   },
   backButton: {
     position: 'absolute',
@@ -471,7 +536,7 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     backgroundColor: '#FFFFFF',
-    marginTop: -40,
+    marginTop: -36,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
@@ -482,16 +547,42 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   restaurantName: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '600',
-    color: '#212121',
+    color: '#1A4D47',
     marginBottom: 4,
+    letterSpacing: -0.3,
   },
   cuisineType: {
     fontSize: 14,
     fontWeight: '400',
     color: '#6D6D6D',
-    marginBottom: 12,
+    marginBottom: 10,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    flexWrap: 'wrap',
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statTextBold: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#555555',
+  },
+  statText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#555555',
+  },
+  statDivider: {
+    fontSize: 14,
+    color: '#9E9E9E',
+    marginHorizontal: 8,
   },
   locationRow: {
     flexDirection: 'row',
@@ -549,16 +640,52 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   menuSection: {
-    padding: SCREEN_WIDTH * 0.05,
+    paddingBottom: SCREEN_WIDTH * 0.05,
+  },
+  categoryBarContainer: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
+    paddingVertical: 12,
+  },
+  categoryBar: {
+    paddingHorizontal: SCREEN_WIDTH * 0.05,
+    gap: 20,
+  },
+  categoryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  categoryButtonText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#6D6D6D',
+  },
+  categoryButtonTextActive: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  categoryIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: colors.primary,
+    borderRadius: 2,
   },
   menuCategory: {
     marginBottom: 24,
+    paddingHorizontal: SCREEN_WIDTH * 0.05,
   },
   categoryHeader: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.primary,
+    color: '#1A4D47',
     marginBottom: 16,
+    marginTop: 16,
+    letterSpacing: -0.2,
   },
   menuItem: {
     flexDirection: 'row',
@@ -567,10 +694,10 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.06,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    elevation: 3,
   },
   menuItemImageContainer: {
     position: 'relative',
@@ -633,6 +760,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
+    shadowColor: colors.primary,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   aboutSection: {
     padding: SCREEN_WIDTH * 0.05,
@@ -819,12 +951,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SCREEN_WIDTH * 0.05,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: -6 },
-    elevation: 12,
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: -8 },
+    elevation: 15,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
+    borderTopColor: 'rgba(0,0,0,0.08)',
   },
   stickyBarLeft: {
     flex: 1,

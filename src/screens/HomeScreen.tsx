@@ -30,11 +30,13 @@ const HomeScreen: React.FC = () => {
         {/* Top App Bar */}
         <View style={styles.appBar}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.greeting}>
-              <Text style={styles.greetingLight}>Good evening, </Text>
-              <Text style={styles.greetingBold}>Ahmed</Text>
-              <Text> 👋</Text>
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.greeting}>
+                <Text style={styles.greetingLight}>Good evening, </Text>
+                <Text style={styles.greetingBold}>Ahmed</Text>
+              </Text>
+              <Text style={styles.waveEmoji}> 👋</Text>
+            </View>
             <TouchableOpacity style={styles.locationChip} activeOpacity={0.7}>
               <Icon name="map-pin" size={12} color={colors.primary} style={{ marginRight: 4 }} />
               <Text style={styles.locationText}>Manama</Text>
@@ -59,31 +61,42 @@ const HomeScreen: React.FC = () => {
         </ScrollView>
 
         {/* AI Picks */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>✨ For You</Text>
-          <Text style={styles.sectionSub}>Curated by your taste</Text>
-        </View>
+        <LinearGradient
+          colors={['#FFFFFF', '#FAFAFA']}
+          style={styles.sectionContainer}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>✨ For You</Text>
+            <Text style={styles.sectionSub}>Curated by your taste</Text>
+          </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 16 }}>
-          {aiPicks.map(item => (
-            <View key={item.id} style={styles.aiCard}>
-              <View style={styles.imageContainer}>
-                <Image source={item.image} style={styles.aiImage} />
-                <View style={styles.tealOverlay} />
-              </View>
-              <View style={styles.aiCardBody}>
-                <Text style={styles.aiName}>{item.name}</Text>
-                <Text style={styles.aiMatch}>{item.match}</Text>
-                <View style={styles.metaRow}>
-                  <Text style={styles.metaText}>⭐ {item.rating}</Text>
-                  <Text style={styles.metaDot}>•</Text>
-                  <Text style={styles.metaText}>{item.eta}</Text>
-                  <Text style={styles.metaDot}>•</Text>
-                  <Text style={styles.metaText}>{item.price}</Text>
+          {aiPicks.map(item => {
+            const isFoodImage = item.image === require('../../assets/food.png');
+            const isLogoImage = !isFoodImage;
+            
+            return (
+              <View key={item.id} style={styles.aiCard}>
+                <View style={styles.imageContainer}>
+                  {isLogoImage && <View style={styles.logoBackground} />}
+                  <Image source={item.image} style={[styles.aiImage, isLogoImage && styles.logoImage]} />
+                  {isFoodImage && <View style={styles.tealOverlay} />}
+                </View>
+                <View style={styles.aiCardBody}>
+                  <Text style={styles.aiName}>{item.name}</Text>
+                  <Text style={styles.aiMatch}>{item.match}</Text>
+                  <View style={styles.metaRow}>
+                    <Text style={styles.metaText}>⭐ {item.rating}</Text>
+                    <Text style={styles.metaDot}>•</Text>
+                    <Text style={styles.metaText}>{item.eta}</Text>
+                    <Text style={styles.metaDot}>•</Text>
+                    <Text style={styles.metaText}>{item.price}</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </ScrollView>
+        </LinearGradient>
 
         {/* Mood Banner */}
         <View style={styles.moodBanner}>
@@ -102,16 +115,27 @@ const HomeScreen: React.FC = () => {
         </View>
 
         {/* Nearby */}
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Popular Near You</Text>
-          <Text style={styles.link}>See All ▶</Text>
-        </View>
+        <LinearGradient
+          colors={['#FFFFFF', '#FAFAFA']}
+          style={styles.sectionContainer}
+        >
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Popular Near You</Text>
+            <TouchableOpacity activeOpacity={0.7}>
+              <View style={styles.seeAllContainer}>
+                <Text style={styles.link}>See All</Text>
+                <Icon name="arrow-right" size={16} color={colors.primary} style={{ marginLeft: 4 }} />
+              </View>
+            </TouchableOpacity>
+          </View>
 
         <View style={styles.gridWrap}>
           {nearby.map(item => (
             <RestaurantCard key={item.id} image={item.image} name={item.name} tags={item.tags} style={styles.gridItem} />
           ))}
         </View>
+
+        </LinearGradient>
 
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -133,7 +157,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
   },
-  greeting: { fontSize: 18, fontWeight: '600', color: '#2D2D2D' },
+  greeting: { fontSize: 18, fontWeight: '600', color: '#2D2D2D', lineHeight: 22 },
+  waveEmoji: { fontSize: 18, marginLeft: 2, marginTop: -2 },
   greetingLight: { color: '#5A5A5A', fontWeight: '500' },
   greetingBold: { color: '#1F1F1F', fontWeight: '700' },
   locationChip: { alignSelf: 'flex-start', marginTop: 6, backgroundColor: '#E6F3F1', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, shadowColor: colors.primary, shadowOpacity: 0.15, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 2, borderWidth: 0.5, borderColor: 'rgba(20, 119, 111, 0.2)', flexDirection: 'row', alignItems: 'center' },
@@ -141,8 +166,10 @@ const styles = StyleSheet.create({
   avatar: { width: 38, height: 38, borderRadius: 19, marginLeft: 8, marginRight: 8, borderColor: colors.primary, borderWidth: 2 },
   headerGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 120, zIndex: 1 },
 
-  sectionHeader: { paddingHorizontal: 20, marginTop: 16 },
-  sectionHeaderRow: { paddingHorizontal: 20, marginTop: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sectionContainer: { paddingVertical: 20, marginTop: 8 },
+  sectionHeader: { paddingHorizontal: 20, marginBottom: 16 },
+  sectionHeaderRow: { paddingHorizontal: 20, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  seeAllContainer: { flexDirection: 'row', alignItems: 'center' },
   sectionTitle: { fontSize: 20, fontWeight: '600', color: colors.textPrimary },
   sectionSub: { fontSize: 14, color: '#555555', marginTop: 4 },
 
@@ -150,9 +177,11 @@ const styles = StyleSheet.create({
   imageContainer: { position: 'relative', width: 200, height: 140 },
   aiImage: { width: 200, height: 140, borderTopLeftRadius: 16, borderTopRightRadius: 16, resizeMode: 'cover' },
   tealOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(20, 119, 111, 0.25)', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
+  logoBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#E6F3F1', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
+  logoImage: { opacity: 0.9 },
   aiCardBody: { padding: 12 },
   aiName: { fontSize: 16, fontWeight: '600', color: colors.textPrimary },
-  aiMatch: { fontSize: 12, color: '#3BC8A4', marginTop: 4 },
+  aiMatch: { fontSize: 11, color: '#0B9E8E', marginTop: 2, fontWeight: '500' },
   metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
   metaText: { fontSize: 11, color: '#555555' },
   metaDot: { marginHorizontal: 4, color: '#555555', fontSize: 11 },
@@ -165,7 +194,7 @@ const styles = StyleSheet.create({
 
   gridWrap: { paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 12 },
   gridItem: { },
-  link: { color: colors.primary, fontWeight: '600', fontSize: 14 },
+  link: { color: colors.primary, fontWeight: '600', fontSize: 14, letterSpacing: 0.3 },
 });
 
 export default HomeScreen;

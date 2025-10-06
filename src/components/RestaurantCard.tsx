@@ -14,11 +14,13 @@ interface RestaurantCardProps {
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rating = 4.8, eta = '15 min', price = '$$', style }) => {
   const isFoodImage = image === require('../../assets/food.png');
+  const isLogoImage = !isFoodImage;
   
   return (
     <View style={[styles.card, style]}>
       <View style={styles.imageContainer}>
-        <Image source={image} style={styles.image} />
+        {isLogoImage && <View style={styles.logoBackground} />}
+        <Image source={image} style={[styles.image, isLogoImage && styles.logoImage]} />
         {isFoodImage && <View style={styles.tealOverlay} />}
       </View>
       <Text style={styles.name}>{name}</Text>
@@ -67,6 +69,18 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'rgba(20, 119, 111, 0.25)',
     borderRadius: 12,
+  },
+  logoBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#E6F3F1',
+    borderRadius: 12,
+  },
+  logoImage: {
+    opacity: 0.9,
   },
   name: {
     fontSize: 16,

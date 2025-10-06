@@ -13,6 +13,7 @@ export type RootStackParamList = {
     restaurantId: string;
     restaurantName: string;
   };
+  Cart: undefined;
 };
 
 export type AuthStackParamList = {

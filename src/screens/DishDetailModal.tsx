@@ -49,7 +49,6 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
   onAddToCart,
 }) => {
   const [quantity, setQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [specialRequest, setSpecialRequest] = useState('');
   const [addOns, setAddOns] = useState<AddOn[]>([
     { id: '1', name: 'Extra Chicken', price: 1.0, selected: false },
@@ -153,19 +152,6 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
                 colors={['transparent', 'rgba(255,255,255,0.95)']}
                 style={styles.imageGradient}
               />
-              
-              {/* Favorite Button */}
-              <TouchableOpacity
-                style={styles.favoriteButton}
-                onPress={() => setIsFavorite(!isFavorite)}
-                activeOpacity={0.8}
-              >
-                <Icon
-                  name="heart"
-                  size={20}
-                  color={isFavorite ? '#E74C3C' : '#FFFFFF'}
-                />
-              </TouchableOpacity>
             </View>
 
             {/* Info Block */}

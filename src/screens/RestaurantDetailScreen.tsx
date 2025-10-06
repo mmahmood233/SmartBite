@@ -468,14 +468,18 @@ const RestaurantDetailScreen: React.FC = () => {
             <Text style={styles.stickyBarItems}>{cartItems} items</Text>
             <Text style={styles.stickyBarTotal}>BD {cartTotal.toFixed(2)}</Text>
           </View>
-          <TouchableOpacity style={styles.stickyBarButton} activeOpacity={0.8}>
+          <TouchableOpacity 
+            style={styles.stickyBarButton} 
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('Cart')}
+          >
             <LinearGradient
               colors={['#007E73', '#00BFA6']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.stickyBarGradient}
             >
-              <Text style={styles.stickyBarButtonText}>Start Order</Text>
+              <Text style={styles.stickyBarButtonText}>View Cart</Text>
               <Icon name="arrow-right" size={18} color="#FFFFFF" />
             </LinearGradient>
           </TouchableOpacity>

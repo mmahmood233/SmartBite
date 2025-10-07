@@ -81,7 +81,7 @@ const EditProfileScreen: React.FC = () => {
         <View style={styles.avatarSection}>
           <View style={styles.avatarContainer}>
             <LinearGradient
-              colors={['#00897B', '#26A69A']}
+              colors={[colors.gradientStart, colors.gradientEnd]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.avatar}
@@ -152,7 +152,7 @@ const EditProfileScreen: React.FC = () => {
         <GradientButton
           title="Save Changes"
           onPress={handleSaveChanges}
-          gradientColors={['#00A58E', '#00C4A3']}
+          gradientColors={[colors.gradientStart, colors.gradientEnd]}
           style={styles.saveButton}
         />
 
@@ -214,11 +214,11 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
   avatarInitials: {
     fontSize: 42,
@@ -259,13 +259,13 @@ const styles = StyleSheet.create({
     right: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
+    backgroundColor: colors.successToastBg,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     gap: 10,
-    shadowColor: '#4CAF50',
-    shadowOpacity: 0.2,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
     elevation: 6,
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   successText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2E7D32',
+    color: colors.successToastText,
   },
   footer: {
     paddingHorizontal: 20,
@@ -287,13 +287,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cancelButton: {
-    paddingVertical: 14,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   cancelButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6D6D6D',
+    color: '#6B6B6B',
   },
 });
 

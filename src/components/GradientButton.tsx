@@ -12,7 +12,7 @@ const GradientButton: React.FC<GradientButtonProps> = ({
   loading = false,
   style,
   textStyle,
-  gradientColors = [colors.primary, colors.gradientBannerEnd],
+  gradientColors = [colors.gradientStart, colors.gradientEnd],
   accessibilityLabel,
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;

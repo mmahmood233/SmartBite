@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -80,8 +80,6 @@ const RestaurantDetailScreen: React.FC = () => {
   const [cartItems, setCartItems] = useState<number>(0);
   const [cartTotal, setCartTotal] = useState<number>(0);
   const scrollY = new Animated.Value(0);
-  const scrollViewRef = useRef<any>(null);
-  const categoryRefs = useRef<{ [key: string]: number }>({});
   
   // Dish Detail Modal State
   const [dishModalVisible, setDishModalVisible] = useState(false);

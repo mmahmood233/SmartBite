@@ -15,6 +15,10 @@ export type RootStackParamList = {
   };
   Cart: undefined;
   Checkout: undefined;
+  OrderConfirmation: undefined;
+  OrderTracking: {
+    orderNumber: string;
+  };
 };
 
 export type AuthStackParamList = {

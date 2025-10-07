@@ -72,8 +72,9 @@ const CheckoutScreen: React.FC = () => {
   const total = subtotal + deliveryFee - discount;
 
   const handlePlaceOrder = () => {
-    // TODO: Process order
-    console.log('Order placed!');
+    // TODO: Process payment
+    // Navigate to order confirmation
+    navigation.navigate('OrderConfirmation');
   };
 
   return (

@@ -147,9 +147,6 @@ const ProfileScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity style={styles.settingsButton} activeOpacity={0.7}>
-          <Icon name="settings" size={22} color={colors.primary} />
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -338,14 +335,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.huge,
     fontWeight: '700',
     color: colors.textPrimary,
-  },
-  settingsButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BORDER_RADIUS.md,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   scrollView: {
     flex: 1,

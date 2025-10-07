@@ -189,14 +189,23 @@ const OrdersScreen: React.FC = () => {
           <Text style={styles.orderTotal}>BD {order.total.toFixed(2)}</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.trackButton}
-          onPress={() => handleTrackOrder(order.orderNumber)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.trackButtonText}>Track Order</Text>
-          <Icon name="arrow-right" size={16} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={styles.activeOrderActions}>
+          <TouchableOpacity
+            style={styles.trackButton}
+            onPress={() => handleTrackOrder(order.orderNumber)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.trackButtonText}>Track Order</Text>
+            <Icon name="arrow-right" size={16} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.detailsButtonActive}
+            onPress={() => handleViewDetails(order.id)}
+            activeOpacity={0.7}
+          >
+            <Icon name="file-text" size={16} color="#6D6D6D" />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -558,7 +567,12 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginLeft: 'auto',
   },
+  activeOrderActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   trackButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -578,6 +592,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: colors.primary,
+  },
+  detailsButtonActive: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F9F9F9',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   pastOrderMeta: {
     flexDirection: 'row',

@@ -1,7 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface BottomNavProps {
   active?: 'Home' | 'Chat' | 'Orders' | 'Profile';
@@ -18,8 +23,23 @@ const getIconName = (label: string): string => {
 };
 
 const BottomNav: React.FC<BottomNavProps> = ({ active = 'Home' }) => {
+  const navigation = useNavigation<NavigationProp>();
+
+  const handleTabPress = (label: string) => {
+    if (label === 'Home') {
+      navigation.navigate('Home');
+    } else if (label === 'Orders') {
+      navigation.navigate('Orders');
+    }
+    // Chat and Profile screens can be added later
+  };
+
   const Tab = ({ label, isActive }: { label: string; isActive: boolean }) => (
-    <TouchableOpacity activeOpacity={0.8} style={styles.tab}>
+    <TouchableOpacity 
+      activeOpacity={0.8} 
+      style={styles.tab}
+      onPress={() => handleTabPress(label)}
+    >
       <View style={[styles.pill, isActive && styles.pillActive]}>
         <Icon 
           name={getIconName(label)} 

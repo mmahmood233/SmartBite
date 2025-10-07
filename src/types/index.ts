@@ -21,6 +21,7 @@ export type RootStackParamList = {
   };
   DeliveryComplete: undefined;
   ReviewConfirmation: undefined;
+  Orders: undefined;
 };
 
 export type AuthStackParamList = {

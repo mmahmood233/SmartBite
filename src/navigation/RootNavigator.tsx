@@ -12,6 +12,7 @@ import OrderConfirmationScreen from '../screens/OrderConfirmationScreen';
 import OrderTrackingScreen from '../screens/OrderTrackingScreen';
 import DeliveryCompleteScreen from '../screens/DeliveryCompleteScreen';
 import ReviewConfirmationScreen from '../screens/ReviewConfirmationScreen';
+import OrdersScreen from '../screens/OrdersScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -37,6 +38,7 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />
       <Stack.Screen name="DeliveryComplete" component={DeliveryCompleteScreen} />
       <Stack.Screen name="ReviewConfirmation" component={ReviewConfirmationScreen} />
+      <Stack.Screen name="Orders" component={OrdersScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>
   );

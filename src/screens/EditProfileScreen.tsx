@@ -5,17 +5,18 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Platform,
   KeyboardAvoidingView,
   Alert,
 } from 'react-native';
+import { TextInput } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import Icon from 'react-native-vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+import { GradientButton, Input } from '../components';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -28,9 +29,6 @@ const EditProfileScreen: React.FC = () => {
   const [phone, setPhone] = useState('+973 3356 0803');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
-
-  // Focus states
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleChangePhoto = () => {
     // TODO: Open camera/gallery picker
@@ -105,88 +103,37 @@ const EditProfileScreen: React.FC = () => {
 
         {/* Form Fields */}
         <View style={styles.formSection}>
-          {/* Full Name */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Full Name</Text>
-            <View style={[
-              styles.inputWrapper,
-              focusedField === 'name' && styles.inputWrapperFocused
-            ]}>
-              <Icon name="user" size={18} color="#9E9E9E" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={fullName}
-                onChangeText={setFullName}
-                placeholder="Enter your full name"
-                placeholderTextColor="#BDBDBD"
-                onFocus={() => setFocusedField('name')}
-                onBlur={() => setFocusedField(null)}
-              />
-            </View>
-          </View>
+          <Input
+            label="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+            left={<TextInput.Icon icon="account" />}
+          />
 
-          {/* Email */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Email</Text>
-            <View style={[
-              styles.inputWrapper,
-              focusedField === 'email' && styles.inputWrapperFocused
-            ]}>
-              <Icon name="mail" size={18} color="#9E9E9E" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter your email"
-                placeholderTextColor="#BDBDBD"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                onFocus={() => setFocusedField('email')}
-                onBlur={() => setFocusedField(null)}
-              />
-            </View>
-          </View>
+          <Input
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            left={<TextInput.Icon icon="email" />}
+          />
 
-          {/* Phone */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Phone</Text>
-            <View style={[
-              styles.inputWrapper,
-              focusedField === 'phone' && styles.inputWrapperFocused
-            ]}>
-              <Icon name="phone" size={18} color="#9E9E9E" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={phone}
-                onChangeText={setPhone}
-                placeholder="Enter your phone number"
-                placeholderTextColor="#BDBDBD"
-                keyboardType="phone-pad"
-                onFocus={() => setFocusedField('phone')}
-                onBlur={() => setFocusedField(null)}
-              />
-            </View>
-          </View>
+          <Input
+            label="Phone"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            left={<TextInput.Icon icon="phone" />}
+          />
 
-          {/* Date of Birth */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Date of Birth (Optional)</Text>
-            <View style={[
-              styles.inputWrapper,
-              focusedField === 'dob' && styles.inputWrapperFocused
-            ]}>
-              <Icon name="calendar" size={18} color="#9E9E9E" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={dateOfBirth}
-                onChangeText={setDateOfBirth}
-                placeholder="DD/MM/YYYY"
-                placeholderTextColor="#BDBDBD"
-                onFocus={() => setFocusedField('dob')}
-                onBlur={() => setFocusedField(null)}
-              />
-            </View>
-          </View>
+          <Input
+            label="Date of Birth (Optional)"
+            value={dateOfBirth}
+            onChangeText={setDateOfBirth}
+            placeholder="DD/MM/YYYY"
+            left={<TextInput.Icon icon="calendar" />}
+          />
         </View>
 
         <View style={{ height: 120 }} />
@@ -202,20 +149,12 @@ const EditProfileScreen: React.FC = () => {
 
       {/* Action Buttons */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.saveButton}
+        <GradientButton
+          title="Save Changes"
           onPress={handleSaveChanges}
-          activeOpacity={0.9}
-        >
-          <LinearGradient
-            colors={['#00A58E', '#00C4A3']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.saveButtonGradient}
-          >
-            <Text style={styles.saveButtonText}>Save Changes</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+          gradientColors={['#00A58E', '#00C4A3']}
+          style={styles.saveButton}
+        />
 
         <TouchableOpacity
           style={styles.cancelButton}
@@ -313,45 +252,6 @@ const styles = StyleSheet.create({
   formSection: {
     paddingHorizontal: 20,
   },
-  fieldContainer: {
-    marginBottom: 20,
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#212121',
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#E9ECEF',
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.02,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
-  },
-  inputWrapperFocused: {
-    borderColor: '#00A58E',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowColor: colors.primary,
-    elevation: 3,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    color: '#212121',
-    paddingVertical: 14,
-  },
   successBanner: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 100 : 80,
@@ -385,22 +285,6 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginBottom: 12,
-  },
-  saveButtonGradient: {
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: colors.primary,
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 6,
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 0.3,
   },
   cancelButton: {
     paddingVertical: 14,

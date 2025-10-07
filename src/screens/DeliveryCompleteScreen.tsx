@@ -61,11 +61,11 @@ const DeliveryCompleteScreen: React.FC = () => {
 
   const handleReorder = () => {
     // TODO: Navigate to restaurant with previous order
-    navigation.navigate('Home');
+    navigation.navigate('MainTabs');
   };
 
   const handleExplore = () => {
-    navigation.navigate('Home');
+    navigation.navigate('MainTabs');
   };
 
   return (

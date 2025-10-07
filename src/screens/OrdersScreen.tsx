@@ -134,7 +134,7 @@ const OrdersScreen: React.FC = () => {
   };
 
   const handleBrowseRestaurants = () => {
-    navigation.navigate('Home');
+    navigation.navigate('MainTabs');
   };
 
   const onRefresh = () => {

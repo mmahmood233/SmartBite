@@ -39,7 +39,7 @@ const ReviewConfirmationScreen: React.FC = () => {
   }, []);
 
   const handleBackToHome = () => {
-    navigation.navigate('Home');
+    navigation.navigate('MainTabs');
   };
 
   return (

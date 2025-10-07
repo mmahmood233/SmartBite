@@ -95,6 +95,10 @@ const OrderTrackingScreen: React.FC = () => {
     console.log('Contact support...');
   };
 
+  const handleDeliveryComplete = () => {
+    navigation.navigate('DeliveryComplete');
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -207,6 +211,17 @@ const OrderTrackingScreen: React.FC = () => {
           >
             <Icon name="message-circle" size={20} color={colors.primary} />
             <Text style={styles.supportButtonText}>Contact Support</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Temporary: Simulate Delivery Complete */}
+        <View style={styles.supportSection}>
+          <TouchableOpacity
+            style={styles.deliveryCompleteButton}
+            onPress={handleDeliveryComplete}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.deliveryCompleteText}>🎉 Simulate Delivery Complete</Text>
           </TouchableOpacity>
         </View>
 
@@ -452,6 +467,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: colors.primary,
+  },
+  deliveryCompleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFE5B4',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#FFB800',
+  },
+  deliveryCompleteText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#8B6914',
   },
 });
 

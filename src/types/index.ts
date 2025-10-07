@@ -19,6 +19,8 @@ export type RootStackParamList = {
   OrderTracking: {
     orderNumber: string;
   };
+  DeliveryComplete: undefined;
+  ReviewConfirmation: undefined;
 };
 
 export type AuthStackParamList = {

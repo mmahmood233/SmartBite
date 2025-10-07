@@ -48,8 +48,7 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleFavorites = () => {
-    // TODO: Navigate to Favorites screen
-    console.log('Favorites');
+    navigation.navigate('Favorites');
   };
 
   const handleAddresses = () => {

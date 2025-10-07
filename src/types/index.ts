@@ -28,6 +28,7 @@ export type RootStackParamList = {
     isActive: boolean;
   };
   EditProfile: undefined;
+  Favorites: undefined;
 };
 
 export type AuthStackParamList = {

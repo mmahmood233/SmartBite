@@ -16,6 +16,8 @@ import { RootStackParamList } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import { formatCurrency } from '../utils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -328,18 +330,18 @@ const CartScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: colors.border,
   },
   backButton: {
     width: 40,
@@ -348,9 +350,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FONT_SIZE.xl,
     fontWeight: '600',
-    color: '#1A4D47',
+    color: colors.textPrimary,
   },
   clearButton: {
     width: 40,
@@ -363,10 +365,10 @@ const styles = StyleSheet.create({
   },
   restaurantCard: {
     flexDirection: 'row',
-    backgroundColor: '#FAFAFA',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: colors.surface,
+    margin: SPACING.lg,
+    padding: SPACING.lg,
+    borderRadius: BORDER_RADIUS.md,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -376,11 +378,11 @@ const styles = StyleSheet.create({
   restaurantThumbnail: {
     width: 48,
     height: 48,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
+    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING.md,
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -394,15 +396,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   restaurantName: {
-    fontSize: 18,
+    fontSize: FONT_SIZE.xl,
     fontWeight: '600',
-    color: '#1A4D47',
-    marginBottom: 4,
+    color: colors.textPrimary,
+    marginBottom: SPACING.xs,
   },
   restaurantCuisine: {
-    fontSize: 14,
-    color: '#6D6D6D',
-    marginBottom: 8,
+    fontSize: FONT_SIZE.md,
+    color: colors.textSecondary,
+    marginBottom: SPACING.sm,
   },
   restaurantMeta: {
     flexDirection: 'row',
@@ -414,8 +416,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metaText: {
-    fontSize: 12,
-    color: '#6D6D6D',
+    fontSize: FONT_SIZE.sm,
+    color: colors.textSecondary,
   },
   metaDot: {
     fontSize: 12,
@@ -423,21 +425,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
   },
   itemsSection: {
-    marginHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: SPACING.lg,
+    marginBottom: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: FONT_SIZE.lg,
     fontWeight: '600',
-    color: '#1A4D47',
-    marginBottom: 12,
+    color: colors.textPrimary,
+    marginBottom: SPACING.md,
   },
   cartItem: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    backgroundColor: colors.surface,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 6,
@@ -447,25 +449,25 @@ const styles = StyleSheet.create({
   itemImage: {
     width: 64,
     height: 64,
-    borderRadius: 8,
-    marginRight: 12,
+    borderRadius: BORDER_RADIUS.sm,
+    marginRight: SPACING.md,
   },
   itemInfo: {
     flex: 1,
   },
   itemName: {
-    fontSize: 15,
+    fontSize: FONT_SIZE.base,
     fontWeight: '600',
-    color: '#212121',
-    marginBottom: 4,
+    color: colors.textPrimary,
+    marginBottom: SPACING.xs,
   },
   addOnsContainer: {
     marginBottom: 8,
     paddingLeft: 8,
   },
   addOnText: {
-    fontSize: 12,
-    color: '#6D6D6D',
+    fontSize: FONT_SIZE.sm,
+    color: colors.textSecondary,
     marginBottom: 2,
   },
   itemFooter: {

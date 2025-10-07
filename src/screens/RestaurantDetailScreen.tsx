@@ -15,6 +15,8 @@ import { RootStackParamList } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import { formatCurrency, formatRating } from '../utils';
 import DishDetailModal from './DishDetailModal';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -500,7 +502,7 @@ const RestaurantDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -530,10 +532,10 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 50 : 20,
-    left: 16,
+    left: SPACING.lg,
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: BORDER_RADIUS.full,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -546,10 +548,10 @@ const styles = StyleSheet.create({
   favoriteButton: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 50 : 20,
-    right: 16,
+    right: SPACING.lg,
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: BORDER_RADIUS.full,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -564,16 +566,16 @@ const styles = StyleSheet.create({
   },
   ratingBadge: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
+    bottom: SPACING.lg,
+    right: SPACING.lg,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.full,
   },
   ratingBadgeText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: FONT_SIZE.sm,
     fontWeight: '600',
   },
   infoCard: {

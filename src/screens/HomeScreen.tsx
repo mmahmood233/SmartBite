@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import SearchBar from '../components/SearchBar';
 import Chip from '../components/Chip';
 import RestaurantCard from '../components/RestaurantCard';

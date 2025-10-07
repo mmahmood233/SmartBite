@@ -14,6 +14,8 @@ import { RootStackParamList } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import { formatOrderNumber } from '../utils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -260,7 +262,7 @@ const DeliveryCompleteScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -268,11 +270,11 @@ const styles = StyleSheet.create({
   successHeader: {
     alignItems: 'center',
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: SPACING.xl,
+    paddingBottom: SPACING.xxxl,
   },
   checkmarkContainer: {
-    marginBottom: 24,
+    marginBottom: SPACING.xxl,
   },
   checkmarkGradient: {
     width: 112,
@@ -287,33 +289,33 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   successTitle: {
-    fontSize: 28,
+    fontSize: FONT_SIZE.huge,
     fontWeight: '700',
-    color: '#1A4D47',
-    marginBottom: 12,
+    color: colors.textPrimary,
+    marginBottom: SPACING.md,
     textAlign: 'center',
   },
   successSubtext: {
-    fontSize: 16,
-    color: '#6D6D6D',
+    fontSize: FONT_SIZE.lg,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.xl,
   },
   section: {
-    marginTop: 24,
-    paddingHorizontal: 16,
+    marginTop: SPACING.xxl,
+    paddingHorizontal: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: FONT_SIZE.lg,
     fontWeight: '600',
-    color: '#1A4D47',
-    marginBottom: 12,
+    color: colors.textPrimary,
+    marginBottom: SPACING.md,
   },
   ratingCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: colors.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.xl,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -323,16 +325,16 @@ const styles = StyleSheet.create({
   restaurantHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: SPACING.xxl,
   },
   restaurantLogo: {
     width: 48,
     height: 48,
-    borderRadius: 12,
-    backgroundColor: '#F3F7F5',
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING.md,
   },
   restaurantLogoText: {
     fontSize: 24,
@@ -341,20 +343,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   restaurantName: {
-    fontSize: 17,
+    fontSize: FONT_SIZE.lg + 1,
     fontWeight: '600',
-    color: '#212121',
-    marginBottom: 4,
+    color: colors.textPrimary,
+    marginBottom: SPACING.xs,
   },
   orderNumber: {
-    fontSize: 13,
-    color: '#6D6D6D',
+    fontSize: FONT_SIZE.sm + 1,
+    color: colors.textSecondary,
   },
   starsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
-    marginBottom: 16,
+    gap: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   starButton: {
     padding: 4,

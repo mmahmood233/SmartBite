@@ -13,6 +13,8 @@ import { RootStackParamList } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import { formatCurrency, formatDate, formatOrderNumber } from '../utils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'OrderDetails'>;
@@ -312,18 +314,18 @@ const OrderDetailsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: colors.border,
   },
   backButton: {
     width: 40,
@@ -336,37 +338,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FONT_SIZE.xl,
     fontWeight: '600',
-    color: '#1A4D47',
+    color: colors.textPrimary,
   },
   headerSubtitle: {
-    fontSize: 13,
-    color: '#6D6D6D',
+    fontSize: FONT_SIZE.sm + 1,
+    color: colors.textSecondary,
     marginTop: 2,
   },
   headerMeta: {
-    fontSize: 11,
-    color: '#9E9E9E',
-    marginTop: 4,
+    fontSize: FONT_SIZE.xs,
+    color: colors.textDisabled,
+    marginTop: SPACING.xs,
   },
   scrollView: {
     flex: 1,
   },
   section: {
-    marginTop: 20,
-    paddingHorizontal: 16,
+    marginTop: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: FONT_SIZE.lg,
     fontWeight: '600',
-    color: '#1C1C1C',
-    marginBottom: 12,
+    color: colors.textPrimary,
+    marginBottom: SPACING.md,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: colors.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -374,9 +376,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   restaurantCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: colors.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -385,16 +387,16 @@ const styles = StyleSheet.create({
   },
   restaurantHeader: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
   },
   restaurantLogo: {
     width: 56,
     height: 56,
-    borderRadius: 14,
-    backgroundColor: '#F3F7F5',
+    borderRadius: BORDER_RADIUS.md + 2,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING.md,
   },
   restaurantLogoText: {
     fontSize: 28,
@@ -403,10 +405,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   restaurantName: {
-    fontSize: 18,
+    fontSize: FONT_SIZE.xl,
     fontWeight: '700',
-    color: '#212121',
-    marginBottom: 6,
+    color: colors.textPrimary,
+    marginBottom: SPACING.sm,
   },
   restaurantMeta: {
     flexDirection: 'row',

@@ -13,6 +13,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import { formatOrderNumber } from '../utils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'OrderTracking'>;
@@ -234,18 +236,18 @@ const OrderTrackingScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: colors.border,
   },
   backButton: {
     width: 40,
@@ -258,13 +260,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FONT_SIZE.xl,
     fontWeight: '600',
-    color: '#1A4D47',
+    color: colors.textPrimary,
   },
   headerSubtitle: {
-    fontSize: 13,
-    color: '#6D6D6D',
+    fontSize: FONT_SIZE.sm + 1,
+    color: colors.textSecondary,
     marginTop: 2,
   },
   scrollView: {
@@ -273,10 +275,10 @@ const styles = StyleSheet.create({
   etaCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: colors.surface,
+    margin: SPACING.lg,
+    padding: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -287,28 +289,28 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#F3F7F5',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: SPACING.lg,
   },
   etaInfo: {
     flex: 1,
   },
   etaLabel: {
-    fontSize: 14,
-    color: '#6D6D6D',
-    marginBottom: 4,
+    fontSize: FONT_SIZE.md,
+    color: colors.textSecondary,
+    marginBottom: SPACING.xs,
   },
   etaTime: {
-    fontSize: 32,
+    fontSize: FONT_SIZE.massive,
     fontWeight: '700',
     color: colors.primary,
   },
   mapSection: {
-    marginHorizontal: 16,
-    marginBottom: 20,
-    borderRadius: 16,
+    marginHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.06,
@@ -322,15 +324,15 @@ const styles = StyleSheet.create({
   },
   mapOverlay: {
     position: 'absolute',
-    bottom: 16,
-    left: 16,
-    right: 16,
+    bottom: SPACING.lg,
+    left: SPACING.lg,
+    right: SPACING.lg,
   },
   riderCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 12,
+    backgroundColor: colors.surface,
+    padding: SPACING.md,
     borderRadius: 12,
     shadowColor: '#000',
     shadowOpacity: 0.1,

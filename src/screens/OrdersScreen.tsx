@@ -13,6 +13,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import { formatCurrency, formatDate, formatOrderNumber } from '../utils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -369,33 +371,33 @@ const OrdersScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.background,
   },
   header: {
     paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: SPACING.xl,
+    paddingBottom: SPACING.xl,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: colors.border,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: FONT_SIZE.xxxl,
     fontWeight: '700',
-    color: '#1A4D47',
-    marginBottom: 4,
+    color: colors.textPrimary,
+    marginBottom: SPACING.xs,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#6D6D6D',
+    fontSize: FONT_SIZE.md,
+    color: colors.textSecondary,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    backgroundColor: colors.surface,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: colors.border,
   },
   tab: {
     flex: 1,
@@ -403,9 +405,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    marginHorizontal: 4,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.sm,
+    marginHorizontal: SPACING.xs,
   },
   tabActive: {
     backgroundColor: '#F3F7F5',
@@ -416,9 +418,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   tabText: {
-    fontSize: 15,
+    fontSize: FONT_SIZE.base,
     fontWeight: '500',
-    color: '#6D6D6D',
+    color: colors.textSecondary,
   },
   tabTextActive: {
     color: colors.primary,
@@ -429,15 +431,15 @@ const styles = StyleSheet.create({
   },
   badge: {
     backgroundColor: colors.primary,
-    borderRadius: 10,
-    paddingHorizontal: 6,
+    borderRadius: BORDER_RADIUS.sm,
+    paddingHorizontal: SPACING.sm,
     paddingVertical: 2,
-    marginLeft: 6,
+    marginLeft: SPACING.sm,
     minWidth: 20,
     alignItems: 'center',
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: FONT_SIZE.xs,
     fontWeight: '600',
     color: '#FFFFFF',
   },
@@ -445,13 +447,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   ordersContainer: {
-    padding: 16,
+    padding: SPACING.lg,
   },
   orderCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: colors.surface,
+    borderRadius: BORDER_RADIUS.lg + 2,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -459,7 +461,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   orderHeader: {
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   restaurantInfo: {
     flexDirection: 'row',
@@ -468,11 +470,11 @@ const styles = StyleSheet.create({
   restaurantLogo: {
     width: 48,
     height: 48,
-    borderRadius: 12,
-    backgroundColor: '#F3F7F5',
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING.md,
   },
   restaurantLogoText: {
     fontSize: 24,
@@ -492,9 +494,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   restaurantName: {
-    fontSize: 16,
+    fontSize: FONT_SIZE.lg,
     fontWeight: '600',
-    color: '#212121',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   orderNumber: {

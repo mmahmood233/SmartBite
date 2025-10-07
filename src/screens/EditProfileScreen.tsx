@@ -16,6 +16,8 @@ import { RootStackParamList } from '../types';
 import Icon from 'react-native-vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE, ICON_SIZE, AVATAR_SIZE } from '../constants';
+import { getInitials, validateEmail, validatePhone, validateRequired } from '../utils';
 import { GradientButton, Input } from '../components';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -36,6 +38,22 @@ const EditProfileScreen: React.FC = () => {
   };
 
   const handleSaveChanges = () => {
+    // Validate all fields
+    if (!validateRequired(fullName)) {
+      Alert.alert('Error', 'Please enter your full name');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      Alert.alert('Error', 'Please enter a valid phone number');
+      return;
+    }
+
     // TODO: Save to backend
     console.log('Saving profile:', { fullName, email, phone, dateOfBirth });
     
@@ -53,14 +71,7 @@ const EditProfileScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  // Using imported getInitials utility
 
   return (
     <KeyboardAvoidingView
@@ -178,11 +189,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: SPACING.xl,
+    paddingBottom: SPACING.lg,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: colors.border,
   },
   backButton: {
     width: 40,
@@ -191,27 +202,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FONT_SIZE.xl,
     fontWeight: '600',
-    color: '#1A4D47',
+    color: colors.textPrimary,
   },
   scrollView: {
     flex: 1,
   },
   avatarSection: {
     alignItems: 'center',
-    paddingVertical: 32,
-    backgroundColor: '#FFFFFF',
-    marginBottom: 20,
+    paddingVertical: SPACING.xxxl,
+    backgroundColor: colors.surface,
+    marginBottom: SPACING.xl,
   },
   avatarContainer: {
     position: 'relative',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: AVATAR_SIZE.xxl,
+    height: AVATAR_SIZE.xxl,
+    borderRadius: AVATAR_SIZE.xxl / 2,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: colors.primary,
@@ -221,7 +232,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   avatarInitials: {
-    fontSize: 42,
+    fontSize: FONT_SIZE.massive + 10,
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 1,
@@ -232,12 +243,12 @@ const styles = StyleSheet.create({
     right: 0,
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: BORDER_RADIUS.full,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: colors.surface,
     shadowColor: colors.primary,
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -245,24 +256,24 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   changePhotoText: {
-    fontSize: 14,
+    fontSize: FONT_SIZE.md,
     fontWeight: '600',
     color: colors.primary,
   },
   formSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.xl,
   },
   successBanner: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 100 : 80,
-    left: 20,
-    right: 20,
+    left: SPACING.xl,
+    right: SPACING.xl,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.successToastBg,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 16,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
     gap: 10,
     shadowColor: colors.primary,
     shadowOpacity: 0.15,
@@ -271,29 +282,29 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   successText: {
-    fontSize: 14,
+    fontSize: FONT_SIZE.md,
     fontWeight: '600',
     color: colors.successToastText,
   },
   footer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.lg,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.xxxl : SPACING.lg,
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: colors.border,
   },
   saveButton: {
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   cancelButton: {
-    paddingVertical: 12,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
   },
   cancelButtonText: {
-    fontSize: 15,
+    fontSize: FONT_SIZE.base,
     fontWeight: '600',
-    color: '#6B6B6B',
+    color: colors.textSecondary,
   },
 });
 

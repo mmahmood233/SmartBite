@@ -13,6 +13,7 @@ import { RootStackParamList } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

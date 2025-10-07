@@ -15,6 +15,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import { formatCurrency } from '../utils';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const IMAGE_HEIGHT = 240;
@@ -287,9 +289,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: BORDER_RADIUS.xxl,
+    borderTopRightRadius: BORDER_RADIUS.xxl,
     height: SCREEN_HEIGHT * 0.9,
     shadowColor: '#000',
     shadowOpacity: 0.2,
@@ -299,13 +301,13 @@ const styles = StyleSheet.create({
   },
   dragHandleContainer: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: SPACING.md,
   },
   dragHandle: {
     width: 36,
     height: 4,
-    borderRadius: 2,
-    backgroundColor: '#CFCFCF',
+    borderRadius: BORDER_RADIUS.xs,
+    backgroundColor: colors.border,
   },
   scrollView: {
     flex: 1,
@@ -328,50 +330,50 @@ const styles = StyleSheet.create({
   },
   favoriteButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: SPACING.lg,
+    right: SPACING.lg,
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: BORDER_RADIUS.full,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   infoBlock: {
-    padding: 20,
+    padding: SPACING.xl,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   dishName: {
     flex: 1,
-    fontSize: 20,
+    fontSize: FONT_SIZE.xxl,
     fontWeight: '600',
-    color: '#1A4D47',
+    color: colors.textPrimary,
     letterSpacing: -0.3,
-    marginRight: 12,
+    marginRight: SPACING.md,
   },
   dishPrice: {
-    fontSize: 18,
+    fontSize: FONT_SIZE.xl,
     fontWeight: '700',
-    color: '#00796B',
+    color: colors.primary,
   },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   ratingText: {
-    fontSize: 14,
-    color: '#6D6D6D',
-    marginLeft: 4,
+    fontSize: FONT_SIZE.md,
+    color: colors.textSecondary,
+    marginLeft: SPACING.xs,
   },
   description: {
-    fontSize: 14,
-    color: '#6C6C6C',
+    fontSize: FONT_SIZE.md,
+    color: colors.textSecondary,
     lineHeight: 20,
     marginBottom: 16,
   },

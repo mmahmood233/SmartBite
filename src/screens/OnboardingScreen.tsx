@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { GradientButton } from '../components';
 import { colors } from '../theme/colors';
 import { tokens } from '../theme/theme';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import { RootStackParamList } from '../types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AnimatedLogo } from '../components';
 import { colors } from '../theme/colors';
 import { tokens } from '../theme/theme';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import { RootStackParamList } from '../types';
 
 type SplashScreenNavigationProp = NativeStackNavigationProp<

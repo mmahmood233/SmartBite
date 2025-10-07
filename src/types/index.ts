@@ -22,6 +22,10 @@ export type RootStackParamList = {
   DeliveryComplete: undefined;
   ReviewConfirmation: undefined;
   Orders: undefined;
+  OrderDetails: {
+    orderId: string;
+    isActive: boolean;
+  };
 };
 
 export type AuthStackParamList = {

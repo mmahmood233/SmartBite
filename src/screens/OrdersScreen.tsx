@@ -125,9 +125,8 @@ const OrdersScreen: React.FC = () => {
     navigation.navigate('OrderTracking', { orderNumber });
   };
 
-  const handleViewDetails = (orderId: string) => {
-    // TODO: Navigate to order details screen
-    console.log('View details:', orderId);
+  const handleViewDetails = (orderId: string, isActive: boolean = false) => {
+    navigation.navigate('OrderDetails', { orderId, isActive });
   };
 
   const handleReorder = (orderId: string) => {
@@ -200,7 +199,7 @@ const OrdersScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.detailsButtonActive}
-            onPress={() => handleViewDetails(order.id)}
+            onPress={() => handleViewDetails(order.id, true)}
             activeOpacity={0.7}
           >
             <Icon name="file-text" size={16} color="#6D6D6D" />
@@ -252,7 +251,7 @@ const OrdersScreen: React.FC = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.detailsButton}
-            onPress={() => handleViewDetails(order.id)}
+            onPress={() => handleViewDetails(order.id, false)}
             activeOpacity={0.7}
           >
             <Text style={styles.detailsButtonText}>View Details</Text>

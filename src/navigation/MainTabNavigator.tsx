@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 import HomeScreen from '../screens/HomeScreen';
 import OrdersScreen from '../screens/OrdersScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -32,18 +33,6 @@ const MainTabNavigator: React.FC = () => {
         }}
       />
       <Tab.Screen
-        name="ChatTab"
-        component={PlaceholderScreen}
-        options={{
-          tabBarLabel: 'Chat',
-          tabBarIcon: ({ color, size, focused }) => (
-            <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
-              <Icon name="message-circle" size={focused ? 25 : 24} color={color} />
-            </View>
-          ),
-        }}
-      />
-      <Tab.Screen
         name="OrdersTab"
         component={OrdersScreen}
         options={{
@@ -57,7 +46,7 @@ const MainTabNavigator: React.FC = () => {
       />
       <Tab.Screen
         name="ProfileTab"
-        component={PlaceholderScreen}
+        component={ProfileScreen}
         options={{
           tabBarLabel: 'Profile',
           tabBarIcon: ({ color, size, focused }) => (
@@ -71,10 +60,6 @@ const MainTabNavigator: React.FC = () => {
   );
 };
 
-// Placeholder component for Chat and Profile tabs
-const PlaceholderScreen: React.FC = () => {
-  return <View style={styles.placeholder} />;
-};
 
 const styles = StyleSheet.create({
   tabBar: {
@@ -103,10 +88,6 @@ const styles = StyleSheet.create({
   },
   iconContainerActive: {
     backgroundColor: '#E6F3F1',
-  },
-  placeholder: {
-    flex: 1,
-    backgroundColor: '#F9F9F9',
   },
 });
 

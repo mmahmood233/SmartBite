@@ -210,22 +210,26 @@ const OrdersScreen: React.FC = () => {
               <Text style={styles.restaurantLogoText}>{order.restaurant.logo}</Text>
             </View>
             <View style={styles.restaurantDetails}>
-              <Text style={styles.restaurantName}>{order.restaurant.name}</Text>
-              <Text style={styles.orderDate}>
-                Delivered on {formatDate(order.createdAt)}
-              </Text>
+              <View style={styles.restaurantTopRow}>
+                <Text style={styles.restaurantName}>{order.restaurant.name}</Text>
+                <Text style={styles.orderTotal}>BD {order.total.toFixed(2)}</Text>
+              </View>
+              <View style={styles.restaurantMetaRow}>
+                {order.rating && (
+                  <>
+                    <View style={styles.ratingBadge}>
+                      <Icon name="star" size={12} color="#FFB800" />
+                      <Text style={styles.ratingText}>{order.rating.toFixed(1)}</Text>
+                    </View>
+                    <Text style={styles.metaDot}>•</Text>
+                  </>
+                )}
+                <Text style={styles.orderDateCompact}>
+                  Delivered {formatDate(order.createdAt)}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
-
-        <View style={styles.pastOrderMeta}>
-          {order.rating && (
-            <View style={styles.ratingContainer}>
-              <Icon name="star" size={14} color="#FFB800" />
-              <Text style={styles.ratingText}>{order.rating.toFixed(1)}</Text>
-            </View>
-          )}
-          <Text style={styles.orderTotal}>BD {order.total.toFixed(2)}</Text>
         </View>
 
         <View style={styles.pastOrderActions}>
@@ -470,6 +474,17 @@ const styles = StyleSheet.create({
   restaurantDetails: {
     flex: 1,
   },
+  restaurantTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  restaurantMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   restaurantName: {
     fontSize: 16,
     fontWeight: '600',
@@ -483,6 +498,16 @@ const styles = StyleSheet.create({
   orderDate: {
     fontSize: 13,
     color: '#8D8D8D',
+  },
+  orderDateCompact: {
+    fontSize: 12,
+    color: '#888888',
+    fontWeight: '500',
+  },
+  metaDot: {
+    fontSize: 12,
+    color: '#CFCFCF',
+    marginHorizontal: 2,
   },
   statusContainer: {
     marginBottom: 12,
@@ -569,8 +594,17 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
   },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#FFF7E0',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
   ratingText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: '#212121',
   },
@@ -586,8 +620,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F7F5',
     paddingVertical: 12,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(0, 126, 115, 0.25)',
+    borderWidth: 2,
+    borderColor: 'rgba(0, 126, 115, 0.3)',
     gap: 6,
     shadowColor: colors.primary,
     shadowOpacity: 0.08,

@@ -39,9 +39,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleSignIn = (): void => {
-    // TODO: Replace with real auth; for now, go to Home
+    // TODO: Replace with real auth; for now, go to MainTabs
     console.log('Sign in with:', email, password);
-    rootNav.reset({ index: 0, routes: [{ name: 'Home' }] });
+    rootNav.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
   };
 
   const handleForgotPassword = (): void => {

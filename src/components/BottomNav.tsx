@@ -27,9 +27,9 @@ const BottomNav: React.FC<BottomNavProps> = ({ active = 'Home' }) => {
 
   const handleTabPress = (label: string) => {
     if (label === 'Home') {
-      navigation.navigate('Home');
+      navigation.navigate('MainTabs');
     } else if (label === 'Orders') {
-      navigation.navigate('Orders');
+      navigation.navigate('MainTabs');
     }
     // Chat and Profile screens can be added later
   };

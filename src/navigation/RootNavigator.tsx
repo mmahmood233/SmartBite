@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import SplashScreen from '../screens/SplashScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
-import HomeScreen from '../screens/HomeScreen';
+import MainTabNavigator from './MainTabNavigator';
 import AuthNavigator from './AuthNavigator';
 import RestaurantDetailScreen from '../screens/RestaurantDetailScreen';
 import CartScreen from '../screens/CartScreen';
@@ -12,7 +12,6 @@ import OrderConfirmationScreen from '../screens/OrderConfirmationScreen';
 import OrderTrackingScreen from '../screens/OrderTrackingScreen';
 import DeliveryCompleteScreen from '../screens/DeliveryCompleteScreen';
 import ReviewConfirmationScreen from '../screens/ReviewConfirmationScreen';
-import OrdersScreen from '../screens/OrdersScreen';
 import OrderDetailsScreen from '../screens/OrderDetailsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -31,7 +30,7 @@ const RootNavigator: React.FC = () => {
     >
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
       <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
       <Stack.Screen name="Cart" component={CartScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
@@ -39,7 +38,6 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />
       <Stack.Screen name="DeliveryComplete" component={DeliveryCompleteScreen} />
       <Stack.Screen name="ReviewConfirmation" component={ReviewConfirmationScreen} />
-      <Stack.Screen name="Orders" component={OrdersScreen} />
       <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>

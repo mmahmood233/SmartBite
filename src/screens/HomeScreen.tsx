@@ -6,7 +6,6 @@ import { colors } from '../theme/colors';
 import SearchBar from '../components/SearchBar';
 import Chip from '../components/Chip';
 import RestaurantCard from '../components/RestaurantCard';
-import BottomNav from '../components/BottomNav';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const AI_CARD_WIDTH = SCREEN_WIDTH * 0.55; // 55% of screen width for AI cards
@@ -143,9 +142,6 @@ const HomeScreen: React.FC = () => {
 
         <View style={{ height: 100 }} />
       </ScrollView>
-
-      {/* Bottom Nav */}
-      <BottomNav active="Home" />
     </View>
   );
 };

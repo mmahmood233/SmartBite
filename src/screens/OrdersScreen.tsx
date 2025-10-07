@@ -7,7 +7,6 @@ import {
   ScrollView,
   RefreshControl,
   Platform,
-  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -39,7 +38,6 @@ const OrdersScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [activeTab, setActiveTab] = useState<TabType>('active');
   const [refreshing, setRefreshing] = useState(false);
-  const slideAnim = useState(new Animated.Value(0))[0];
 
   // Mock data - will be replaced with API calls
   const activeOrders: Order[] = [

@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import { formatCurrency, formatDate, formatOrderNumber } from '../utils';
+import EmptyState from '../components/EmptyState';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -263,31 +264,25 @@ const OrdersScreen: React.FC = () => {
   };
 
   const renderEmptyState = (type: 'active' | 'past') => {
-    return (
-      <View style={styles.emptyState}>
-        <Text style={styles.emptyIcon}>
-          {type === 'active' ? '🍽️' : '📦'}
-        </Text>
-        <Text style={styles.emptyTitle}>
-          {type === 'active' ? 'No active orders' : 'No past orders yet'}
-        </Text>
-        <Text style={styles.emptyText}>
-          {type === 'active'
-            ? "You don't have any orders in progress right now"
-            : "Your order history will appear here"}
-        </Text>
-        {type === 'active' && (
-          <TouchableOpacity
-            style={styles.browseButton}
-            onPress={handleBrowseRestaurants}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.browseButtonText}>Browse Restaurants</Text>
-            <Icon name="arrow-right" size={16} color="#FFFFFF" />
-          </TouchableOpacity>
-        )}
-      </View>
-    );
+    if (type === 'active') {
+      return (
+        <EmptyState
+          emoji="🍽️"
+          title="No Active Orders"
+          message="You don't have any orders in progress right now"
+          buttonText="Browse Restaurants"
+          onButtonPress={handleBrowseRestaurants}
+        />
+      );
+    } else {
+      return (
+        <EmptyState
+          emoji="📦"
+          title="No Past Orders Yet"
+          message="Your order history will appear here once you place your first order"
+        />
+      );
+    }
   };
 
   return (

@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import EmptyState from '../components/EmptyState';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -146,9 +147,19 @@ const PaymentMethodsScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.paymentsContainer}>
-          {paymentMethods.map(renderPaymentCard)}
-        </View>
+        {paymentMethods.length === 0 ? (
+          <EmptyState
+            emoji="💳"
+            title="No Payment Methods"
+            message="Add a payment method to checkout faster and easier"
+            buttonText="Add Payment Method"
+            onButtonPress={handleAddPayment}
+          />
+        ) : (
+          <View style={styles.paymentsContainer}>
+            {paymentMethods.map(renderPaymentCard)}
+          </View>
+        )}
 
         {/* Add New Payment Button */}
         <TouchableOpacity

@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import EmptyState from '../components/EmptyState';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -165,9 +166,19 @@ const SavedAddressesScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.addressesContainer}>
-          {addresses.map(renderAddressCard)}
-        </View>
+        {addresses.length === 0 ? (
+          <EmptyState
+            emoji="🏠"
+            title="No Saved Addresses"
+            message="Add your delivery addresses to make ordering faster and easier"
+            buttonText="Add New Address"
+            onButtonPress={handleAddNewAddress}
+          />
+        ) : (
+          <View style={styles.addressesContainer}>
+            {addresses.map(renderAddressCard)}
+          </View>
+        )}
 
         {/* Add New Address Button */}
         <TouchableOpacity

@@ -109,8 +109,46 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleDeleteAccount = () => {
-    // TODO: Show confirmation dialog then delete account
-    console.log('Delete Account');
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            // Show second confirmation for critical action
+            Alert.alert(
+              'Final Confirmation',
+              'This will permanently delete your account. Are you absolutely sure?',
+              [
+                {
+                  text: 'Cancel',
+                  style: 'cancel',
+                },
+                {
+                  text: 'Yes, Delete My Account',
+                  style: 'destructive',
+                  onPress: async () => {
+                    // TODO: Delete account from backend
+                    // TODO: Clear all local data
+                    // TODO: Navigate to Auth screen
+                    console.log('Account deleted');
+                    // await deleteAccount();
+                    // await AsyncStorage.clear();
+                    // navigation.navigate('Auth');
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ]
+    );
   };
 
   const renderMenuItem = (item: MenuItem) => (

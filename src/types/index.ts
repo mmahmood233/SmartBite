@@ -27,6 +27,7 @@ export type RootStackParamList = {
     orderId: string;
     isActive: boolean;
   };
+  EditProfile: undefined;
 };
 
 export type AuthStackParamList = {

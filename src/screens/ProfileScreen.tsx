@@ -10,9 +10,14 @@ import {
   Switch,
   Modal,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 import Icon from 'react-native-vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface MenuItem {
   icon: string;
@@ -23,6 +28,7 @@ interface MenuItem {
 }
 
 const ProfileScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('English');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
@@ -36,8 +42,7 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleEditProfile = () => {
-    // TODO: Navigate to Edit Profile screen
-    console.log('Edit Profile');
+    navigation.navigate('EditProfile');
   };
 
   const handleFavorites = () => {

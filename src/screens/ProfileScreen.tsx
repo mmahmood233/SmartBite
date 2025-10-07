@@ -9,6 +9,7 @@ import {
   Platform,
   Switch,
   Modal,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -81,13 +82,30 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleChangePassword = () => {
-    // TODO: Navigate to Change Password screen
-    console.log('Change Password');
+    navigation.navigate('ChangePassword');
   };
 
   const handleLogout = () => {
-    // TODO: Show confirmation dialog then logout
-    console.log('Logout');
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: () => {
+            // TODO: Clear user session/token
+            // TODO: Navigate to Auth screen
+            console.log('User logged out');
+            // navigation.navigate('Auth');
+          },
+        },
+      ]
+    );
   };
 
   const handleDeleteAccount = () => {

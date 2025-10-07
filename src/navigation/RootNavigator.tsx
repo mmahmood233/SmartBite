@@ -22,6 +22,7 @@ import HelpSupportScreen from '../screens/HelpSupportScreen';
 import AddAddressScreen from '../screens/AddAddressScreen';
 import EditAddressScreen from '../screens/EditAddressScreen';
 import AddPaymentMethodScreen from '../screens/AddPaymentMethodScreen';
+import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -57,6 +58,7 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="AddPaymentMethod" component={AddPaymentMethodScreen} />
       <Stack.Screen name="Offers" component={OffersScreen} />
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>
   );

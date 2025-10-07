@@ -38,6 +38,7 @@ export type RootStackParamList = {
   AddPaymentMethod: undefined;
   Offers: undefined;
   HelpSupport: undefined;
+  ChangePassword: undefined;
 };
 
 export type AuthStackParamList = {

@@ -52,23 +52,19 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleAddresses = () => {
-    // TODO: Navigate to Saved Addresses screen
-    console.log('Saved Addresses');
+    navigation.navigate('SavedAddresses');
   };
 
   const handlePaymentMethods = () => {
-    // TODO: Navigate to Payment Methods screen
-    console.log('Payment Methods');
+    navigation.navigate('PaymentMethods');
   };
 
   const handleOffers = () => {
-    // TODO: Navigate to Offers screen
-    console.log('Offers & Promotions');
+    navigation.navigate('Offers');
   };
 
-  const handleSupport = () => {
-    // TODO: Navigate to Help & Support screen
-    console.log('Help & Support');
+  const handleHelp = () => {
+    navigation.navigate('HelpSupport');
   };
 
   const handleDarkModeToggle = (value: boolean) => {
@@ -180,7 +176,7 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.divider} />
             {renderMenuItem({ icon: 'gift', label: 'Offers & Promotions', onPress: handleOffers })}
             <View style={styles.divider} />
-            {renderMenuItem({ icon: 'message-circle', label: 'Help & Support', onPress: handleSupport })}
+            {renderMenuItem({ icon: 'message-circle', label: 'Help & Support', onPress: handleHelp })}
           </View>
         </View>
 

@@ -15,6 +15,13 @@ import ReviewConfirmationScreen from '../screens/ReviewConfirmationScreen';
 import OrderDetailsScreen from '../screens/OrderDetailsScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
+import SavedAddressesScreen from '../screens/SavedAddressesScreen';
+import PaymentMethodsScreen from '../screens/PaymentMethodsScreen';
+import OffersScreen from '../screens/OffersScreen';
+import HelpSupportScreen from '../screens/HelpSupportScreen';
+import AddAddressScreen from '../screens/AddAddressScreen';
+import EditAddressScreen from '../screens/EditAddressScreen';
+import AddPaymentMethodScreen from '../screens/AddPaymentMethodScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -43,6 +50,13 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Favorites" component={FavoritesScreen} />
+      <Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
+      <Stack.Screen name="AddAddress" component={AddAddressScreen} />
+      <Stack.Screen name="EditAddress" component={EditAddressScreen} />
+      <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+      <Stack.Screen name="AddPaymentMethod" component={AddPaymentMethodScreen} />
+      <Stack.Screen name="Offers" component={OffersScreen} />
+      <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>
   );

@@ -29,6 +29,15 @@ export type RootStackParamList = {
   };
   EditProfile: undefined;
   Favorites: undefined;
+  SavedAddresses: undefined;
+  AddAddress: undefined;
+  EditAddress: {
+    addressId: string;
+  };
+  PaymentMethods: undefined;
+  AddPaymentMethod: undefined;
+  Offers: undefined;
+  HelpSupport: undefined;
 };
 
 export type AuthStackParamList = {

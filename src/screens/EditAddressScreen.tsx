@@ -18,6 +18,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import { validateRequired, validatePhone } from '../utils';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'EditAddress'>;
@@ -38,12 +39,13 @@ const EditAddressScreen: React.FC = () => {
   const [contactNumber, setContactNumber] = useState('+973 3356 0803');
   const [notes, setNotes] = useState('');
   const [isDefault, setIsDefault] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleUpdateAddress = () => {
+  const handleUpdateAddress = async () => {
     // Validation
     if (!validateRequired(building)) {
       Alert.alert('Required Field', 'Please enter building/flat number');
@@ -58,17 +60,25 @@ const EditAddressScreen: React.FC = () => {
       return;
     }
 
-    // TODO: Update backend/state
-    Alert.alert(
-      'Success',
-      '✅ Address updated successfully',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
-        },
-      ]
-    );
+    setIsLoading(true);
+    try {
+      // TODO: Update backend/state
+      // await updateAddress(addressId, addressData);
+      Alert.alert(
+        'Success',
+        '✅ Address updated successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update address. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDeleteAddress = () => {
@@ -80,13 +90,22 @@ const EditAddressScreen: React.FC = () => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            Alert.alert('Success', '🗑 Address removed', [
-              {
-                text: 'OK',
-                onPress: () => navigation.goBack(),
-              },
-            ]);
+          onPress: async () => {
+            setIsLoading(true);
+            try {
+              // TODO: Delete from backend
+              // await deleteAddress(addressId);
+              Alert.alert('Success', '🗑 Address removed', [
+                {
+                  text: 'OK',
+                  onPress: () => navigation.goBack(),
+                },
+              ]);
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete address. Please try again.');
+            } finally {
+              setIsLoading(false);
+            }
           },
         },
       ]
@@ -264,6 +283,8 @@ const EditAddressScreen: React.FC = () => {
         {/* Bottom Spacing */}
         <View style={{ height: SPACING.xxxl }} />
       </ScrollView>
+
+      <LoadingSpinner visible={isLoading} message="Updating..." overlay />
 
       {/* Bottom Actions */}
       <View style={styles.bottomActions}>

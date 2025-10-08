@@ -17,6 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 import { SPACING, FONT_SIZE } from '../constants';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -32,6 +33,7 @@ const ChangePasswordScreen: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [isValid, setIsValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Password validation checks
   const [hasMinLength, setHasMinLength] = useState(false);
@@ -66,22 +68,30 @@ const ChangePasswordScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  const handleUpdatePassword = () => {
+  const handleUpdatePassword = async () => {
     if (!isValid) return;
 
-    // TODO: Validate current password with backend
-    // TODO: Update password on backend
-    
-    Alert.alert(
-      'Success',
-      '✅ Password updated successfully',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
-        },
-      ]
-    );
+    setIsLoading(true);
+    try {
+      // TODO: Validate current password with backend
+      // TODO: Update password on backend
+      // await updatePassword(currentPassword, newPassword);
+      
+      Alert.alert(
+        'Success',
+        '✅ Password updated successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', '⚠️ Current password is incorrect');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderPasswordInput = (
@@ -228,6 +238,8 @@ const ChangePasswordScreen: React.FC = () => {
         {/* Bottom Spacing */}
         <View style={{ height: SPACING.xxxl }} />
       </ScrollView>
+
+      <LoadingSpinner visible={isLoading} message="Updating password..." overlay />
 
       {/* Bottom Actions */}
       <View style={styles.bottomActions}>

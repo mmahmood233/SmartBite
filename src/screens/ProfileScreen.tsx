@@ -19,6 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE, ICON_SIZE, AVATAR_SIZE } from '../constants';
 import { getInitials } from '../utils';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -35,6 +36,7 @@ const ProfileScreen: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('English');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Mock user data - will be replaced with real data
   const user = {
@@ -97,11 +99,20 @@ const ProfileScreen: React.FC = () => {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => {
-            // TODO: Clear user session/token
-            // TODO: Navigate to Auth screen
-            console.log('User logged out');
-            // navigation.navigate('Auth');
+          onPress: async () => {
+            setIsLoading(true);
+            try {
+              // TODO: Clear user session/token
+              // TODO: Navigate to Auth screen
+              // await logout();
+              // await AsyncStorage.clear();
+              console.log('User logged out');
+              // navigation.navigate('Auth');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            } finally {
+              setIsLoading(false);
+            }
           },
         },
       ]
@@ -134,13 +145,20 @@ const ProfileScreen: React.FC = () => {
                   text: 'Yes, Delete My Account',
                   style: 'destructive',
                   onPress: async () => {
-                    // TODO: Delete account from backend
-                    // TODO: Clear all local data
-                    // TODO: Navigate to Auth screen
-                    console.log('Account deleted');
-                    // await deleteAccount();
-                    // await AsyncStorage.clear();
-                    // navigation.navigate('Auth');
+                    setIsLoading(true);
+                    try {
+                      // TODO: Delete account from backend
+                      // TODO: Clear all local data
+                      // TODO: Navigate to Auth screen
+                      // await deleteAccount();
+                      // await AsyncStorage.clear();
+                      console.log('Account deleted');
+                      // navigation.navigate('Auth');
+                    } catch (error) {
+                      Alert.alert('Error', 'Failed to delete account. Please try again.');
+                    } finally {
+                      setIsLoading(false);
+                    }
                   },
                 },
               ]
@@ -306,6 +324,8 @@ const ProfileScreen: React.FC = () => {
 
         <View style={{ height: 80 }} />
       </ScrollView>
+
+      <LoadingSpinner visible={isLoading} message="Processing..." overlay />
 
       {/* Language Selection Modal */}
       <Modal

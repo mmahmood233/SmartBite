@@ -17,6 +17,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import EmptyState from '../components/EmptyState';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -34,6 +35,7 @@ interface PaymentMethod {
 const PaymentMethodsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     {
       id: '1',
@@ -60,8 +62,17 @@ const PaymentMethodsScreen: React.FC = () => {
         {
           text: 'Remove',
           style: 'destructive',
-          onPress: () => {
-            setPaymentMethods(paymentMethods.filter(pm => pm.id !== id));
+          onPress: async () => {
+            setIsLoading(true);
+            try {
+              // TODO: Delete from backend
+              // await deletePaymentMethod(id);
+              setPaymentMethods(paymentMethods.filter(pm => pm.id !== id));
+            } catch (error) {
+              Alert.alert('Error', 'Failed to remove payment method. Please try again.');
+            } finally {
+              setIsLoading(false);
+            }
           },
         },
       ]
@@ -181,6 +192,8 @@ const PaymentMethodsScreen: React.FC = () => {
         {/* Bottom Spacing */}
         <View style={{ height: SPACING.xxxl }} />
       </ScrollView>
+
+      <LoadingSpinner visible={isLoading} message="Removing..." overlay />
     </View>
   );
 };

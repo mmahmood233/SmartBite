@@ -19,6 +19,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import { validateRequired } from '../utils';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -31,6 +32,7 @@ const AddPaymentMethodScreen: React.FC = () => {
   const [cvv, setCvv] = useState('');
   const [isDefault, setIsDefault] = useState(false);
   const [cardType, setCardType] = useState<'visa' | 'mastercard' | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBack = () => {
     navigation.goBack();
@@ -72,7 +74,7 @@ const AddPaymentMethodScreen: React.FC = () => {
     setCvv(cleaned.substring(0, 3));
   };
 
-  const handleSaveCard = () => {
+  const handleSaveCard = async () => {
     // Validation
     if (!validateRequired(cardholderName)) {
       Alert.alert('Required Field', 'Please enter cardholder name');
@@ -99,17 +101,25 @@ const AddPaymentMethodScreen: React.FC = () => {
       return;
     }
 
-    // TODO: Save to backend/state (encrypted)
-    Alert.alert(
-      'Success',
-      '💳 Card added successfully',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
-        },
-      ]
-    );
+    setIsLoading(true);
+    try {
+      // TODO: Save to backend/state (encrypted)
+      // await savePaymentMethod(cardData);
+      Alert.alert(
+        'Success',
+        '💳 Card added successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add card. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderInput = (
@@ -217,6 +227,8 @@ const AddPaymentMethodScreen: React.FC = () => {
         {/* Bottom Spacing */}
         <View style={{ height: SPACING.xxxl }} />
       </ScrollView>
+
+      <LoadingSpinner visible={isLoading} message="Adding card..." overlay />
 
       {/* Bottom Actions */}
       <View style={styles.bottomActions}>

@@ -17,6 +17,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import EmptyState from '../components/EmptyState';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -36,6 +37,7 @@ interface Address {
 const SavedAddressesScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([
     {
       id: '1',
@@ -72,8 +74,17 @@ const SavedAddressesScreen: React.FC = () => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            setAddresses(addresses.filter(addr => addr.id !== id));
+          onPress: async () => {
+            setIsLoading(true);
+            try {
+              // TODO: Delete from backend
+              // await deleteAddress(id);
+              setAddresses(addresses.filter(addr => addr.id !== id));
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete address. Please try again.');
+            } finally {
+              setIsLoading(false);
+            }
           },
         },
       ]
@@ -201,6 +212,7 @@ const SavedAddressesScreen: React.FC = () => {
         <View style={{ height: SPACING.xxxl }} />
       </ScrollView>
 
+      <LoadingSpinner visible={isLoading} message="Deleting..." overlay />
     </View>
   );
 };

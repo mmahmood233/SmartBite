@@ -18,6 +18,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import { validateRequired, validatePhone } from '../utils';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -35,12 +36,13 @@ const AddAddressScreen: React.FC = () => {
   const [contactNumber, setContactNumber] = useState('+973 3356 0803'); // Pre-filled from profile
   const [notes, setNotes] = useState('');
   const [isDefault, setIsDefault] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleSaveAddress = () => {
+  const handleSaveAddress = async () => {
     // Validation
     if (!validateRequired(building)) {
       Alert.alert('Required Field', 'Please enter building/flat number');
@@ -55,17 +57,25 @@ const AddAddressScreen: React.FC = () => {
       return;
     }
 
-    // TODO: Save to backend/state
-    Alert.alert(
-      'Success',
-      '✅ Address saved successfully',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
-        },
-      ]
-    );
+    setIsLoading(true);
+    try {
+      // TODO: Save to backend/state
+      // await saveAddress(addressData);
+      Alert.alert(
+        'Success',
+        '✅ Address saved successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save address. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePickLocation = () => {
@@ -229,6 +239,8 @@ const AddAddressScreen: React.FC = () => {
         {/* Bottom Spacing */}
         <View style={{ height: SPACING.xxxl }} />
       </ScrollView>
+
+      <LoadingSpinner visible={isLoading} message="Saving address..." overlay />
 
       {/* Bottom Actions */}
       <View style={styles.bottomActions}>

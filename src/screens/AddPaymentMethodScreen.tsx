@@ -20,6 +20,7 @@ import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import { validateRequired } from '../utils';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Snackbar from '../components/Snackbar';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -33,6 +34,11 @@ const AddPaymentMethodScreen: React.FC = () => {
   const [isDefault, setIsDefault] = useState(false);
   const [cardType, setCardType] = useState<'visa' | 'mastercard' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
+
+  const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
+    setSnackbar({ visible: true, message, type });
+  };
 
   const handleBack = () => {
     navigation.goBack();
@@ -77,27 +83,27 @@ const AddPaymentMethodScreen: React.FC = () => {
   const handleSaveCard = async () => {
     // Validation
     if (!validateRequired(cardholderName)) {
-      Alert.alert('Required Field', 'Please enter cardholder name');
+      showSnackbar('Please enter cardholder name', 'error');
       return;
     }
     
     // Simple card number validation (13-19 digits)
     const cleanCardNumber = cardNumber.replace(/\s/g, '');
     if (cleanCardNumber.length < 13 || cleanCardNumber.length > 19) {
-      Alert.alert('Invalid Card', 'Please enter a valid card number');
+      showSnackbar('Please enter a valid card number', 'error');
       return;
     }
     
     // Simple expiry validation (MM/YY format)
     const cleanExpiry = expiryDate.replace(/\s|\//g, '');
     if (cleanExpiry.length !== 4) {
-      Alert.alert('Invalid Expiry', 'Please enter a valid expiry date (MM/YY)');
+      showSnackbar('Please enter a valid expiry date (MM/YY)', 'error');
       return;
     }
     
     // Simple CVV validation (3 digits)
     if (cvv.length !== 3) {
-      Alert.alert('Invalid CVV', 'Please enter a valid 3-digit CVV');
+      showSnackbar('Please enter a valid 3-digit CVV', 'error');
       return;
     }
 
@@ -105,18 +111,10 @@ const AddPaymentMethodScreen: React.FC = () => {
     try {
       // TODO: Save to backend/state (encrypted)
       // await savePaymentMethod(cardData);
-      Alert.alert(
-        'Success',
-        '💳 Card added successfully',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      showSnackbar('Card added successfully', 'success');
+      setTimeout(() => navigation.goBack(), 1500);
     } catch (error) {
-      Alert.alert('Error', 'Failed to add card. Please try again.');
+      showSnackbar('Failed to add card', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -229,6 +227,12 @@ const AddPaymentMethodScreen: React.FC = () => {
       </ScrollView>
 
       <LoadingSpinner visible={isLoading} message="Adding card..." overlay />
+      <Snackbar
+        visible={snackbar.visible}
+        message={snackbar.message}
+        type={snackbar.type}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+      />
 
       {/* Bottom Actions */}
       <View style={styles.bottomActions}>

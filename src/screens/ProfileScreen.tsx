@@ -20,6 +20,7 @@ import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE, ICON_SIZE, AVATAR_SIZE } from '../constants';
 import { getInitials } from '../utils';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Snackbar from '../components/Snackbar';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -37,6 +38,11 @@ const ProfileScreen: React.FC = () => {
   const [currentLanguage, setCurrentLanguage] = useState('English');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
+
+  const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
+    setSnackbar({ visible: true, message, type });
+  };
 
   // Mock user data - will be replaced with real data
   const user = {
@@ -107,9 +113,10 @@ const ProfileScreen: React.FC = () => {
               // await logout();
               // await AsyncStorage.clear();
               console.log('User logged out');
+              showSnackbar('Logged out successfully', 'success');
               // navigation.navigate('Auth');
             } catch (error) {
-              Alert.alert('Error', 'Failed to logout. Please try again.');
+              showSnackbar('Failed to logout', 'error');
             } finally {
               setIsLoading(false);
             }
@@ -153,9 +160,10 @@ const ProfileScreen: React.FC = () => {
                       // await deleteAccount();
                       // await AsyncStorage.clear();
                       console.log('Account deleted');
+                      showSnackbar('Account deleted successfully', 'success');
                       // navigation.navigate('Auth');
                     } catch (error) {
-                      Alert.alert('Error', 'Failed to delete account. Please try again.');
+                      showSnackbar('Failed to delete account', 'error');
                     } finally {
                       setIsLoading(false);
                     }
@@ -326,6 +334,12 @@ const ProfileScreen: React.FC = () => {
       </ScrollView>
 
       <LoadingSpinner visible={isLoading} message="Processing..." overlay />
+      <Snackbar
+        visible={snackbar.visible}
+        message={snackbar.message}
+        type={snackbar.type}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+      />
 
       {/* Language Selection Modal */}
       <Modal

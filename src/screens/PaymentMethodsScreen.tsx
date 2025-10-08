@@ -18,6 +18,7 @@ import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import EmptyState from '../components/EmptyState';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Snackbar from '../components/Snackbar';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -36,6 +37,12 @@ const PaymentMethodsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
+
+  const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
+    setSnackbar({ visible: true, message, type });
+  };
+
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     {
       id: '1',
@@ -68,8 +75,9 @@ const PaymentMethodsScreen: React.FC = () => {
               // TODO: Delete from backend
               // await deletePaymentMethod(id);
               setPaymentMethods(paymentMethods.filter(pm => pm.id !== id));
+              showSnackbar('Payment method removed', 'success');
             } catch (error) {
-              Alert.alert('Error', 'Failed to remove payment method. Please try again.');
+              showSnackbar('Failed to remove payment method', 'error');
             } finally {
               setIsLoading(false);
             }
@@ -194,6 +202,12 @@ const PaymentMethodsScreen: React.FC = () => {
       </ScrollView>
 
       <LoadingSpinner visible={isLoading} message="Removing..." overlay />
+      <Snackbar
+        visible={snackbar.visible}
+        message={snackbar.message}
+        type={snackbar.type}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+      />
     </View>
   );
 };

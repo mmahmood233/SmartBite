@@ -17,7 +17,9 @@ import Icon from 'react-native-vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE, ICON_SIZE, AVATAR_SIZE } from '../constants';
-import { getInitials, validateEmail, validatePhone, validateRequired } from '../utils';
+import { getInitials, validateRequired, validateEmail, validatePhone } from '../utils';
+import LoadingSpinner from '../components/LoadingSpinner';
+import Snackbar from '../components/Snackbar';
 import { GradientButton, Input } from '../components';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -30,48 +32,47 @@ const EditProfileScreen: React.FC = () => {
   const [email, setEmail] = useState('ahmed.faisal@example.com');
   const [phone, setPhone] = useState('+973 3356 0803');
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
+
+  const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
+    setSnackbar({ visible: true, message, type });
+  };
 
   const handleChangePhoto = () => {
     // TODO: Open camera/gallery picker
     Alert.alert('Change Photo', 'Camera/Gallery picker will open here');
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     // Validate all fields
     if (!validateRequired(fullName)) {
-      Alert.alert('Error', 'Please enter your full name');
+      showSnackbar('Please enter your full name', 'error');
       return;
     }
 
     if (!validateEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      showSnackbar('Please enter a valid email address', 'error');
       return;
     }
 
     if (!validatePhone(phone)) {
-      Alert.alert('Error', 'Please enter a valid phone number');
+      showSnackbar('Please enter a valid phone number', 'error');
       return;
     }
 
-    // TODO: Save to backend
-    console.log('Saving profile:', { fullName, email, phone, dateOfBirth });
-    
-    // Show success feedback
-    setShowSuccess(true);
-    
-    // Auto-hide and navigate back
-    setTimeout(() => {
-      setShowSuccess(false);
-      navigation.goBack();
-    }, 2000);
+    setIsLoading(true);
+    try {
+      // TODO: Save to backend
+      // await updateProfile({ fullName, email, phone });
+      showSnackbar('Profile updated successfully', 'success');
+      setTimeout(() => navigation.goBack(), 1500);
+    } catch (error) {
+      showSnackbar('Failed to update profile', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  const handleCancel = () => {
-    navigation.goBack();
-  };
-
-  // Using imported getInitials utility
 
   return (
     <KeyboardAvoidingView
@@ -80,7 +81,7 @@ const EditProfileScreen: React.FC = () => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Profile</Text>
@@ -150,14 +151,6 @@ const EditProfileScreen: React.FC = () => {
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* Success Message */}
-      {showSuccess && (
-        <View style={styles.successBanner}>
-          <Icon name="check-circle" size={20} color="#4CAF50" />
-          <Text style={styles.successText}>Profile updated successfully</Text>
-        </View>
-      )}
-
       {/* Action Buttons */}
       <View style={styles.footer}>
         <GradientButton
@@ -169,12 +162,20 @@ const EditProfileScreen: React.FC = () => {
 
         <TouchableOpacity
           style={styles.cancelButton}
-          onPress={handleCancel}
+          onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>
+
+      <LoadingSpinner visible={isLoading} message="Updating profile..." overlay />
+      <Snackbar
+        visible={snackbar.visible}
+        message={snackbar.message}
+        type={snackbar.type}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+      />
     </KeyboardAvoidingView>
   );
 };

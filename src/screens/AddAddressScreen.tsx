@@ -19,6 +19,7 @@ import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import { validateRequired, validatePhone } from '../utils';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Snackbar from '../components/Snackbar';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -37,6 +38,11 @@ const AddAddressScreen: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [isDefault, setIsDefault] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
+
+  const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
+    setSnackbar({ visible: true, message, type });
+  };
 
   const handleBack = () => {
     navigation.goBack();
@@ -45,15 +51,15 @@ const AddAddressScreen: React.FC = () => {
   const handleSaveAddress = async () => {
     // Validation
     if (!validateRequired(building)) {
-      Alert.alert('Required Field', 'Please enter building/flat number');
+      showSnackbar('Please enter building/flat number', 'error');
       return;
     }
     if (!validateRequired(area)) {
-      Alert.alert('Required Field', 'Please enter area');
+      showSnackbar('Please enter area', 'error');
       return;
     }
     if (!validatePhone(contactNumber)) {
-      Alert.alert('Invalid Phone', 'Please enter a valid contact number');
+      showSnackbar('Please enter a valid contact number', 'error');
       return;
     }
 
@@ -61,18 +67,10 @@ const AddAddressScreen: React.FC = () => {
     try {
       // TODO: Save to backend/state
       // await saveAddress(addressData);
-      Alert.alert(
-        'Success',
-        '✅ Address saved successfully',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      showSnackbar('Address saved successfully', 'success');
+      setTimeout(() => navigation.goBack(), 1500);
     } catch (error) {
-      Alert.alert('Error', 'Failed to save address. Please try again.');
+      showSnackbar('Failed to save address', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -241,6 +239,12 @@ const AddAddressScreen: React.FC = () => {
       </ScrollView>
 
       <LoadingSpinner visible={isLoading} message="Saving address..." overlay />
+      <Snackbar
+        visible={snackbar.visible}
+        message={snackbar.message}
+        type={snackbar.type}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+      />
 
       {/* Bottom Actions */}
       <View style={styles.bottomActions}>

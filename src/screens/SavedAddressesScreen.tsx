@@ -18,6 +18,7 @@ import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import EmptyState from '../components/EmptyState';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Snackbar from '../components/Snackbar';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -38,6 +39,12 @@ const SavedAddressesScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
+
+  const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
+    setSnackbar({ visible: true, message, type });
+  };
+
   const [addresses, setAddresses] = useState<Address[]>([
     {
       id: '1',
@@ -80,8 +87,9 @@ const SavedAddressesScreen: React.FC = () => {
               // TODO: Delete from backend
               // await deleteAddress(id);
               setAddresses(addresses.filter(addr => addr.id !== id));
+              showSnackbar('Address removed', 'success');
             } catch (error) {
-              Alert.alert('Error', 'Failed to delete address. Please try again.');
+              showSnackbar('Failed to delete address', 'error');
             } finally {
               setIsLoading(false);
             }
@@ -213,6 +221,12 @@ const SavedAddressesScreen: React.FC = () => {
       </ScrollView>
 
       <LoadingSpinner visible={isLoading} message="Deleting..." overlay />
+      <Snackbar
+        visible={snackbar.visible}
+        message={snackbar.message}
+        type={snackbar.type}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+      />
     </View>
   );
 };

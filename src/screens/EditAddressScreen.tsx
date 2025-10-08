@@ -19,6 +19,7 @@ import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import { validateRequired, validatePhone } from '../utils';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Snackbar from '../components/Snackbar';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'EditAddress'>;
@@ -40,6 +41,11 @@ const EditAddressScreen: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [isDefault, setIsDefault] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
+
+  const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
+    setSnackbar({ visible: true, message, type });
+  };
 
   const handleBack = () => {
     navigation.goBack();
@@ -48,15 +54,15 @@ const EditAddressScreen: React.FC = () => {
   const handleUpdateAddress = async () => {
     // Validation
     if (!validateRequired(building)) {
-      Alert.alert('Required Field', 'Please enter building/flat number');
+      showSnackbar('Please enter building/flat number', 'error');
       return;
     }
     if (!validateRequired(area)) {
-      Alert.alert('Required Field', 'Please enter area');
+      showSnackbar('Please enter area', 'error');
       return;
     }
     if (!validatePhone(contactNumber)) {
-      Alert.alert('Invalid Phone', 'Please enter a valid contact number');
+      showSnackbar('Please enter a valid contact number', 'error');
       return;
     }
 
@@ -64,18 +70,10 @@ const EditAddressScreen: React.FC = () => {
     try {
       // TODO: Update backend/state
       // await updateAddress(addressId, addressData);
-      Alert.alert(
-        'Success',
-        '✅ Address updated successfully',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      showSnackbar('Address updated successfully', 'success');
+      setTimeout(() => navigation.goBack(), 1500);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update address. Please try again.');
+      showSnackbar('Failed to update address', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -95,14 +93,10 @@ const EditAddressScreen: React.FC = () => {
             try {
               // TODO: Delete from backend
               // await deleteAddress(addressId);
-              Alert.alert('Success', '🗑 Address removed', [
-                {
-                  text: 'OK',
-                  onPress: () => navigation.goBack(),
-                },
-              ]);
+              showSnackbar('Address removed', 'success');
+              setTimeout(() => navigation.goBack(), 1500);
             } catch (error) {
-              Alert.alert('Error', 'Failed to delete address. Please try again.');
+              showSnackbar('Failed to delete address', 'error');
             } finally {
               setIsLoading(false);
             }
@@ -285,6 +279,12 @@ const EditAddressScreen: React.FC = () => {
       </ScrollView>
 
       <LoadingSpinner visible={isLoading} message="Updating..." overlay />
+      <Snackbar
+        visible={snackbar.visible}
+        message={snackbar.message}
+        type={snackbar.type}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+      />
 
       {/* Bottom Actions */}
       <View style={styles.bottomActions}>

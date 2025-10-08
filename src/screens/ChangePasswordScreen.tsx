@@ -18,6 +18,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 import { SPACING, FONT_SIZE } from '../constants';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Snackbar from '../components/Snackbar';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -34,6 +35,11 @@ const ChangePasswordScreen: React.FC = () => {
 
   const [isValid, setIsValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
+
+  const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
+    setSnackbar({ visible: true, message, type });
+  };
 
   // Password validation checks
   const [hasMinLength, setHasMinLength] = useState(false);
@@ -77,18 +83,10 @@ const ChangePasswordScreen: React.FC = () => {
       // TODO: Update password on backend
       // await updatePassword(currentPassword, newPassword);
       
-      Alert.alert(
-        'Success',
-        '✅ Password updated successfully',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      showSnackbar('Password updated successfully', 'success');
+      setTimeout(() => navigation.goBack(), 1500);
     } catch (error) {
-      Alert.alert('Error', '⚠️ Current password is incorrect');
+      showSnackbar('Current password is incorrect', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -240,6 +238,12 @@ const ChangePasswordScreen: React.FC = () => {
       </ScrollView>
 
       <LoadingSpinner visible={isLoading} message="Updating password..." overlay />
+      <Snackbar
+        visible={snackbar.visible}
+        message={snackbar.message}
+        type={snackbar.type}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+      />
 
       {/* Bottom Actions */}
       <View style={styles.bottomActions}>

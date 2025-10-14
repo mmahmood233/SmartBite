@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,21 +28,28 @@ const smartSuggestions = [
 ];
 
 const aiPicks = [
-  { id: '1', name: 'Al Qariah', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png') },
-  { id: '2', name: 'Shawarma House', rating: 4.7, eta: '18 min', price: '$', image: require('../../assets/food.png') },
-  { id: '3', name: 'Manousheh Spot', rating: 4.8, eta: '15 min', price: '$$', image: require('../../assets/wajba_logo.png') },
+  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png'), tags: ['saudi', 'traditional', 'arabic'] },
+  { id: '2', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../assets/food.png'), tags: ['lebanese', 'shawarma', 'grill'] },
+  { id: '3', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.8, eta: '15 min', price: '$$', image: require('../../assets/wajba_logo.png'), tags: ['lebanese', 'bakery', 'manakish'] },
 ];
 
 const nearby = [
-  { id: 'n1', name: 'Al Tazaj', tags: 'Lebanese • Grill', image: require('../../assets/food.png') },
-  { id: 'n2', name: "Mama's Kitchen", tags: 'Saudi • Home-Style', image: require('../../assets/food.png') },
-  { id: 'n3', name: 'Falafel Corner', tags: 'Vegetarian • Quick', image: require('../../assets/wajba_logo.png') },
-  { id: 'n4', name: 'Zaatar & Oil', tags: 'Breakfast • Bakery', image: require('../../assets/wajba_logo.png') },
+  { id: 'n1', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', image: require('../../assets/food.png'), tags: ['lebanese', 'grill', 'chicken'] },
+  { id: 'n2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', image: require('../../assets/food.png'), tags: ['saudi', 'homestyle', 'comfort'] },
+  { id: 'n3', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', image: require('../../assets/wajba_logo.png'), tags: ['vegetarian', 'falafel', 'healthy'] },
+  { id: 'n4', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', image: require('../../assets/wajba_logo.png'), tags: ['breakfast', 'bakery', 'zaatar'] },
+  { id: 'n5', name: 'Pizza Hut', cuisine: 'Italian • Pizza', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'cheese'] },
+  { id: 'n6', name: "Papa Johns", cuisine: 'Italian • Pizza', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'delivery'] },
 ];
+
+const ALL_RESTAURANTS = [...aiPicks, ...nearby];
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [suggestionIndex, setSuggestionIndex] = React.useState(0);
+  const [suggestionIndex, setSuggestionIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -85,8 +92,8 @@ const HomeScreen: React.FC = () => {
     return () => clearInterval(interval);
   }, [fadeAnim, slideAnim]);
 
-  const handleAIChatPress = (prefillQuery?: string) => {
-    // TODO: Pass prefillQuery to AI Chat screen
+  const handleAIChatPress = (_prefillQuery?: string) => {
+    // TODO: Pass _prefillQuery to AI Chat screen
     navigation.navigate('AIChat');
   };
 
@@ -97,6 +104,76 @@ const HomeScreen: React.FC = () => {
   const handleSuggestionPress = () => {
     const currentSuggestion = smartSuggestions[suggestionIndex];
     handleAIChatPress(currentSuggestion.query);
+  };
+
+  // Fuzzy search function
+  const fuzzySearch = (query: string) => {
+    if (!query || query.length < 2) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const suggestions: any[] = [];
+
+    // Search restaurants
+    ALL_RESTAURANTS.forEach(restaurant => {
+      const nameMatch = restaurant.name.toLowerCase().includes(lowerQuery);
+      const cuisineMatch = restaurant.cuisine?.toLowerCase().includes(lowerQuery);
+      const tagMatch = restaurant.tags?.some((tag: string) => tag.includes(lowerQuery));
+
+      if (nameMatch || cuisineMatch || tagMatch) {
+        suggestions.push({
+          type: 'restaurant',
+          id: restaurant.id,
+          name: restaurant.name,
+          subtitle: restaurant.cuisine,
+          icon: 'map-pin',
+          data: restaurant,
+        });
+      }
+    });
+
+    // Add AI fallback
+    if (suggestions.length === 0) {
+      suggestions.push({
+        type: 'ai',
+        id: 'ai-fallback',
+        name: `Can't find "${query}"? Ask Wajba AI`,
+        subtitle: 'Get personalized recommendations',
+        icon: 'zap',
+        query: query,
+      });
+    } else if (suggestions.length <= 3) {
+      suggestions.push({
+        type: 'ai',
+        id: 'ai-suggestion',
+        name: `Ask Wajba AI about "${query}"`,
+        subtitle: 'Get more suggestions',
+        icon: 'zap',
+        query: query,
+      });
+    }
+
+    setSearchSuggestions(suggestions.slice(0, 6));
+    setShowSuggestions(true);
+  };
+
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    fuzzySearch(text);
+  };
+
+  const handleSearchSuggestionPress = (suggestion: any) => {
+    if (suggestion.type === 'ai') {
+      handleAIChatPress(suggestion.query);
+      setShowSuggestions(false);
+    } else if (suggestion.type === 'restaurant') {
+      setSearchQuery(suggestion.name);
+      setShowSuggestions(false);
+      // Could navigate to restaurant detail here
+    }
   };
 
   return (
@@ -146,11 +223,61 @@ const HomeScreen: React.FC = () => {
         />
 
         {/* Search with AI Integration */}
-        <SearchBar 
-          style={{ marginHorizontal: 20 }} 
-          placeholder="Search restaurants or ask Wajba AI..."
-          onAIPress={handleAIChatPress}
-        />
+        <View style={{ marginHorizontal: 20, position: 'relative', zIndex: 100 }}>
+          <SearchBar 
+            value={searchQuery}
+            onChangeText={handleSearchChange}
+            onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onAIPress={() => handleAIChatPress()}
+            placeholder="Search restaurants or ask Wajba AI..."
+          />
+          
+          {/* Search Suggestions Dropdown */}
+          {showSuggestions && searchSuggestions.length > 0 && (
+            <View style={styles.suggestionsContainer}>
+              {searchSuggestions.map((suggestion, index) => (
+                <TouchableOpacity
+                  key={suggestion.id}
+                  style={[
+                    styles.suggestionItem,
+                    suggestion.type === 'ai' && styles.suggestionItemAI,
+                    index === searchSuggestions.length - 1 && styles.suggestionItemLast,
+                  ]}
+                  onPress={() => handleSearchSuggestionPress(suggestion)}
+                  activeOpacity={0.7}
+                >
+                  {suggestion.type === 'ai' ? (
+                    <LinearGradient
+                      colors={[colors.gradientStart, colors.gradientEnd]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.suggestionIconGradient}
+                    >
+                      <Icon name={suggestion.icon} size={16} color="#FFFFFF" />
+                    </LinearGradient>
+                  ) : (
+                    <View style={styles.suggestionIcon}>
+                      <Icon name={suggestion.icon} size={16} color={colors.primary} />
+                    </View>
+                  )}
+                  <View style={styles.suggestionContent}>
+                    <Text style={[
+                      styles.suggestionName,
+                      suggestion.type === 'ai' && styles.suggestionNameAI,
+                    ]}>
+                      {suggestion.name}
+                    </Text>
+                    <Text style={styles.suggestionSubtitle}>{suggestion.subtitle}</Text>
+                  </View>
+                  {suggestion.type !== 'ai' && (
+                    <Icon name="arrow-up-right" size={16} color="#94A3B8" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
 
         {/* Quick Action Buttons */}
         <View style={styles.actionRow}>
@@ -257,7 +384,7 @@ const HomeScreen: React.FC = () => {
 
         <View style={styles.gridWrap}>
           {nearby.map(item => (
-            <RestaurantCard key={item.id} image={item.image} name={item.name} tags={item.tags} style={styles.gridItem} />
+            <RestaurantCard key={item.id} image={item.image} name={item.name} tags={item.cuisine} style={styles.gridItem} />
           ))}
         </View>
 
@@ -415,6 +542,65 @@ const styles = StyleSheet.create({
   gridWrap: { paddingHorizontal: SCREEN_WIDTH * 0.05, flexDirection: 'row', flexWrap: 'wrap', gap: SCREEN_WIDTH * 0.04, marginTop: 12 },
   gridItem: { },
   link: { color: colors.primary, fontWeight: '600', fontSize: 14, letterSpacing: 0.3 },
+  
+  // Search Suggestions
+  suggestionsContainer: {
+    marginTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+    maxHeight: 320,
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    gap: 12,
+  },
+  suggestionItemAI: {
+    backgroundColor: 'rgba(240, 255, 250, 0.4)',
+  },
+  suggestionItemLast: {
+    borderBottomWidth: 0,
+  },
+  suggestionIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E6F3F1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  suggestionIconGradient: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  suggestionContent: {
+    flex: 1,
+  },
+  suggestionName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  suggestionNameAI: {
+    color: colors.primary,
+  },
+  suggestionSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+  },
   
   // AI Callout styles
   aiCallout: {

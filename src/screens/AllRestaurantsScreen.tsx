@@ -74,8 +74,8 @@ const AllRestaurantsScreen: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
 
-  const handleAIChatPress = (query?: string) => {
-    // TODO: Pass contextual query to AI Chat
+  const handleAIChatPress = (_query?: string) => {
+    // TODO: Pass contextual _query to AI Chat
     navigation.navigate('AIChat');
   };
 

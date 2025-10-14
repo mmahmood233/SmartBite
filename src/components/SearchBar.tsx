@@ -9,13 +9,21 @@ interface SearchBarProps {
   style?: ViewStyle;
   onAIPress?: () => void;
   onFilterPress?: () => void;
+  value?: string;
+  onChangeText?: (text: string) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ 
   placeholder = 'Search restaurants or dishes', 
   style,
   onAIPress,
-  onFilterPress 
+  onFilterPress,
+  value,
+  onChangeText,
+  onFocus,
+  onBlur,
 }) => {
   return (
     <LinearGradient
@@ -29,6 +37,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
         placeholder={placeholder}
         placeholderTextColor="#8A8A8A"
         style={styles.input}
+        value={value}
+        onChangeText={onChangeText}
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
       {onAIPress && (
         <TouchableOpacity onPress={onAIPress} activeOpacity={0.7}>

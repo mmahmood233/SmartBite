@@ -16,13 +16,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const AI_CARD_WIDTH = SCREEN_WIDTH * 0.55; // 55% of screen width for AI cards
 const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
 
-const categories = [
-  { id: 'burgers', label: 'Burgers', icon: '🍔' },
-  { id: 'pizza', label: 'Pizza', icon: '🍕' },
-  { id: 'coffee', label: 'Coffee', icon: '☕' },
-  { id: 'healthy', label: 'Healthy', icon: '🥗' },
-  { id: 'desserts', label: 'Desserts', icon: '🍰' },
-];
+// Removed: Category icons row - redundant with All Restaurants filters
 
 const smartSuggestions = [
   { emoji: '🍴', text: 'Feeling like something spicy?', query: 'I want something spicy' },
@@ -34,9 +28,9 @@ const smartSuggestions = [
 ];
 
 const aiPicks = [
-  { id: '1', name: 'Al Qariah', match: 'Match: 92%', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png') },
-  { id: '2', name: 'Shawarma House', match: 'Match: 88%', rating: 4.7, eta: '18 min', price: '$', image: require('../../assets/food.png') },
-  { id: '3', name: 'Manousheh Spot', match: 'Match: 86%', rating: 4.8, eta: '15 min', price: '$$', image: require('../../assets/wajba_logo.png') },
+  { id: '1', name: 'Al Qariah', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png') },
+  { id: '2', name: 'Shawarma House', rating: 4.7, eta: '18 min', price: '$', image: require('../../assets/food.png') },
+  { id: '3', name: 'Manousheh Spot', rating: 4.8, eta: '15 min', price: '$$', image: require('../../assets/wajba_logo.png') },
 ];
 
 const nearby = [
@@ -179,47 +173,36 @@ const HomeScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Category Icons */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          style={styles.categoryScroll}
-          contentContainerStyle={styles.categoryContent}
-        >
-          {categories.map((cat) => (
-            <TouchableOpacity 
-              key={cat.id}
-              style={styles.categoryItem}
-              onPress={handleBrowseAllPress}
-              activeOpacity={0.7}
-            >
-              <View style={styles.categoryIcon}>
-                <Text style={styles.categoryEmoji}>{cat.icon}</Text>
-              </View>
-              <Text style={styles.categoryLabel}>{cat.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
         {/* AI Picks */}
         <LinearGradient
           colors={['#FFFFFF', '#FAFAFA']}
           style={styles.sectionContainer}
         >
           <View style={styles.sectionHeaderRow}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.sectionTitle}>✨ For You</Text>
               <Text style={styles.sectionSub}>Curated by Wajba AI</Text>
             </View>
-            <TouchableOpacity 
-              activeOpacity={0.7}
-              onPress={handleBrowseAllPress}
-            >
-              <View style={styles.seeAllContainer}>
-                <Text style={styles.link}>See All</Text>
-                <Icon name="arrow-right" size={16} color={colors.primary} style={{ marginLeft: 4 }} />
-              </View>
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity 
+                style={styles.inlineTip}
+                onPress={() => handleAIChatPress()}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.inlineTipIcon}>💡</Text>
+                <Text style={styles.inlineTipText}>Try asking</Text>
+                <Icon name="chevron-right" size={14} color={colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                activeOpacity={0.7}
+                onPress={handleBrowseAllPress}
+              >
+                <View style={styles.seeAllContainer}>
+                  <Text style={styles.link}>See All</Text>
+                  <Icon name="arrow-right" size={16} color={colors.primary} style={{ marginLeft: 4 }} />
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 18 }}>
           {aiPicks.map(item => {
@@ -235,7 +218,6 @@ const HomeScreen: React.FC = () => {
                 </View>
                 <View style={styles.aiCardBody}>
                   <Text style={styles.aiName}>{item.name}</Text>
-                  <Text style={styles.aiMatch}>{item.match}</Text>
                   <View style={styles.metaRow}>
                     <Text style={styles.metaText}>⭐ {item.rating}</Text>
                     <Text style={styles.metaDot}>•</Text>
@@ -250,16 +232,7 @@ const HomeScreen: React.FC = () => {
         </ScrollView>
         </LinearGradient>
 
-        {/* Dynamic Tip Banner */}
-        <TouchableOpacity 
-          style={styles.tipBanner}
-          onPress={() => handleAIChatPress()}
-          activeOpacity={0.9}
-        >
-          <Text style={styles.tipIcon}>💡</Text>
-          <Text style={styles.tipText}>Try asking: "What's trending in Manama?"</Text>
-          <Icon name="arrow-right" size={18} color={colors.primary} />
-        </TouchableOpacity>
+        {/* Removed: Tip banner - now integrated into 'For You' header */}
 
         {/* Nearby */}
         <LinearGradient
@@ -298,7 +271,7 @@ const HomeScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FAFAFA' },
-  scroll: { paddingBottom: 120 },
+  scroll: { paddingBottom: 24 }, // Tight to nav bar
   appBar: {
     paddingTop: STATUS_BAR_HEIGHT + 12,
     paddingHorizontal: SCREEN_WIDTH * 0.05,
@@ -380,91 +353,64 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
 
-  // Category Icons
-  categoryScroll: {
-    marginTop: 24, // Consistent vertical rhythm
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0', // Light divider
+  sectionContainer: { paddingVertical: 16, marginTop: 12 }, // Tighter spacing
+  sectionHeader: { paddingHorizontal: SCREEN_WIDTH * 0.05, marginBottom: 16 },
+  sectionHeaderRow: { 
+    paddingHorizontal: SCREEN_WIDTH * 0.05, 
+    marginBottom: 12, // Tighter to cards
+    flexDirection: 'row', 
+    alignItems: 'flex-start', 
+    justifyContent: 'space-between',
   },
-  categoryContent: {
-    paddingHorizontal: SCREEN_WIDTH * 0.05,
-    gap: 16,
-  },
-  categoryItem: {
-    alignItems: 'center',
+  headerActions: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
     gap: 8,
   },
-  categoryIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
+  inlineTip: {
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    backgroundColor: 'rgba(240, 255, 250, 0.4)',
+    borderRadius: 12,
   },
-  categoryEmoji: {
-    fontSize: 30, // Slightly smaller for balance
+  inlineTipIcon: {
+    fontSize: 14,
   },
-  categoryLabel: {
+  inlineTipText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#2D2D2D',
+    fontWeight: '500',
+    color: '#6B7280',
   },
-
-  sectionContainer: { paddingVertical: 20, marginTop: 24 }, // Consistent rhythm
-  sectionHeader: { paddingHorizontal: SCREEN_WIDTH * 0.05, marginBottom: 16 },
-  sectionHeaderRow: { paddingHorizontal: SCREEN_WIDTH * 0.05, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   seeAllContainer: { flexDirection: 'row', alignItems: 'center' },
   sectionTitle: { fontSize: 20, fontWeight: '600', color: colors.textPrimary },
   sectionSub: { fontSize: 14, color: '#555555', marginTop: 4 },
 
-  aiCard: { width: AI_CARD_WIDTH, height: AI_CARD_WIDTH * 1.3, borderRadius: 16, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, marginVertical: 12, overflow: 'hidden', elevation: 3 },
-  imageContainer: { position: 'relative', width: AI_CARD_WIDTH, height: AI_CARD_WIDTH * 0.7 },
-  aiImage: { width: AI_CARD_WIDTH, height: AI_CARD_WIDTH * 0.7, borderTopLeftRadius: 16, borderTopRightRadius: 16, resizeMode: 'cover' },
-  tealOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(20, 119, 111, 0.25)', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
-  logoBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#E6F3F1', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
-  logoImage: { opacity: 0.9 },
-  aiCardBody: { padding: 12 },
-  aiName: { fontSize: 16, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 },
-  aiMatch: { fontSize: 12, fontWeight: '600', color: '#00C48C', marginBottom: 6 },
-  metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-  metaText: { fontSize: 11, color: '#555555' },
-  metaDot: { marginHorizontal: 4, color: '#555555', fontSize: 11 },
-  
-  // Tip Banner (Compact Pill Style)
-  tipBanner: {
-    marginTop: 24, // Consistent rhythm
-    marginHorizontal: SCREEN_WIDTH * 0.05,
-    borderRadius: 24, // More pill-like
-    paddingVertical: 12, // Reduced height
-    paddingHorizontal: 16,
-    backgroundColor: '#F8FAF9',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    borderWidth: 1,
-    borderColor: '#E0F4F1',
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+  aiCard: { 
+    width: AI_CARD_WIDTH, 
+    height: AI_CARD_WIDTH * 1.2, // Reduced height without Match label
+    borderRadius: 12, // Less rounded, more professional
+    backgroundColor: '#FFFFFF', 
+    shadowColor: '#000', 
+    shadowOpacity: 0.05, // Subtle shadow
+    shadowRadius: 8, 
+    shadowOffset: { width: 0, height: 2 }, 
+    marginVertical: 8, // Tighter vertical spacing
+    overflow: 'hidden', 
     elevation: 2,
   },
-  tipIcon: {
-    fontSize: 20, // Smaller for compact look
-  },
-  tipText: {
-    flex: 1,
-    fontSize: 13, // Slightly smaller
-    fontWeight: '500',
-    color: '#2D2D2D',
-  },
+  imageContainer: { position: 'relative', width: AI_CARD_WIDTH, height: AI_CARD_WIDTH * 0.7 },
+  aiImage: { width: AI_CARD_WIDTH, height: AI_CARD_WIDTH * 0.7, borderTopLeftRadius: 12, borderTopRightRadius: 12, resizeMode: 'cover' },
+  tealOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(20, 119, 111, 0.25)', borderTopLeftRadius: 12, borderTopRightRadius: 12 },
+  logoBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#E6F3F1', borderTopLeftRadius: 12, borderTopRightRadius: 12 },
+  logoImage: { opacity: 0.9 },
+  aiCardBody: { padding: 12 },
+  aiName: { fontSize: 16, fontWeight: '600', color: colors.textPrimary, marginBottom: 8 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 0 }, // Tight to name
+  metaText: { fontSize: 11, color: '#555555' },
+  metaDot: { marginHorizontal: 4, color: '#555555', fontSize: 11 },
 
   gridWrap: { paddingHorizontal: SCREEN_WIDTH * 0.05, flexDirection: 'row', flexWrap: 'wrap', gap: SCREEN_WIDTH * 0.04, marginTop: 12 },
   gridItem: { },

@@ -51,14 +51,14 @@ const CUISINES = [
 ];
 
 const MOCK_RESTAURANTS = [
-  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', match: 92, image: require('../../assets/food.png') },
-  { id: '2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', rating: 4.8, eta: '15 min', price: '$$', match: 88, image: require('../../assets/food.png') },
-  { id: '3', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', match: 85, image: require('../../assets/food.png') },
-  { id: '4', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', rating: 4.6, eta: '20 min', price: '$$', match: 82, image: require('../../assets/food.png') },
-  { id: '5', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', rating: 4.5, eta: '10 min', price: '$', match: 80, image: require('../../assets/wajba_logo.png') },
-  { id: '6', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', rating: 4.8, eta: '22 min', price: '$$', match: 78, image: require('../../assets/wajba_logo.png') },
-  { id: '7', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.7, eta: '16 min', price: '$', match: 75, image: require('../../assets/wajba_logo.png') },
-  { id: '8', name: 'Spice Garden', cuisine: 'Indian • Curry', rating: 4.6, eta: '25 min', price: '$$', match: 72, image: require('../../assets/food.png') },
+  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png') },
+  { id: '2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', rating: 4.8, eta: '15 min', price: '$$', image: require('../../assets/food.png') },
+  { id: '3', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../assets/food.png') },
+  { id: '4', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', rating: 4.6, eta: '20 min', price: '$$', image: require('../../assets/food.png') },
+  { id: '5', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', rating: 4.5, eta: '10 min', price: '$', image: require('../../assets/wajba_logo.png') },
+  { id: '6', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', rating: 4.8, eta: '22 min', price: '$$', image: require('../../assets/wajba_logo.png') },
+  { id: '7', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.7, eta: '16 min', price: '$', image: require('../../assets/wajba_logo.png') },
+  { id: '8', name: 'Spice Garden', cuisine: 'Indian • Curry', rating: 4.6, eta: '25 min', price: '$$', image: require('../../assets/food.png') },
 ];
 
 const AllRestaurantsScreen: React.FC = () => {
@@ -81,7 +81,8 @@ const AllRestaurantsScreen: React.FC = () => {
       case 'name':
         return sorted.sort((a, b) => a.name.localeCompare(b.name));
       case 'ai_match':
-        return sorted.sort((a, b) => b.match - a.match);
+        // AI match sorting would use backend data in production
+        return sorted;
       default:
         return sorted;
     }
@@ -177,7 +178,6 @@ const AllRestaurantsScreen: React.FC = () => {
               rating={restaurant.rating}
               eta={restaurant.eta}
               price={restaurant.price}
-              match={restaurant.match}
               restaurantId={restaurant.id}
               style={styles.restaurantCard}
             />

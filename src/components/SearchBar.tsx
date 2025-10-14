@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextInput, StyleSheet, ViewStyle } from 'react-native';
+import { TextInput, StyleSheet, ViewStyle, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
@@ -7,9 +7,16 @@ import { colors } from '../theme/colors';
 interface SearchBarProps {
   placeholder?: string;
   style?: ViewStyle;
+  onAIPress?: () => void;
+  onFilterPress?: () => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ placeholder = 'Search restaurants or dishes', style }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ 
+  placeholder = 'Search restaurants or dishes', 
+  style,
+  onAIPress,
+  onFilterPress 
+}) => {
   return (
     <LinearGradient
       colors={['#FAFAFA', '#F2F2F2']}
@@ -23,7 +30,18 @@ const SearchBar: React.FC<SearchBarProps> = ({ placeholder = 'Search restaurants
         placeholderTextColor="#8A8A8A"
         style={styles.input}
       />
-      <Icon name="sliders" size={20} color={colors.primary} style={styles.iconRight} />
+      {onAIPress && (
+        <TouchableOpacity onPress={onAIPress} activeOpacity={0.7}>
+          <View style={styles.aiButton}>
+            <Icon name="zap" size={18} color={colors.primary} />
+          </View>
+        </TouchableOpacity>
+      )}
+      {onFilterPress && (
+        <TouchableOpacity onPress={onFilterPress} activeOpacity={0.7}>
+          <Icon name="sliders" size={20} color={colors.primary} style={styles.iconRight} />
+        </TouchableOpacity>
+      )}
     </LinearGradient>
   );
 };
@@ -31,17 +49,17 @@ const SearchBar: React.FC<SearchBarProps> = ({ placeholder = 'Search restaurants
 const styles = StyleSheet.create({
   container: {
     height: 56,
-    borderRadius: 16,
+    borderRadius: 12, // Reduced from 16 for professional look
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
+    shadowOpacity: 0.06, // Slightly stronger shadow
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#E8E8E8',
+    elevation: 3,
+    borderWidth: 1.5, // Slightly thicker border
+    borderColor: '#D8D8D8', // Darker border for definition
   },
   iconLeft: {
     marginRight: 8,
@@ -54,6 +72,15 @@ const styles = StyleSheet.create({
     height: 44,
     color: '#4A4A4A',
     fontSize: 16,
+  },
+  aiButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E8F5F2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
 });
 

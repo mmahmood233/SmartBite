@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
@@ -8,7 +8,6 @@ import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import SearchBar from '../components/SearchBar';
-import Chip from '../components/Chip';
 import RestaurantCard from '../components/RestaurantCard';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -17,7 +16,19 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const AI_CARD_WIDTH = SCREEN_WIDTH * 0.55; // 55% of screen width for AI cards
 const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
 
-const chips = ['🥙 Nearby', '🔥 Offers', '⏱️ Fast', '🌿 Vegetarian', '⭐ Top Rated', '🍰 Desserts'];
+const categories = [
+  { id: 'burgers', label: 'Burgers', icon: '🍔' },
+  { id: 'pizza', label: 'Pizza', icon: '🍕' },
+  { id: 'coffee', label: 'Coffee', icon: '☕' },
+  { id: 'healthy', label: 'Healthy', icon: '🥗' },
+  { id: 'desserts', label: 'Desserts', icon: '🍰' },
+];
+
+const smartSuggestions = [
+  '🍴 Feeling like something spicy?',
+  '🥗 Want something light under 3 BD?',
+  '🍛 Craving comfort food tonight?',
+];
 
 const aiPicks = [
   { id: '1', name: 'Al Qariah', match: 'Match: 92%', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png') },
@@ -34,28 +45,14 @@ const nearby = [
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  // Pulsing animation for AI CTA
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.03,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
+  const [suggestionIndex] = React.useState(0);
 
   const handleAIChatPress = () => {
     navigation.navigate('AIChat');
+  };
+
+  const handleBrowseAllPress = () => {
+    navigation.navigate('AllRestaurants');
   };
 
   return (
@@ -78,62 +75,90 @@ const HomeScreen: React.FC = () => {
           </View>
           <Image source={require('../../assets/wajba_logo.png')} style={styles.avatar} />
         </View>
+        
+        {/* Smart Suggestion */}
+        <TouchableOpacity 
+          style={styles.smartSuggestion}
+          onPress={handleAIChatPress}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.smartSuggestionText}>{smartSuggestions[suggestionIndex]}</Text>
+        </TouchableOpacity>
         <LinearGradient
           colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0)']}
           style={styles.headerGradient}
           pointerEvents="none"
         />
 
-        {/* AI Callout */}
-        <View style={styles.aiCallout}>
-          <Text style={styles.aiCalloutText}>💭 Hungry? Ask Wajba AI what to eat 🤖</Text>
-          <Text style={styles.aiCalloutSub}>Try saying: "I want something spicy under 3 BD!"</Text>
+        {/* Search with AI Integration */}
+        <SearchBar 
+          style={{ marginHorizontal: 20 }} 
+          placeholder="Search restaurants or ask Wajba AI..."
+          onAIPress={handleAIChatPress}
+        />
+
+        {/* Quick Action Buttons */}
+        <View style={styles.actionRow}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={handleBrowseAllPress}
+            activeOpacity={0.8}
+          >
+            <Icon name="grid" size={20} color={colors.primary} />
+            <Text style={styles.actionButtonText}>Browse All Restaurants</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={handleAIChatPress}
+            activeOpacity={0.8}
+          >
+            <Icon name="zap" size={20} color={colors.primary} />
+            <Text style={styles.actionButtonText}>Talk to Wajba AI</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Search */}
-        <SearchBar style={{ marginHorizontal: 20 }} />
-
-        {/* Chips */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 16 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}>
-          {chips.map((c, i) => (
-            <Chip key={c} label={c} active={i === 0} />
+        {/* Category Icons */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.categoryScroll}
+          contentContainerStyle={styles.categoryContent}
+        >
+          {categories.map((cat) => (
+            <TouchableOpacity 
+              key={cat.id}
+              style={styles.categoryItem}
+              onPress={handleBrowseAllPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.categoryIcon}>
+                <Text style={styles.categoryEmoji}>{cat.icon}</Text>
+              </View>
+              <Text style={styles.categoryLabel}>{cat.label}</Text>
+            </TouchableOpacity>
           ))}
         </ScrollView>
-
-        {/* AI Chat CTA Card */}
-        <Animated.View style={[styles.aiCTAContainer, { transform: [{ scale: pulseAnim }] }]}>
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={handleAIChatPress}
-          >
-            <LinearGradient
-              colors={[colors.gradientStart, colors.gradientMid, colors.gradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.aiCTACard}
-            >
-              <View style={styles.aiCTAContent}>
-                <View style={styles.aiCTAIcon}>
-                  <Text style={styles.aiCTAEmoji}>🤖</Text>
-                </View>
-                <View style={styles.aiCTAText}>
-                  <Text style={styles.aiCTATitle}>Ask Wajba AI</Text>
-                  <Text style={styles.aiCTASubtitle}>"Tell me what you're craving today..."</Text>
-                </View>
-                <Icon name="arrow-right" size={24} color="#FFFFFF" />
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
 
         {/* AI Picks */}
         <LinearGradient
           colors={['#FFFFFF', '#FAFAFA']}
           style={styles.sectionContainer}
         >
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>✨ For You</Text>
-            <Text style={styles.sectionSub}>Curated by your taste</Text>
+          <View style={styles.sectionHeaderRow}>
+            <View>
+              <Text style={styles.sectionTitle}>✨ For You</Text>
+              <Text style={styles.sectionSub}>Curated by Wajba AI</Text>
+            </View>
+            <TouchableOpacity 
+              activeOpacity={0.7}
+              onPress={handleBrowseAllPress}
+            >
+              <View style={styles.seeAllContainer}>
+                <Text style={styles.link}>See All</Text>
+                <Icon name="arrow-right" size={16} color={colors.primary} style={{ marginLeft: 4 }} />
+              </View>
+            </TouchableOpacity>
           </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 18 }}>
           {aiPicks.map(item => {
@@ -164,21 +189,16 @@ const HomeScreen: React.FC = () => {
         </ScrollView>
         </LinearGradient>
 
-        {/* Mood Banner */}
-        <View style={styles.moodBanner}>
-          <View>
-            <Text style={styles.moodIcon}>🧠</Text>
-            <Text style={styles.moodTitle}>Tell us your craving</Text>
-          </View>
-          <LinearGradient
-            colors={[colors.primary, '#3BC8A4']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.moodButton}
-          >
-            <Text style={styles.moodButtonText}>Pick My Mood</Text>
-          </LinearGradient>
-        </View>
+        {/* Dynamic Tip Banner */}
+        <TouchableOpacity 
+          style={styles.tipBanner}
+          onPress={handleAIChatPress}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.tipIcon}>💡</Text>
+          <Text style={styles.tipText}>Try asking: "What's trending in Manama?"</Text>
+          <Icon name="arrow-right" size={18} color={colors.primary} />
+        </TouchableOpacity>
 
         {/* Nearby */}
         <LinearGradient
@@ -186,10 +206,13 @@ const HomeScreen: React.FC = () => {
           style={styles.sectionContainer}
         >
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Popular Near You</Text>
+            <View>
+              <Text style={styles.sectionTitle}>🔥 Popular Near You</Text>
+              <Text style={styles.sectionSub}>Discover trending restaurants nearby</Text>
+            </View>
             <TouchableOpacity 
               activeOpacity={0.7}
-              onPress={() => navigation.navigate('AllRestaurants')}
+              onPress={handleBrowseAllPress}
             >
               <View style={styles.seeAllContainer}>
                 <Text style={styles.link}>See All</Text>
@@ -230,9 +253,96 @@ const styles = StyleSheet.create({
   locationChip: { alignSelf: 'flex-start', marginTop: 6, backgroundColor: '#E6F3F1', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, shadowColor: colors.primary, shadowOpacity: 0.15, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 2, borderWidth: 0.5, borderColor: 'rgba(20, 119, 111, 0.2)', flexDirection: 'row', alignItems: 'center' },
   locationText: { fontSize: 13, color: colors.primary, fontWeight: '500' },
   avatar: { width: 38, height: 38, borderRadius: 19, marginLeft: 8, marginRight: 8, borderColor: colors.primary, borderWidth: 2 },
+  
+  // Smart Suggestion
+  smartSuggestion: {
+    marginHorizontal: SCREEN_WIDTH * 0.05,
+    marginTop: 8,
+    marginBottom: 20, // Breathing space before search
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: '#F8FAF9',
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  smartSuggestionText: {
+    fontSize: 14,
+    color: '#2D2D2D',
+    fontWeight: '500',
+  },
+  
   headerGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 120, zIndex: 1 },
 
-  sectionContainer: { paddingVertical: 20, marginTop: 8 },
+  // Action Buttons
+  actionRow: {
+    flexDirection: 'row',
+    marginHorizontal: SCREEN_WIDTH * 0.05,
+    marginTop: 24, // Consistent vertical rhythm
+    gap: 14, // More breathing space
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 52, // Increased from 44px
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  actionButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+
+  // Category Icons
+  categoryScroll: {
+    marginTop: 24, // Consistent vertical rhythm
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0', // Light divider
+  },
+  categoryContent: {
+    paddingHorizontal: SCREEN_WIDTH * 0.05,
+    gap: 16,
+  },
+  categoryItem: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  categoryIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  categoryEmoji: {
+    fontSize: 30, // Slightly smaller for balance
+  },
+  categoryLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2D2D2D',
+  },
+
+  sectionContainer: { paddingVertical: 20, marginTop: 24 }, // Consistent rhythm
   sectionHeader: { paddingHorizontal: SCREEN_WIDTH * 0.05, marginBottom: 16 },
   sectionHeaderRow: { paddingHorizontal: SCREEN_WIDTH * 0.05, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   seeAllContainer: { flexDirection: 'row', alignItems: 'center' },
@@ -252,11 +362,34 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 11, color: '#555555' },
   metaDot: { marginHorizontal: 4, color: '#555555', fontSize: 11 },
   
-  moodBanner: { marginTop: 16, marginHorizontal: SCREEN_WIDTH * 0.05, borderRadius: 16, paddingVertical: 24, paddingHorizontal: 20, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
-  moodIcon: { fontSize: 20, color: '#FFFFFF', marginBottom: 6 },
-  moodTitle: { fontSize: 18, fontWeight: '600', color: '#FFFFFF' },
-  moodButton: { borderRadius: 24, paddingHorizontal: 20, paddingVertical: 14, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
-  moodButtonText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
+  // Tip Banner (Compact Pill Style)
+  tipBanner: {
+    marginTop: 24, // Consistent rhythm
+    marginHorizontal: SCREEN_WIDTH * 0.05,
+    borderRadius: 24, // More pill-like
+    paddingVertical: 12, // Reduced height
+    paddingHorizontal: 16,
+    backgroundColor: '#F8FAF9',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#E0F4F1',
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  tipIcon: {
+    fontSize: 20, // Smaller for compact look
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 13, // Slightly smaller
+    fontWeight: '500',
+    color: '#2D2D2D',
+  },
 
   gridWrap: { paddingHorizontal: SCREEN_WIDTH * 0.05, flexDirection: 'row', flexWrap: 'wrap', gap: SCREEN_WIDTH * 0.04, marginTop: 12 },
   gridItem: { },

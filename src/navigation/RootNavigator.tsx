@@ -23,6 +23,8 @@ import AddAddressScreen from '../screens/AddAddressScreen';
 import EditAddressScreen from '../screens/EditAddressScreen';
 import AddPaymentMethodScreen from '../screens/AddPaymentMethodScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
+import AIChatScreen from '../screens/AIChatScreen';
+import AllRestaurantsScreen from '../screens/AllRestaurantsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -41,6 +43,8 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+      <Stack.Screen name="AIChat" component={AIChatScreen} />
+      <Stack.Screen name="AllRestaurants" component={AllRestaurantsScreen} />
       <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
       <Stack.Screen name="Cart" component={CartScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen} />

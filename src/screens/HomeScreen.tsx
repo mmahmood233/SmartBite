@@ -187,7 +187,10 @@ const HomeScreen: React.FC = () => {
         >
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Popular Near You</Text>
-            <TouchableOpacity activeOpacity={0.7}>
+            <TouchableOpacity 
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('AllRestaurants')}
+            >
               <View style={styles.seeAllContainer}>
                 <Text style={styles.link}>See All</Text>
                 <Icon name="arrow-right" size={16} color={colors.primary} style={{ marginLeft: 4 }} />

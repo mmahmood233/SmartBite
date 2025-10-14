@@ -13,12 +13,12 @@ import {
   TextInput,
   Platform,
   Dimensions,
+  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import Icon from 'react-native-vector-icons/Feather';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import RestaurantCard from '../components/RestaurantCard';
@@ -26,27 +26,28 @@ import RestaurantCard from '../components/RestaurantCard';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = (SCREEN_WIDTH - SPACING.xl * 3) / 2;
+// Perfect grid: (100% - 16px*2 margins - 12px gap) / 2 columns
+const PAGE_PADDING = 16;
+const COLUMN_GAP = 12;
+const CARD_WIDTH = (SCREEN_WIDTH - PAGE_PADDING * 2 - COLUMN_GAP) / 2;
 
-interface FilterChip {
-  id: string;
-  label: string;
-  category: 'cuisine' | 'time' | 'price' | 'rating';
-}
+type SortOption = 'recommended' | 'rating' | 'name' | 'ai_match';
 
-const FILTER_CHIPS: FilterChip[] = [
-  { id: 'all', label: 'All', category: 'cuisine' },
-  { id: 'arabic', label: 'Arabic', category: 'cuisine' },
-  { id: 'italian', label: 'Italian', category: 'cuisine' },
-  { id: 'asian', label: 'Asian', category: 'cuisine' },
-  { id: 'fast', label: '≤15 min', category: 'time' },
-  { id: 'medium', label: '≤25 min', category: 'time' },
-  { id: 'slow', label: '≤40 min', category: 'time' },
-  { id: 'cheap', label: '$', category: 'price' },
-  { id: 'moderate', label: '$$', category: 'price' },
-  { id: 'expensive', label: '$$$', category: 'price' },
-  { id: 'rating4', label: '4.0+', category: 'rating' },
-  { id: 'rating45', label: '4.5+', category: 'rating' },
+const SORT_OPTIONS = [
+  { id: 'recommended' as SortOption, label: 'Recommended', icon: 'thumbs-up', description: 'Our top picks for you' },
+  { id: 'rating' as SortOption, label: 'Rating: High to Low', icon: 'star', description: 'Best rated first' },
+  { id: 'name' as SortOption, label: 'Name: A-Z', icon: 'type', description: 'Alphabetical order' },
+  { id: 'ai_match' as SortOption, label: 'AI Match', icon: 'zap', description: 'Personalized ranking based on your chat and order history' },
+];
+
+const CUISINES = [
+  { id: 'all', label: 'All', icon: 'grid' },
+  { id: 'arabic', label: 'Arabic', icon: 'coffee' },
+  { id: 'italian', label: 'Italian', icon: 'award' },
+  { id: 'asian', label: 'Asian', icon: 'sun' },
+  { id: 'indian', label: 'Indian', icon: 'star' },
+  { id: 'healthy', label: 'Healthy', icon: 'heart' },
+  { id: 'desserts', label: 'Desserts', icon: 'gift' },
 ];
 
 const MOCK_RESTAURANTS = [
@@ -63,28 +64,30 @@ const MOCK_RESTAURANTS = [
 const AllRestaurantsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilters, setSelectedFilters] = useState<string[]>(['all']);
-  const [sortByMatch, setSortByMatch] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('recommended');
+  const [showSortModal, setShowSortModal] = useState(false);
+  const [selectedCuisine, setSelectedCuisine] = useState<string>('all');
 
-  const handleFilterToggle = (filterId: string) => {
-    if (filterId === 'all') {
-      setSelectedFilters(['all']);
-    } else {
-      const newFilters = selectedFilters.includes(filterId)
-        ? selectedFilters.filter(id => id !== filterId && id !== 'all')
-        : [...selectedFilters.filter(id => id !== 'all'), filterId];
-      
-      setSelectedFilters(newFilters.length === 0 ? ['all'] : newFilters);
+  const handleSortSelect = (option: SortOption) => {
+    setSortBy(option);
+    setShowSortModal(false);
+  };
+
+  const getSortedRestaurants = () => {
+    let sorted = [...MOCK_RESTAURANTS];
+    switch (sortBy) {
+      case 'rating':
+        return sorted.sort((a, b) => b.rating - a.rating);
+      case 'name':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'ai_match':
+        return sorted.sort((a, b) => b.match - a.match);
+      default:
+        return sorted;
     }
   };
 
-  const handleSortByMatch = () => {
-    setSortByMatch(!sortByMatch);
-  };
-
-  const filteredRestaurants = sortByMatch
-    ? [...MOCK_RESTAURANTS].sort((a, b) => b.match - a.match)
-    : MOCK_RESTAURANTS;
+  const filteredRestaurants = getSortedRestaurants();
 
   return (
     <View style={styles.container}>
@@ -97,9 +100,7 @@ const AllRestaurantsScreen: React.FC = () => {
           <Icon name="arrow-left" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>All Restaurants</Text>
-        <TouchableOpacity style={styles.filterButton}>
-          <Icon name="sliders" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
+        <View style={styles.filterButton} />
       </View>
 
       {/* Search Bar */}
@@ -116,29 +117,50 @@ const AllRestaurantsScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Filter Chips */}
+      {/* Cuisine Chips */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={styles.filterChipsContainer}
-        contentContainerStyle={styles.filterChipsContent}
+        style={styles.cuisineChipsContainer}
+        contentContainerStyle={styles.cuisineChipsContent}
       >
-        {FILTER_CHIPS.map((chip) => {
-          const isSelected = selectedFilters.includes(chip.id);
+        {CUISINES.map((cuisine) => {
+          const isSelected = selectedCuisine === cuisine.id;
           return (
             <TouchableOpacity
-              key={chip.id}
-              style={[styles.filterChip, isSelected && styles.filterChipActive]}
-              onPress={() => handleFilterToggle(chip.id)}
+              key={cuisine.id}
+              style={[styles.cuisineChip, isSelected && styles.cuisineChipActive]}
+              onPress={() => setSelectedCuisine(cuisine.id)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.filterChipText, isSelected && styles.filterChipTextActive]}>
-                {chip.label}
+              <Icon
+                name={cuisine.icon}
+                size={16}
+                color={isSelected ? '#FFFFFF' : colors.primary}
+                style={styles.cuisineChipIcon}
+              />
+              <Text style={[styles.cuisineChipText, isSelected && styles.cuisineChipTextActive]}>
+                {cuisine.label}
               </Text>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
+
+      {/* Sort Button */}
+      <View style={styles.sortContainer}>
+        <TouchableOpacity
+          style={styles.sortButton}
+          onPress={() => setShowSortModal(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.sortLabel}>Sort by:</Text>
+          <Text style={styles.sortValue}>
+            {SORT_OPTIONS.find(opt => opt.id === sortBy)?.label}
+          </Text>
+          <Icon name="chevron-down" size={20} color={colors.textSecondary} />
+        </TouchableOpacity>
+      </View>
 
       {/* Restaurant Grid */}
       <ScrollView
@@ -148,53 +170,74 @@ const AllRestaurantsScreen: React.FC = () => {
       >
         {filteredRestaurants.map((restaurant) => (
           <View key={restaurant.id} style={styles.cardWrapper}>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => {
-                // TODO: Navigate to restaurant details
-                console.log('Navigate to restaurant:', restaurant.id);
-              }}
-            >
-              <RestaurantCard
-                image={restaurant.image}
-                name={restaurant.name}
-                tags={restaurant.cuisine}
-                style={styles.restaurantCard}
-              />
-              <View style={styles.cardFooter}>
-                <View style={styles.metaRow}>
-                  <Icon name="star" size={14} color="#FFB800" />
-                  <Text style={styles.metaText}>{restaurant.rating}</Text>
-                  <Text style={styles.metaDot}>•</Text>
-                  <Text style={styles.metaText}>{restaurant.eta}</Text>
-                  <Text style={styles.metaDot}>•</Text>
-                  <Text style={styles.metaText}>{restaurant.price}</Text>
-                </View>
-                <View style={styles.matchBadge}>
-                  <Text style={styles.matchText}>Match: {restaurant.match}%</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
+            <RestaurantCard
+              image={restaurant.image}
+              name={restaurant.name}
+              tags={restaurant.cuisine}
+              rating={restaurant.rating}
+              eta={restaurant.eta}
+              price={restaurant.price}
+              match={restaurant.match}
+              restaurantId={restaurant.id}
+              style={styles.restaurantCard}
+            />
           </View>
         ))}
       </ScrollView>
 
-      {/* Floating Sort Button */}
-      <TouchableOpacity
-        style={styles.floatingButton}
-        onPress={handleSortByMatch}
-        activeOpacity={0.9}
+      {/* Sort Modal */}
+      <Modal
+        visible={showSortModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSortModal(false)}
       >
-        <LinearGradient
-          colors={sortByMatch ? [colors.gradientStart, colors.gradientEnd] : ['#E2E8F0', '#CBD5E1']}
-          style={styles.floatingButtonGradient}
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowSortModal(false)}
         >
-          <Icon name="zap" size={20} color={sortByMatch ? '#FFFFFF' : colors.textSecondary} />
-          <Text style={[styles.floatingButtonText, sortByMatch && styles.floatingButtonTextActive]}>
-            Sort by AI Match
-          </Text>
-        </LinearGradient>
-      </TouchableOpacity>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Sort By</Text>
+              <TouchableOpacity onPress={() => setShowSortModal(false)}>
+                <Icon name="x" size={24} color={colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            {SORT_OPTIONS.map((option) => {
+              const isSelected = sortBy === option.id;
+              const isAIMatch = option.id === 'ai_match';
+              return (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[styles.sortOption, isSelected && styles.sortOptionActive]}
+                  onPress={() => handleSortSelect(option.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.sortOptionLeft}>
+                    <View style={[styles.sortIconContainer, isAIMatch && styles.sortIconAI]}>
+                      <Icon
+                        name={option.icon}
+                        size={20}
+                        color={isAIMatch ? colors.primary : colors.textSecondary}
+                      />
+                    </View>
+                    <View style={styles.sortOptionText}>
+                      <Text style={[styles.sortOptionLabel, isSelected && styles.sortOptionLabelActive]}>
+                        {option.label}
+                      </Text>
+                      <Text style={styles.sortOptionDescription}>{option.description}</Text>
+                    </View>
+                  </View>
+                  {isSelected && (
+                    <Icon name="check" size={20} color={colors.primary} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -253,37 +296,64 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.base,
     color: colors.textPrimary,
   },
-  filterChipsContainer: {
-    maxHeight: 50,
+  cuisineChipsContainer: {
+    maxHeight: 60,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  filterChipsContent: {
+  cuisineChipsContent: {
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.md,
     gap: SPACING.sm,
   },
-  filterChip: {
-    paddingHorizontal: SPACING.lg,
+  cuisineChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md + 2,
     paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.full,
     backgroundColor: '#F1F5F9',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
+    gap: SPACING.xs,
   },
-  filterChipActive: {
+  cuisineChipActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-  filterChipText: {
+  cuisineChipIcon: {
+    marginRight: 2,
+  },
+  cuisineChipText: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '500',
+    fontWeight: '600',
     color: colors.textSecondary,
   },
-  filterChipTextActive: {
+  cuisineChipTextActive: {
     color: '#FFFFFF',
+  },
+  sortContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  sortLabel: {
+    fontSize: FONT_SIZE.sm,
+    color: colors.textSecondary,
+  },
+  sortValue: {
+    flex: 1,
+    fontSize: FONT_SIZE.base,
     fontWeight: '600',
+    color: colors.textPrimary,
   },
   scrollView: {
     flex: 1,
@@ -291,74 +361,97 @@ const styles = StyleSheet.create({
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: SPACING.lg,
+    paddingHorizontal: PAGE_PADDING, // Perfect 16px margins
     paddingTop: SPACING.lg,
     paddingBottom: 100,
-    gap: SPACING.md,
+    gap: COLUMN_GAP, // Perfect 12px gutter
   },
   cardWrapper: {
     width: CARD_WIDTH,
     marginBottom: SPACING.md,
+    // Add subtle shadow for depth
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
   },
   restaurantCard: {
     width: CARD_WIDTH,
   },
-  cardFooter: {
-    paddingTop: SPACING.sm,
+  // Sort Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
   },
-  metaRow: {
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: BORDER_RADIUS.xl,
+    borderTopRightRadius: BORDER_RADIUS.xl,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.xl : SPACING.lg,
+  },
+  modalHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.xs,
-  },
-  metaText: {
-    fontSize: FONT_SIZE.xs,
-    color: colors.textSecondary,
-    marginLeft: 4,
-  },
-  metaDot: {
-    fontSize: FONT_SIZE.xs,
-    color: colors.textSecondary,
-    marginHorizontal: 4,
-  },
-  matchBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#D1FAE5',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 2,
-    borderRadius: BORDER_RADIUS.sm,
-  },
-  matchText: {
-    fontSize: FONT_SIZE.xs,
-    fontWeight: '600',
-    color: '#00C48C',
-  },
-  floatingButton: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 100 : 80,
-    right: SPACING.lg,
-    borderRadius: BORDER_RADIUS.full,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-  },
-  floatingButtonGradient: {
-    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.full,
-    gap: SPACING.sm,
+    paddingVertical: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  floatingButtonText: {
-    fontSize: FONT_SIZE.sm,
+  modalTitle: {
+    fontSize: FONT_SIZE.xl,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  sortOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  sortOptionActive: {
+    backgroundColor: '#F0F9F8',
+  },
+  sortOptionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: SPACING.md,
+  },
+  sortIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sortIconAI: {
+    backgroundColor: '#E8F5F2',
+  },
+  sortOptionText: {
+    flex: 1,
+  },
+  sortOptionLabel: {
+    fontSize: FONT_SIZE.base,
     fontWeight: '600',
-    color: colors.textSecondary,
+    color: colors.textPrimary,
+    marginBottom: 2,
   },
-  floatingButtonTextActive: {
-    color: '#FFFFFF',
+  sortOptionLabelActive: {
+    color: colors.primary,
+  },
+  sortOptionDescription: {
+    fontSize: FONT_SIZE.xs,
+    color: colors.textSecondary,
+    lineHeight: 16,
   },
 });
 

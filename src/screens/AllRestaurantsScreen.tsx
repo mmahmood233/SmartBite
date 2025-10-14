@@ -22,6 +22,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import RestaurantCard from '../components/RestaurantCard';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -68,6 +69,11 @@ const AllRestaurantsScreen: React.FC = () => {
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<string>('all');
 
+  const handleAIChatPress = () => {
+    // TODO: Pass contextual query to AI Chat
+    navigation.navigate('AIChat');
+  };
+
   const handleSortSelect = (option: SortOption) => {
     setSortBy(option);
     setShowSortModal(false);
@@ -104,17 +110,31 @@ const AllRestaurantsScreen: React.FC = () => {
         <View style={styles.filterButton} />
       </View>
 
-      {/* Search Bar */}
+      {/* Search Bar with AI Integration */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <Icon name="search" size={20} color="#94A3B8" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search for a restaurant or cuisine..."
+            placeholder="Search restaurants or ask Wajba AI..."
             placeholderTextColor="#94A3B8"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
+          <TouchableOpacity
+            onPress={handleAIChatPress}
+            activeOpacity={0.7}
+            style={styles.aiIconButton}
+          >
+            <LinearGradient
+              colors={[colors.gradientStart, colors.gradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.aiIconGradient}
+            >
+              <Icon name="zap" size={16} color="#FFFFFF" />
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -295,6 +315,17 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FONT_SIZE.base,
     color: colors.textPrimary,
+  },
+  // AI Icon in Search Bar
+  aiIconButton: {
+    marginLeft: 8,
+  },
+  aiIconGradient: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cuisineChipsContainer: {
     maxHeight: 60,

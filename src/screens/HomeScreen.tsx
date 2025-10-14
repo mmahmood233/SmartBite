@@ -135,7 +135,7 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.sectionTitle}>✨ For You</Text>
             <Text style={styles.sectionSub}>Curated by your taste</Text>
           </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 16 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 18 }}>
           {aiPicks.map(item => {
             const isFoodImage = item.image === require('../../assets/food.png');
             const isLogoImage = !isFoodImage;
@@ -213,9 +213,9 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FAFAFA' },
   scroll: { paddingBottom: 120 },
   appBar: {
-    paddingTop: STATUS_BAR_HEIGHT + 16,
+    paddingTop: STATUS_BAR_HEIGHT + 12,
     paddingHorizontal: SCREEN_WIDTH * 0.05,
-    paddingBottom: 16,
+    paddingBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
@@ -243,12 +243,12 @@ const styles = StyleSheet.create({
   logoBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#E6F3F1', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
   logoImage: { opacity: 0.9 },
   aiCardBody: { padding: 12 },
-  aiName: { fontSize: 16, fontWeight: '600', color: colors.textPrimary },
-  aiMatch: { fontSize: 11, color: '#0B9E8E', marginTop: 2, fontWeight: '500' },
+  aiName: { fontSize: 16, fontWeight: '600', color: colors.textPrimary, marginBottom: 4 },
+  aiMatch: { fontSize: 12, fontWeight: '600', color: '#00C48C', marginBottom: 6 },
   metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
   metaText: { fontSize: 11, color: '#555555' },
   metaDot: { marginHorizontal: 4, color: '#555555', fontSize: 11 },
-
+  
   moodBanner: { marginTop: 16, marginHorizontal: SCREEN_WIDTH * 0.05, borderRadius: 16, paddingVertical: 24, paddingHorizontal: 20, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
   moodIcon: { fontSize: 20, color: '#FFFFFF', marginBottom: 6 },
   moodTitle: { fontSize: 18, fontWeight: '600', color: '#FFFFFF' },
@@ -264,6 +264,10 @@ const styles = StyleSheet.create({
     marginHorizontal: SCREEN_WIDTH * 0.05,
     marginTop: 12,
     marginBottom: 16,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: '#F8FAF9',
+    borderRadius: BORDER_RADIUS.lg,
     alignItems: 'center',
   },
   aiCalloutText: {
@@ -271,13 +275,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
+    lineHeight: 20,
   },
   aiCalloutSub: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: colors.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
+    lineHeight: 16,
   },
   
   // AI CTA Card styles
@@ -288,42 +294,49 @@ const styles = StyleSheet.create({
   },
   aiCTACard: {
     borderRadius: BORDER_RADIUS.xl,
-    padding: SPACING.lg,
+    paddingVertical: SPACING.lg + 4,
+    paddingHorizontal: SPACING.xl,
     shadowColor: colors.primary,
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
   },
   aiCTAContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.md,
+    gap: SPACING.md + 2,
   },
   aiCTAIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#FFFFFF',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
   aiCTAEmoji: {
-    fontSize: 28,
+    fontSize: 30,
   },
   aiCTAText: {
     flex: 1,
   },
   aiCTATitle: {
-    fontSize: FONT_SIZE.xl,
+    fontSize: FONT_SIZE.xl + 1,
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 4,
+    letterSpacing: 0.3,
   },
   aiCTASubtitle: {
     fontSize: FONT_SIZE.sm,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: 'rgba(255, 255, 255, 0.95)',
     fontStyle: 'italic',
+    lineHeight: 18,
   },
 });
 

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
@@ -25,9 +25,12 @@ const categories = [
 ];
 
 const smartSuggestions = [
-  '🍴 Feeling like something spicy?',
-  '🥗 Want something light under 3 BD?',
-  '🍛 Craving comfort food tonight?',
+  { emoji: '🍴', text: 'Feeling like something spicy?', query: 'I want something spicy' },
+  { emoji: '🥗', text: 'Maybe something light and healthy?', query: 'I want something light and healthy' },
+  { emoji: '🍔', text: 'In the mood for a burger tonight?', query: 'I want a burger' },
+  { emoji: '🍣', text: 'Craving sushi or something fresh?', query: 'I want sushi or something fresh' },
+  { emoji: '☕', text: 'Just a quick coffee break?', query: 'I want coffee' },
+  { emoji: '🍛', text: 'Craving comfort food tonight?', query: 'I want comfort food' },
 ];
 
 const aiPicks = [
@@ -45,14 +48,61 @@ const nearby = [
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [suggestionIndex] = React.useState(0);
+  const [suggestionIndex, setSuggestionIndex] = React.useState(0);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const handleAIChatPress = () => {
+  // Rotate suggestions every 4 seconds with fade-slide animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Fade out and slide up
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: -20,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Change text
+        setSuggestionIndex((prev) => (prev + 1) % smartSuggestions.length);
+        
+        // Reset position and fade in
+        slideAnim.setValue(20);
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [fadeAnim, slideAnim]);
+
+  const handleAIChatPress = (prefillQuery?: string) => {
+    // TODO: Pass prefillQuery to AI Chat screen
     navigation.navigate('AIChat');
   };
 
   const handleBrowseAllPress = () => {
     navigation.navigate('AllRestaurants');
+  };
+
+  const handleSuggestionPress = () => {
+    const currentSuggestion = smartSuggestions[suggestionIndex];
+    handleAIChatPress(currentSuggestion.query);
   };
 
   return (
@@ -79,10 +129,21 @@ const HomeScreen: React.FC = () => {
         {/* Smart Suggestion */}
         <TouchableOpacity 
           style={styles.smartSuggestion}
-          onPress={handleAIChatPress}
+          onPress={handleSuggestionPress}
           activeOpacity={0.8}
         >
-          <Text style={styles.smartSuggestionText}>{smartSuggestions[suggestionIndex]}</Text>
+          <Animated.View 
+            style={[
+              styles.smartSuggestionContent,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
+          >
+            <Text style={styles.smartSuggestionEmoji}>{smartSuggestions[suggestionIndex].emoji}</Text>
+            <Text style={styles.smartSuggestionText}>{smartSuggestions[suggestionIndex].text}</Text>
+          </Animated.View>
         </TouchableOpacity>
         <LinearGradient
           colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0)']}
@@ -110,7 +171,7 @@ const HomeScreen: React.FC = () => {
           
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={handleAIChatPress}
+            onPress={() => handleAIChatPress()}
             activeOpacity={0.8}
           >
             <Icon name="zap" size={20} color={colors.primary} />
@@ -192,7 +253,7 @@ const HomeScreen: React.FC = () => {
         {/* Dynamic Tip Banner */}
         <TouchableOpacity 
           style={styles.tipBanner}
-          onPress={handleAIChatPress}
+          onPress={() => handleAIChatPress()}
           activeOpacity={0.9}
         >
           <Text style={styles.tipIcon}>💡</Text>
@@ -254,19 +315,33 @@ const styles = StyleSheet.create({
   locationText: { fontSize: 13, color: colors.primary, fontWeight: '500' },
   avatar: { width: 38, height: 38, borderRadius: 19, marginLeft: 8, marginRight: 8, borderColor: colors.primary, borderWidth: 2 },
   
-  // Smart Suggestion
+  // Smart Suggestion (Refined with gradient accent)
   smartSuggestion: {
     marginHorizontal: SCREEN_WIDTH * 0.05,
     marginTop: 8,
     marginBottom: 20, // Breathing space before search
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    backgroundColor: '#F8FAF9',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(240, 255, 250, 0.6)', // Soft glassy tint
     borderRadius: 12,
-    borderLeftWidth: 3,
+    borderLeftWidth: 2, // Thinner accent
     borderLeftColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
+  smartSuggestionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  smartSuggestionEmoji: {
+    fontSize: 18,
   },
   smartSuggestionText: {
+    flex: 1,
     fontSize: 14,
     color: '#2D2D2D',
     fontWeight: '500',

@@ -52,14 +52,17 @@ const CUISINES = [
 ];
 
 const MOCK_RESTAURANTS = [
-  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png') },
-  { id: '2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', rating: 4.8, eta: '15 min', price: '$$', image: require('../../assets/food.png') },
-  { id: '3', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../assets/food.png') },
-  { id: '4', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', rating: 4.6, eta: '20 min', price: '$$', image: require('../../assets/food.png') },
-  { id: '5', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', rating: 4.5, eta: '10 min', price: '$', image: require('../../assets/wajba_logo.png') },
-  { id: '6', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', rating: 4.8, eta: '22 min', price: '$$', image: require('../../assets/wajba_logo.png') },
-  { id: '7', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.7, eta: '16 min', price: '$', image: require('../../assets/wajba_logo.png') },
-  { id: '8', name: 'Spice Garden', cuisine: 'Indian • Curry', rating: 4.6, eta: '25 min', price: '$$', image: require('../../assets/food.png') },
+  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png'), tags: ['saudi', 'traditional', 'arabic', 'kabsa'] },
+  { id: '2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', rating: 4.8, eta: '15 min', price: '$$', image: require('../../assets/food.png'), tags: ['saudi', 'homestyle', 'comfort', 'arabic'] },
+  { id: '3', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../assets/food.png'), tags: ['lebanese', 'shawarma', 'grill', 'arabic'] },
+  { id: '4', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', rating: 4.6, eta: '20 min', price: '$$', image: require('../../assets/food.png'), tags: ['lebanese', 'grill', 'chicken', 'arabic'] },
+  { id: '5', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', rating: 4.5, eta: '10 min', price: '$', image: require('../../assets/wajba_logo.png'), tags: ['vegetarian', 'falafel', 'healthy', 'quick'] },
+  { id: '6', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', rating: 4.8, eta: '22 min', price: '$$', image: require('../../assets/wajba_logo.png'), tags: ['breakfast', 'bakery', 'zaatar', 'manakish'] },
+  { id: '7', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.7, eta: '16 min', price: '$', image: require('../../assets/wajba_logo.png'), tags: ['lebanese', 'bakery', 'manakish', 'zaatar'] },
+  { id: '8', name: 'Spice Garden', cuisine: 'Indian • Curry', rating: 4.6, eta: '25 min', price: '$$', image: require('../../assets/food.png'), tags: ['indian', 'curry', 'spicy', 'biryani'] },
+  { id: '9', name: 'Pizza Hut', cuisine: 'Italian • Pizza', rating: 4.4, eta: '30 min', price: '$$', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'cheese', 'pepperoni'] },
+  { id: '10', name: "Papa Johns", cuisine: 'Italian • Pizza', rating: 4.3, eta: '28 min', price: '$$', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'delivery'] },
+  { id: '11', name: "Mama's Pizza", cuisine: 'Italian • Home-Style', rating: 4.6, eta: '25 min', price: '$', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'homemade'] },
 ];
 
 const AllRestaurantsScreen: React.FC = () => {
@@ -68,8 +71,10 @@ const AllRestaurantsScreen: React.FC = () => {
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<string>('all');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
 
-  const handleAIChatPress = () => {
+  const handleAIChatPress = (query?: string) => {
     // TODO: Pass contextual query to AI Chat
     navigation.navigate('AIChat');
   };
@@ -77,6 +82,94 @@ const AllRestaurantsScreen: React.FC = () => {
   const handleSortSelect = (option: SortOption) => {
     setSortBy(option);
     setShowSortModal(false);
+  };
+
+  // Fuzzy search function
+  const fuzzySearch = (query: string) => {
+    if (!query || query.length < 2) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const suggestions: any[] = [];
+
+    // Search restaurants
+    MOCK_RESTAURANTS.forEach(restaurant => {
+      const nameMatch = restaurant.name.toLowerCase().includes(lowerQuery);
+      const cuisineMatch = restaurant.cuisine.toLowerCase().includes(lowerQuery);
+      const tagMatch = restaurant.tags?.some(tag => tag.includes(lowerQuery));
+
+      if (nameMatch || cuisineMatch || tagMatch) {
+        suggestions.push({
+          type: 'restaurant',
+          id: restaurant.id,
+          name: restaurant.name,
+          subtitle: restaurant.cuisine,
+          icon: 'map-pin',
+          data: restaurant,
+        });
+      }
+    });
+
+    // Search cuisines
+    const cuisineMatches = CUISINES.filter(cuisine => 
+      cuisine.label.toLowerCase().includes(lowerQuery)
+    );
+    cuisineMatches.forEach(cuisine => {
+      suggestions.push({
+        type: 'cuisine',
+        id: cuisine.id,
+        name: cuisine.label,
+        subtitle: 'Cuisine',
+        icon: cuisine.icon,
+        data: cuisine,
+      });
+    });
+
+    // Add AI fallback if no results or few results
+    if (suggestions.length === 0) {
+      suggestions.push({
+        type: 'ai',
+        id: 'ai-fallback',
+        name: `Can't find "${query}"? Ask Wajba AI`,
+        subtitle: 'Get personalized recommendations',
+        icon: 'zap',
+        query: query,
+      });
+    } else if (suggestions.length <= 3) {
+      suggestions.push({
+        type: 'ai',
+        id: 'ai-suggestion',
+        name: `Ask Wajba AI about "${query}"`,
+        subtitle: 'Get more suggestions',
+        icon: 'zap',
+        query: query,
+      });
+    }
+
+    setSearchSuggestions(suggestions.slice(0, 6)); // Limit to 6 results
+    setShowSuggestions(true);
+  };
+
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    fuzzySearch(text);
+  };
+
+  const handleSuggestionPress = (suggestion: any) => {
+    if (suggestion.type === 'ai') {
+      handleAIChatPress(suggestion.query);
+    } else if (suggestion.type === 'restaurant') {
+      // Navigate to restaurant detail
+      setSearchQuery(suggestion.name);
+      setShowSuggestions(false);
+    } else if (suggestion.type === 'cuisine') {
+      setSelectedCuisine(suggestion.id);
+      setSearchQuery('');
+      setShowSuggestions(false);
+    }
   };
 
   const getSortedRestaurants = () => {
@@ -119,10 +212,11 @@ const AllRestaurantsScreen: React.FC = () => {
             placeholder="Search restaurants or ask Wajba AI..."
             placeholderTextColor="#94A3B8"
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={handleSearchChange}
+            onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
           />
           <TouchableOpacity
-            onPress={handleAIChatPress}
+            onPress={() => handleAIChatPress()}
             activeOpacity={0.7}
             style={styles.aiIconButton}
           >
@@ -136,6 +230,51 @@ const AllRestaurantsScreen: React.FC = () => {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+
+        {/* Search Suggestions Dropdown */}
+        {showSuggestions && searchSuggestions.length > 0 && (
+          <View style={styles.suggestionsContainer}>
+            {searchSuggestions.map((suggestion, index) => (
+              <TouchableOpacity
+                key={suggestion.id}
+                style={[
+                  styles.suggestionItem,
+                  suggestion.type === 'ai' && styles.suggestionItemAI,
+                  index === searchSuggestions.length - 1 && styles.suggestionItemLast,
+                ]}
+                onPress={() => handleSuggestionPress(suggestion)}
+                activeOpacity={0.7}
+              >
+                {suggestion.type === 'ai' ? (
+                  <LinearGradient
+                    colors={[colors.gradientStart, colors.gradientEnd]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.suggestionIconGradient}
+                  >
+                    <Icon name={suggestion.icon} size={16} color="#FFFFFF" />
+                  </LinearGradient>
+                ) : (
+                  <View style={styles.suggestionIcon}>
+                    <Icon name={suggestion.icon} size={16} color={colors.primary} />
+                  </View>
+                )}
+                <View style={styles.suggestionContent}>
+                  <Text style={[
+                    styles.suggestionName,
+                    suggestion.type === 'ai' && styles.suggestionNameAI,
+                  ]}>
+                    {suggestion.name}
+                  </Text>
+                  <Text style={styles.suggestionSubtitle}>{suggestion.subtitle}</Text>
+                </View>
+                {suggestion.type !== 'ai' && (
+                  <Icon name="arrow-up-right" size={16} color="#94A3B8" />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
 
       {/* Cuisine Chips */}
@@ -326,6 +465,64 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // Search Suggestions
+  suggestionsContainer: {
+    marginTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+    maxHeight: 320,
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    gap: 12,
+  },
+  suggestionItemAI: {
+    backgroundColor: 'rgba(240, 255, 250, 0.4)',
+  },
+  suggestionItemLast: {
+    borderBottomWidth: 0,
+  },
+  suggestionIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E6F3F1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  suggestionIconGradient: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  suggestionContent: {
+    flex: 1,
+  },
+  suggestionName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  suggestionNameAI: {
+    color: colors.primary,
+  },
+  suggestionSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
   },
   cuisineChipsContainer: {
     maxHeight: 60,

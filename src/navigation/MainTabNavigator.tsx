@@ -2,9 +2,12 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import { LinearGradient } from 'expo-linear-gradient';
 import HomeScreen from '../screens/HomeScreen';
+import AIChatScreen from '../screens/AIChatScreen';
 import OrdersScreen from '../screens/OrdersScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,6 +34,29 @@ const MainTabNavigator: React.FC = () => {
                 <Icon name="home" size={24} color={color} style={{ opacity: focused ? 1 : 0.8 }} />
               </View>
               {focused && <View style={styles.activeIndicator} />}
+            </View>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="AIChatTab"
+        component={AIChatScreen}
+        options={{
+          tabBarLabel: 'AI Chat',
+          tabBarIcon: ({ focused }) => (
+            <View style={[styles.aiIconWrapper, focused && styles.aiIconWrapperActive]}>
+              {focused ? (
+                <LinearGradient
+                  colors={[colors.gradientStart, colors.gradientEnd]}
+                  style={styles.aiIconGradient}
+                >
+                  <Icon name="message-circle" size={28} color="#FFFFFF" />
+                </LinearGradient>
+              ) : (
+                <View style={styles.aiIconInactive}>
+                  <Icon name="message-circle" size={28} color={colors.primary} />
+                </View>
+              )}
             </View>
           ),
         }}
@@ -115,6 +141,35 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: '#00A58E',
     marginTop: 2,
+  },
+  // AI Chat special styles
+  aiIconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -8,
+  },
+  aiIconWrapperActive: {
+    transform: [{ scale: 1.05 }],
+  },
+  aiIconGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#00A58E',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  aiIconInactive: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E8F5F2',
   },
 });
 

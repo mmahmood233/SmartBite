@@ -1,5 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar, Animated } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import { colors } from '../theme/colors';
@@ -7,6 +10,8 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
 import SearchBar from '../components/SearchBar';
 import Chip from '../components/Chip';
 import RestaurantCard from '../components/RestaurantCard';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const AI_CARD_WIDTH = SCREEN_WIDTH * 0.55; // 55% of screen width for AI cards
@@ -28,6 +33,31 @@ const nearby = [
 ];
 
 const HomeScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Pulsing animation for AI CTA
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.03,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const handleAIChatPress = () => {
+    navigation.navigate('AIChat');
+  };
+
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -54,6 +84,12 @@ const HomeScreen: React.FC = () => {
           pointerEvents="none"
         />
 
+        {/* AI Callout */}
+        <View style={styles.aiCallout}>
+          <Text style={styles.aiCalloutText}>💭 Hungry? Ask Wajba AI what to eat 🤖</Text>
+          <Text style={styles.aiCalloutSub}>Try saying: "I want something spicy under 3 BD!"</Text>
+        </View>
+
         {/* Search */}
         <SearchBar style={{ marginHorizontal: 20 }} />
 
@@ -63,6 +99,32 @@ const HomeScreen: React.FC = () => {
             <Chip key={c} label={c} active={i === 0} />
           ))}
         </ScrollView>
+
+        {/* AI Chat CTA Card */}
+        <Animated.View style={[styles.aiCTAContainer, { transform: [{ scale: pulseAnim }] }]}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleAIChatPress}
+          >
+            <LinearGradient
+              colors={[colors.gradientStart, colors.gradientMid, colors.gradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.aiCTACard}
+            >
+              <View style={styles.aiCTAContent}>
+                <View style={styles.aiCTAIcon}>
+                  <Text style={styles.aiCTAEmoji}>🤖</Text>
+                </View>
+                <View style={styles.aiCTAText}>
+                  <Text style={styles.aiCTATitle}>Ask Wajba AI</Text>
+                  <Text style={styles.aiCTASubtitle}>"Tell me what you're craving today..."</Text>
+                </View>
+                <Icon name="arrow-right" size={24} color="#FFFFFF" />
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
 
         {/* AI Picks */}
         <LinearGradient
@@ -196,6 +258,73 @@ const styles = StyleSheet.create({
   gridWrap: { paddingHorizontal: SCREEN_WIDTH * 0.05, flexDirection: 'row', flexWrap: 'wrap', gap: SCREEN_WIDTH * 0.04, marginTop: 12 },
   gridItem: { },
   link: { color: colors.primary, fontWeight: '600', fontSize: 14, letterSpacing: 0.3 },
+  
+  // AI Callout styles
+  aiCallout: {
+    marginHorizontal: SCREEN_WIDTH * 0.05,
+    marginTop: 12,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  aiCalloutText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  aiCalloutSub: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  
+  // AI CTA Card styles
+  aiCTAContainer: {
+    marginHorizontal: SCREEN_WIDTH * 0.05,
+    marginTop: 20,
+    marginBottom: 24,
+  },
+  aiCTACard: {
+    borderRadius: BORDER_RADIUS.xl,
+    padding: SPACING.lg,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
+  aiCTAContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  aiCTAIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aiCTAEmoji: {
+    fontSize: 28,
+  },
+  aiCTAText: {
+    flex: 1,
+  },
+  aiCTATitle: {
+    fontSize: FONT_SIZE.xl,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  aiCTASubtitle: {
+    fontSize: FONT_SIZE.sm,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontStyle: 'italic',
+  },
 });
 
 export default HomeScreen;

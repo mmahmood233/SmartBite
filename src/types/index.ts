@@ -8,6 +8,7 @@ export type RootStackParamList = {
   Auth: undefined;
   MainTabs: undefined;
   Home: undefined;
+  AIChat: undefined;
   Login: undefined;
   Signup: undefined;
   RestaurantDetail: {

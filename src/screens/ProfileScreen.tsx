@@ -326,6 +326,7 @@ const ProfileScreen: React.FC = () => {
 
         {/* Footer */}
         <View style={styles.footer}>
+          <Text style={styles.footerTagline}>Don't scroll. Just ask. 🍴🤖</Text>
           <Text style={styles.footerVersion}>Wajba v1.0.0</Text>
           <Text style={styles.footerCopyright}>© 2025 — Made with ❤️ in Bahrain 🇧🇭</Text>
         </View>
@@ -551,6 +552,13 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xxxl,
     marginBottom: SPACING.lg,
     alignItems: 'center',
+  },
+  footerTagline: {
+    fontSize: FONT_SIZE.base,
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: SPACING.md,
+    textAlign: 'center',
   },
   footerVersion: {
     fontSize: FONT_SIZE.sm,

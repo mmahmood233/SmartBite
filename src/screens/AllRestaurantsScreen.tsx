@@ -3,7 +3,7 @@
  * Expanded restaurant list with filtering, sorting, and AI matching
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   Platform,
   Dimensions,
   Modal,
+  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -73,6 +74,10 @@ const AllRestaurantsScreen: React.FC = () => {
   const [selectedCuisine, setSelectedCuisine] = useState<string>('all');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>(['Shawarma House', 'Pizza Hut', 'Healthy Bowl']);
+  const suggestionFadeAnim = useRef(new Animated.Value(0)).current;
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleAIChatPress = (_query?: string) => {
     // TODO: Pass contextual _query to AI Chat
@@ -84,16 +89,28 @@ const AllRestaurantsScreen: React.FC = () => {
     setShowSortModal(false);
   };
 
-  // Fuzzy search function
+  // Fuzzy search function with shimmer delay
   const fuzzySearch = (query: string) => {
     if (!query || query.length < 2) {
       setSearchSuggestions([]);
       setShowSuggestions(false);
+      setIsSearching(false);
       return;
     }
 
-    const lowerQuery = query.toLowerCase();
-    const suggestions: any[] = [];
+    // Show shimmer loading
+    setIsSearching(true);
+    setShowSuggestions(true);
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Simulate search delay (300ms)
+    searchTimeoutRef.current = setTimeout(() => {
+      const lowerQuery = query.toLowerCase();
+      const suggestions: any[] = [];
 
     // Search restaurants
     MOCK_RESTAURANTS.forEach(restaurant => {
@@ -149,8 +166,16 @@ const AllRestaurantsScreen: React.FC = () => {
       });
     }
 
-    setSearchSuggestions(suggestions.slice(0, 6)); // Limit to 6 results
-    setShowSuggestions(true);
+      setSearchSuggestions(suggestions.slice(0, 6)); // Limit to 6 results
+      setIsSearching(false);
+      
+      // Fade in animation
+      Animated.timing(suggestionFadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }, 300);
   };
 
   const handleSearchChange = (text: string) => {
@@ -161,15 +186,49 @@ const AllRestaurantsScreen: React.FC = () => {
   const handleSuggestionPress = (suggestion: any) => {
     if (suggestion.type === 'ai') {
       handleAIChatPress(suggestion.query);
+      setShowSuggestions(false);
     } else if (suggestion.type === 'restaurant') {
-      // Navigate to restaurant detail
+      // Add to recent searches
+      setRecentSearches(prev => {
+        const filtered = prev.filter(s => s !== suggestion.name);
+        return [suggestion.name, ...filtered].slice(0, 3);
+      });
+      
       setSearchQuery(suggestion.name);
       setShowSuggestions(false);
+      // Navigate to restaurant detail
     } else if (suggestion.type === 'cuisine') {
       setSelectedCuisine(suggestion.id);
       setSearchQuery('');
       setShowSuggestions(false);
     }
+  };
+
+  const handleSearchFocus = () => {
+    if (searchQuery.length >= 2) {
+      setShowSuggestions(true);
+    } else if (searchQuery.length === 0 && recentSearches.length > 0) {
+      // Show recent searches
+      setShowSuggestions(true);
+    }
+    
+    // Fade in animation
+    Animated.timing(suggestionFadeAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleSearchBlur = () => {
+    // Fade out animation
+    Animated.timing(suggestionFadeAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => setShowSuggestions(false), 200);
+    });
   };
 
   const getSortedRestaurants = () => {
@@ -213,7 +272,8 @@ const AllRestaurantsScreen: React.FC = () => {
             placeholderTextColor="#94A3B8"
             value={searchQuery}
             onChangeText={handleSearchChange}
-            onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
           />
           <TouchableOpacity
             onPress={() => handleAIChatPress()}
@@ -232,9 +292,63 @@ const AllRestaurantsScreen: React.FC = () => {
         </View>
 
         {/* Search Suggestions Dropdown */}
-        {showSuggestions && searchSuggestions.length > 0 && (
-          <View style={styles.suggestionsContainer}>
-            {searchSuggestions.map((suggestion, index) => (
+        {showSuggestions && (
+          <Animated.View style={[styles.suggestionsContainer, { opacity: suggestionFadeAnim }]}>
+            {/* Recent Searches */}
+            {searchQuery.length === 0 && recentSearches.length > 0 && (
+              <>
+                <View style={styles.recentHeader}>
+                  <Icon name="clock" size={14} color="#64748B" />
+                  <Text style={styles.recentHeaderText}>Recent Searches</Text>
+                </View>
+                {recentSearches.map((search, index) => (
+                  <TouchableOpacity
+                    key={`recent-${index}`}
+                    style={[
+                      styles.suggestionItem,
+                      index === recentSearches.length - 1 && styles.suggestionItemLast,
+                    ]}
+                    onPress={() => {
+                      setSearchQuery(search);
+                      fuzzySearch(search);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.suggestionIcon}>
+                      <Icon name="clock" size={16} color={colors.primary} />
+                    </View>
+                    <View style={styles.suggestionContent}>
+                      <Text style={styles.suggestionName}>{search}</Text>
+                      <Text style={styles.suggestionSubtitle}>Recent</Text>
+                    </View>
+                    <Icon name="arrow-up-left" size={16} color="#94A3B8" />
+                  </TouchableOpacity>
+                ))}
+              </>
+            )}
+            
+            {/* Loading Shimmer */}
+            {isSearching && searchQuery.length >= 2 && (
+              <View style={styles.shimmerContainer}>
+                <View style={styles.shimmerItem}>
+                  <View style={styles.shimmerCircle} />
+                  <View style={styles.shimmerContent}>
+                    <View style={styles.shimmerLine} />
+                    <View style={styles.shimmerLineShort} />
+                  </View>
+                </View>
+                <View style={styles.shimmerItem}>
+                  <View style={styles.shimmerCircle} />
+                  <View style={styles.shimmerContent}>
+                    <View style={styles.shimmerLine} />
+                    <View style={styles.shimmerLineShort} />
+                  </View>
+                </View>
+              </View>
+            )}
+            
+            {/* Search Results */}
+            {!isSearching && searchQuery.length >= 2 && searchSuggestions.length > 0 && searchSuggestions.map((suggestion, index) => (
               <TouchableOpacity
                 key={suggestion.id}
                 style={[
@@ -273,7 +387,30 @@ const AllRestaurantsScreen: React.FC = () => {
                 )}
               </TouchableOpacity>
             ))}
-          </View>
+            
+            {/* Empty State */}
+            {!isSearching && searchQuery.length >= 2 && searchSuggestions.length === 0 && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateEmoji}>🥲</Text>
+                <Text style={styles.emptyStateText}>No results for "{searchQuery}"</Text>
+                <TouchableOpacity
+                  style={styles.emptyStateButton}
+                  onPress={() => handleAIChatPress(searchQuery)}
+                  activeOpacity={0.7}
+                >
+                  <LinearGradient
+                    colors={[colors.gradientStart, colors.gradientEnd]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.emptyStateButtonGradient}
+                  >
+                    <Icon name="zap" size={16} color="#FFFFFF" />
+                    <Text style={styles.emptyStateButtonText}>Ask Wajba AI</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            )}
+          </Animated.View>
         )}
       </View>
 
@@ -524,6 +661,89 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748B',
   },
+  
+  // Recent Searches
+  recentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    gap: 6,
+  },
+  recentHeaderText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  
+  // Shimmer Loading
+  shimmerContainer: {
+    padding: 16,
+  },
+  shimmerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  shimmerCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E6F3F1',
+  },
+  shimmerContent: {
+    flex: 1,
+  },
+  shimmerLine: {
+    height: 12,
+    backgroundColor: '#E6F3F1',
+    borderRadius: 6,
+    marginBottom: 6,
+    width: '70%',
+  },
+  shimmerLineShort: {
+    height: 10,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 5,
+    width: '40%',
+  },
+  
+  // Empty State
+  emptyState: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  emptyStateEmoji: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: '#64748B',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  emptyStateButton: {
+    marginTop: 8,
+  },
+  emptyStateButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    gap: 8,
+  },
+  emptyStateButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  
   cuisineChipsContainer: {
     maxHeight: 60,
     backgroundColor: colors.surface,

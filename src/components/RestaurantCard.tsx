@@ -53,7 +53,6 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rati
         </View>
         {match && (
           <View style={styles.matchBadge}>
-            <Text style={styles.matchIcon}>⚡</Text>
             <Text style={styles.matchText}>Match: {match}%</Text>
           </View>
         )}
@@ -142,8 +141,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0, // Already handled by card padding
   },
   matchBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: '#E0F4F1', // Brand teal
     paddingHorizontal: 8,
@@ -151,11 +148,6 @@ const styles = StyleSheet.create({
     borderRadius: 6, // Subtle pill shape
     marginTop: 8, // Breathing room from meta row
     marginBottom: 2, // Space before card edge
-    gap: 4, // Space between icon and text
-  },
-  matchIcon: {
-    fontSize: 14, // Small AI icon
-    color: '#008C7A', // Brand teal
   },
   matchText: {
     fontSize: 12,

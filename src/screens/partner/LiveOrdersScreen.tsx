@@ -129,12 +129,13 @@ const LiveOrdersScreen: React.FC = () => {
       </View>
 
       {/* Filter Tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterContainer}
-        contentContainerStyle={styles.filterContent}
-      >
+      <View style={styles.filterWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterContainer}
+          contentContainerStyle={styles.filterContent}
+        >
         {FILTER_TABS.map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -152,9 +153,10 @@ const LiveOrdersScreen: React.FC = () => {
             )}
           </TouchableOpacity>
         ))}
-      </ScrollView>
+        </ScrollView>
+      </View>
 
-      <View style={styles.divider} />
+      <View style={styles.sectionDivider} />
 
       <ScrollView
         style={styles.scrollView}
@@ -356,20 +358,25 @@ const styles = StyleSheet.create({
   },
   
   // Filter Tabs
-  filterContainer: {
+  filterWrapper: {
     backgroundColor: '#FFFFFF',
+  },
+  filterContainer: {
+    flexGrow: 0,
   },
   filterContent: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 10,
+    paddingBottom: 8,
     gap: 8,
   },
   filterTab: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 44,
+    height: 40,
+    paddingVertical: 6,
     paddingHorizontal: 14,
-    borderRadius: 22,
+    borderRadius: 20,
     backgroundColor: '#F7F7F7',
     marginRight: 8,
     gap: 6,
@@ -404,9 +411,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  divider: {
-    height: 0.5,
+  sectionDivider: {
+    height: 1,
     backgroundColor: '#EAEAEA',
+    marginVertical: 8,
   },
   
   // Scroll View
@@ -414,13 +422,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 4,
     paddingBottom: 20,
   },
   
   // Section
   section: {
-    marginTop: 8,
+    marginTop: 4,
     paddingHorizontal: 20,
   },
   sectionHeader: {

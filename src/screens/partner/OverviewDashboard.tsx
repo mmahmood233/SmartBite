@@ -4,6 +4,9 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types';
 import {
   View,
   Text,
@@ -100,7 +103,10 @@ const TOP_ITEMS = [
 
 const CHART_DATA = [30, 45, 38, 52, 48, 60, 55]; // Mon-Sun
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 const OverviewDashboard: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const [selectedTab, setSelectedTab] = useState('today');
   const [activeNav, setActiveNav] = useState('overview');
 
@@ -312,7 +318,7 @@ const OverviewDashboard: React.FC = () => {
       <View style={styles.bottomNav}>
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => setActiveNav('orders')}
+          onPress={() => navigation.navigate('PartnerLiveOrders')}
           activeOpacity={0.7}
         >
           <Icon

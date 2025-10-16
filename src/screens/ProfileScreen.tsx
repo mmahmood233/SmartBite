@@ -243,8 +243,35 @@ const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* My Account Section */}
+        {/* Partner Portal Test Button */}
         <View style={[styles.section, styles.firstSection]}>
+          <TouchableOpacity
+            style={styles.partnerButton}
+            onPress={() => navigation.navigate('PartnerOverview')}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={['#00A896', '#4ECDC4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.partnerGradient}
+            >
+              <View style={styles.partnerContent}>
+                <View style={styles.partnerLeft}>
+                  <Icon name="briefcase" size={24} color="#FFFFFF" />
+                  <View>
+                    <Text style={styles.partnerTitle}>Wajba Partner</Text>
+                    <Text style={styles.partnerSubtitle}>Restaurant Portal</Text>
+                  </View>
+                </View>
+                <Icon name="arrow-right" size={20} color="#FFFFFF" />
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+        {/* My Account Section */}
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Account</Text>
           <View style={styles.card}>
             {renderMenuItem({ icon: 'heart', label: 'Favorites', onPress: handleFavorites })}
@@ -569,6 +596,39 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     color: colors.textDisabled,
     textAlign: 'center',
+  },
+  // Partner Portal Button
+  partnerButton: {
+    marginBottom: SPACING.md,
+  },
+  partnerGradient: {
+    borderRadius: BORDER_RADIUS.xl,
+    padding: 20,
+    shadowColor: '#00A896',
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  partnerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  partnerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  partnerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  partnerSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   // Preference Items
   preferenceItem: {

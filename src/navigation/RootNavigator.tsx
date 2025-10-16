@@ -25,6 +25,7 @@ import AddPaymentMethodScreen from '../screens/AddPaymentMethodScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import AIChatScreen from '../screens/AIChatScreen';
 import AllRestaurantsScreen from '../screens/AllRestaurantsScreen';
+import OverviewDashboard from '../screens/partner/OverviewDashboard';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -63,6 +64,7 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="Offers" component={OffersScreen} />
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+      <Stack.Screen name="PartnerOverview" component={OverviewDashboard} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>
   );

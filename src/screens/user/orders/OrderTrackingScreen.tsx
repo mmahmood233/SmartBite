@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from '../../../types';
 import Icon from 'react-native-vector-icons/Feather';
-import { colors } from '../theme/colors';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import { formatOrderNumber } from '../utils';
+import { colors } from '../../../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import { formatOrderNumber } from '../../../utils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'OrderTracking'>;
@@ -132,7 +132,7 @@ const OrderTrackingScreen: React.FC = () => {
         {/* Map Section */}
         <View style={styles.mapSection}>
           <Image
-            source={require('../../assets/map_sample.png')}
+            source={require('../../../../assets/map_sample.png')}
             style={styles.mapImage}
             resizeMode="cover"
           />

@@ -18,11 +18,11 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from '../../../types';
 import Icon from 'react-native-vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../theme/colors';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
+import { colors } from '../../../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

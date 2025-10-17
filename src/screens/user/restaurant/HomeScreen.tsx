@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from '../../../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
-import { colors } from '../theme/colors';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import SearchBar from '../components/SearchBar';
-import RestaurantCard from '../components/RestaurantCard';
+import { colors } from '../../../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import SearchBar from '../../../components/SearchBar';
+import RestaurantCard from '../../../components/RestaurantCard';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -28,18 +28,18 @@ const smartSuggestions = [
 ];
 
 const aiPicks = [
-  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png'), tags: ['saudi', 'traditional', 'arabic'] },
-  { id: '2', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../assets/food.png'), tags: ['lebanese', 'shawarma', 'grill'] },
-  { id: '3', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.8, eta: '15 min', price: '$$', image: require('../../assets/wajba_logo.png'), tags: ['lebanese', 'bakery', 'manakish'] },
+  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['saudi', 'traditional', 'arabic'] },
+  { id: '2', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../../../assets/food.png'), tags: ['lebanese', 'shawarma', 'grill'] },
+  { id: '3', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.8, eta: '15 min', price: '$$', image: require('../../../../assets/wajba_logo.png'), tags: ['lebanese', 'bakery', 'manakish'] },
 ];
 
 const nearby = [
-  { id: 'n1', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', image: require('../../assets/food.png'), tags: ['lebanese', 'grill', 'chicken'] },
-  { id: 'n2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', image: require('../../assets/food.png'), tags: ['saudi', 'homestyle', 'comfort'] },
-  { id: 'n3', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', image: require('../../assets/wajba_logo.png'), tags: ['vegetarian', 'falafel', 'healthy'] },
-  { id: 'n4', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', image: require('../../assets/wajba_logo.png'), tags: ['breakfast', 'bakery', 'zaatar'] },
-  { id: 'n5', name: 'Pizza Hut', cuisine: 'Italian • Pizza', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'cheese'] },
-  { id: 'n6', name: "Papa Johns", cuisine: 'Italian • Pizza', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'delivery'] },
+  { id: 'n1', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', image: require('../../../../assets/food.png'), tags: ['lebanese', 'grill', 'chicken'] },
+  { id: 'n2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', image: require('../../../../assets/food.png'), tags: ['saudi', 'homestyle', 'comfort'] },
+  { id: 'n3', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', image: require('../../../../assets/wajba_logo.png'), tags: ['vegetarian', 'falafel', 'healthy'] },
+  { id: 'n4', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', image: require('../../../../assets/wajba_logo.png'), tags: ['breakfast', 'bakery', 'zaatar'] },
+  { id: 'n5', name: 'Pizza Hut', cuisine: 'Italian • Pizza', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'cheese'] },
+  { id: 'n6', name: "Papa Johns", cuisine: 'Italian • Pizza', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'delivery'] },
 ];
 
 const ALL_RESTAURANTS = [...aiPicks, ...nearby];
@@ -251,7 +251,7 @@ const HomeScreen: React.FC = () => {
               <Text style={styles.locationText}>Manama</Text>
             </TouchableOpacity>
           </View>
-          <Image source={require('../../assets/wajba_logo.png')} style={styles.avatar} />
+          <Image source={require('../../../../assets/wajba_logo.png')} style={styles.avatar} />
         </View>
         
         {/* Smart Suggestion */}
@@ -467,7 +467,7 @@ const HomeScreen: React.FC = () => {
           </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 18 }}>
           {aiPicks.map(item => {
-            const isFoodImage = item.image === require('../../assets/food.png');
+            const isFoodImage = item.image === require('../../../../assets/food.png');
             const isLogoImage = !isFoodImage;
             
             return (

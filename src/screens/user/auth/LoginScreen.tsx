@@ -9,19 +9,17 @@ import {
 } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { tokens } from '../theme/theme';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import { validateEmail } from '../utils';
+import { colors } from '../../../theme/colors';
+import { typography } from '../../../theme/typography';
+import { tokens } from '../../../theme/theme';
 import { 
   GradientButton, 
   Input, 
   Link, 
   AnimatedLogo, 
   SocialButton 
-} from '../components';
-import { AuthStackParamList, RootStackParamList } from '../types';
+} from '../../../components';
+import { AuthStackParamList, RootStackParamList } from '../../../types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp as RootNav } from '@react-navigation/native-stack';
 

@@ -14,9 +14,9 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
-import { colors } from '../theme/colors';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import { formatCurrency } from '../utils';
+import { colors } from '../../../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import { formatCurrency } from '../../../utils';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const IMAGE_HEIGHT = 240;
@@ -146,7 +146,7 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
             {/* Hero Image */}
             <View style={styles.imageContainer}>
               <Image 
-                source={dish.image || require('../../assets/food.png')} 
+                source={dish.image || require('../../../../assets/food.png')} 
                 style={styles.dishImage} 
                 resizeMode="cover" 
               />

@@ -3,10 +3,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
-import HomeScreen from '../screens/HomeScreen';
-import AIChatScreen from '../screens/AIChatScreen';
-import OrdersScreen from '../screens/OrdersScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+import HomeScreen from '../screens/user/restaurant/HomeScreen';
+import AIChatScreen from '../screens/user/profile/AIChatScreen';
+import OrdersScreen from '../screens/user/orders/OrdersScreen';
+import ProfileScreen from '../screens/user/profile/ProfileScreen';
 import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();

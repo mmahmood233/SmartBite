@@ -11,12 +11,12 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from '../../../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
-import { colors } from '../theme/colors';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import { formatCurrency, formatRating } from '../utils';
+import { colors } from '../../../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import { formatCurrency, formatRating } from '../../../utils';
 import DishDetailModal from './DishDetailModal';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -43,7 +43,7 @@ const mockMenuItems: MenuItem[] = [
     name: 'Kabsa Rice with Chicken',
     description: 'Traditional Saudi rice dish with aromatic spices',
     price: 8.5,
-    image: require('../../assets/food.png'),
+    image: require('../../../../assets/food.png'),
     category: 'Mains',
     isPopular: true,
   },
@@ -52,7 +52,7 @@ const mockMenuItems: MenuItem[] = [
     name: 'Lamb Mandi',
     description: 'Slow-cooked lamb with fragrant basmati rice',
     price: 12.0,
-    image: require('../../assets/food.png'),
+    image: require('../../../../assets/food.png'),
     category: 'Mains',
     isPopular: true,
   },
@@ -61,7 +61,7 @@ const mockMenuItems: MenuItem[] = [
     name: 'Hummus & Pita',
     description: 'Creamy chickpea dip with warm pita bread',
     price: 4.5,
-    image: require('../../assets/food.png'),
+    image: require('../../../../assets/food.png'),
     category: 'Sides',
   },
   {
@@ -69,7 +69,7 @@ const mockMenuItems: MenuItem[] = [
     name: 'Baklava',
     description: 'Sweet pastry with honey and pistachios',
     price: 3.5,
-    image: require('../../assets/food.png'),
+    image: require('../../../../assets/food.png'),
     category: 'Desserts',
   },
 ];
@@ -348,7 +348,7 @@ const RestaurantDetailScreen: React.FC = () => {
         {/* Hero Header */}
         <View style={styles.heroContainer}>
           <Image
-            source={require('../../assets/food.png')}
+            source={require('../../../../assets/food.png')}
             style={styles.heroImage}
             resizeMode="cover"
           />

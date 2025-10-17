@@ -10,36 +10,33 @@ import {
   KeyboardAvoidingView,
   Alert,
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from '../../../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
-import { colors } from '../theme/colors';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import { validateRequired, validatePhone } from '../utils';
-import LoadingSpinner from '../components/LoadingSpinner';
-import Snackbar from '../components/Snackbar';
+import { colors } from '../../../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import { validateRequired, validatePhone } from '../../../utils';
+import LoadingSpinner from '../../../components/LoadingSpinner';
+import Snackbar from '../../../components/Snackbar';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-type RouteProps = RouteProp<RootStackParamList, 'EditAddress'>;
 
 const ADDRESS_TYPES = ['Home', 'Work', 'Other'];
 
-const EditAddressScreen: React.FC = () => {
+const AddAddressScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProps>();
 
-  // Pre-filled data from route params (mock data for now)
   const [addressTitle, setAddressTitle] = useState('Home');
   const [customTitle, setCustomTitle] = useState('');
-  const [building, setBuilding] = useState('Building 227, Flat 21');
-  const [road, setRoad] = useState('Road 15');
+  const [building, setBuilding] = useState('');
+  const [road, setRoad] = useState('');
   const [block, setBlock] = useState('');
-  const [area, setArea] = useState('Manama');
-  const [contactNumber, setContactNumber] = useState('+973 3356 0803');
+  const [area, setArea] = useState('');
+  const [contactNumber, setContactNumber] = useState('+973 3356 0803'); // Pre-filled from profile
   const [notes, setNotes] = useState('');
-  const [isDefault, setIsDefault] = useState(true);
+  const [isDefault, setIsDefault] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
 
@@ -51,7 +48,7 @@ const EditAddressScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  const handleUpdateAddress = async () => {
+  const handleSaveAddress = async () => {
     // Validation
     if (!validateRequired(building)) {
       showSnackbar('Please enter building/flat number', 'error');
@@ -68,42 +65,15 @@ const EditAddressScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // TODO: Update backend/state
-      // await updateAddress(addressId, addressData);
-      showSnackbar('Address updated successfully', 'success');
+      // TODO: Save to backend/state
+      // await saveAddress(addressData);
+      showSnackbar('Address saved successfully', 'success');
       setTimeout(() => navigation.goBack(), 1500);
     } catch (error) {
-      showSnackbar('Failed to update address', 'error');
+      showSnackbar('Failed to save address', 'error');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleDeleteAddress = () => {
-    Alert.alert(
-      'Delete Address',
-      'Are you sure you want to remove this address?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            setIsLoading(true);
-            try {
-              // TODO: Delete from backend
-              // await deleteAddress(addressId);
-              showSnackbar('Address removed', 'success');
-              setTimeout(() => navigation.goBack(), 1500);
-            } catch (error) {
-              showSnackbar('Failed to delete address', 'error');
-            } finally {
-              setIsLoading(false);
-            }
-          },
-        },
-      ]
-    );
   };
 
   const handlePickLocation = () => {
@@ -149,7 +119,7 @@ const EditAddressScreen: React.FC = () => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Address</Text>
+        <Text style={styles.headerTitle}>Add New Address</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -262,23 +232,13 @@ const EditAddressScreen: React.FC = () => {
             <Text style={styles.mapButtonText}>Pick Location on Map</Text>
             <Icon name="chevron-right" size={20} color="#94A3B8" />
           </TouchableOpacity>
-
-          {/* Delete Address */}
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={handleDeleteAddress}
-            activeOpacity={0.7}
-          >
-            <Icon name="trash-2" size={18} color={colors.error} />
-            <Text style={styles.deleteButtonText}>Delete Address</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Bottom Spacing */}
         <View style={{ height: SPACING.xxxl }} />
       </ScrollView>
 
-      <LoadingSpinner visible={isLoading} message="Updating..." overlay />
+      <LoadingSpinner visible={isLoading} message="Saving address..." overlay />
       <Snackbar
         visible={snackbar.visible}
         message={snackbar.message}
@@ -298,7 +258,7 @@ const EditAddressScreen: React.FC = () => {
 
         <TouchableOpacity
           style={styles.saveButton}
-          onPress={handleUpdateAddress}
+          onPress={handleSaveAddress}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -307,7 +267,7 @@ const EditAddressScreen: React.FC = () => {
             end={{ x: 1, y: 0 }}
             style={styles.saveButtonGradient}
           >
-            <Text style={styles.saveButtonText}>Update Address</Text>
+            <Text style={styles.saveButtonText}>Save Address</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -462,7 +422,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
     gap: SPACING.md,
-    marginBottom: SPACING.lg,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -474,18 +433,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.base,
     fontWeight: '500',
     color: colors.primary,
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.md,
-    gap: SPACING.sm,
-  },
-  deleteButtonText: {
-    fontSize: FONT_SIZE.base,
-    fontWeight: '600',
-    color: colors.error,
   },
   bottomActions: {
     flexDirection: 'row',
@@ -523,4 +470,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditAddressScreen;
+export default AddAddressScreen;

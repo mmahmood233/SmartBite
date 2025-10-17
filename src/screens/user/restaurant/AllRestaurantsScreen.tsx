@@ -18,11 +18,11 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from '../../../types';
 import Icon from 'react-native-vector-icons/Feather';
-import { colors } from '../theme/colors';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import RestaurantCard from '../components/RestaurantCard';
+import { colors } from '../../../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import RestaurantCard from '../../../components/RestaurantCard';
 import { LinearGradient } from 'expo-linear-gradient';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -53,17 +53,17 @@ const CUISINES = [
 ];
 
 const MOCK_RESTAURANTS = [
-  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../assets/food.png'), tags: ['saudi', 'traditional', 'arabic', 'kabsa'] },
-  { id: '2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', rating: 4.8, eta: '15 min', price: '$$', image: require('../../assets/food.png'), tags: ['saudi', 'homestyle', 'comfort', 'arabic'] },
-  { id: '3', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../assets/food.png'), tags: ['lebanese', 'shawarma', 'grill', 'arabic'] },
-  { id: '4', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', rating: 4.6, eta: '20 min', price: '$$', image: require('../../assets/food.png'), tags: ['lebanese', 'grill', 'chicken', 'arabic'] },
-  { id: '5', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', rating: 4.5, eta: '10 min', price: '$', image: require('../../assets/wajba_logo.png'), tags: ['vegetarian', 'falafel', 'healthy', 'quick'] },
-  { id: '6', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', rating: 4.8, eta: '22 min', price: '$$', image: require('../../assets/wajba_logo.png'), tags: ['breakfast', 'bakery', 'zaatar', 'manakish'] },
-  { id: '7', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.7, eta: '16 min', price: '$', image: require('../../assets/wajba_logo.png'), tags: ['lebanese', 'bakery', 'manakish', 'zaatar'] },
-  { id: '8', name: 'Spice Garden', cuisine: 'Indian • Curry', rating: 4.6, eta: '25 min', price: '$$', image: require('../../assets/food.png'), tags: ['indian', 'curry', 'spicy', 'biryani'] },
-  { id: '9', name: 'Pizza Hut', cuisine: 'Italian • Pizza', rating: 4.4, eta: '30 min', price: '$$', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'cheese', 'pepperoni'] },
-  { id: '10', name: "Papa Johns", cuisine: 'Italian • Pizza', rating: 4.3, eta: '28 min', price: '$$', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'delivery'] },
-  { id: '11', name: "Mama's Pizza", cuisine: 'Italian • Home-Style', rating: 4.6, eta: '25 min', price: '$', image: require('../../assets/food.png'), tags: ['pizza', 'italian', 'homemade'] },
+  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['saudi', 'traditional', 'arabic', 'kabsa'] },
+  { id: '2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', rating: 4.8, eta: '15 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['saudi', 'homestyle', 'comfort', 'arabic'] },
+  { id: '3', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../../../assets/food.png'), tags: ['lebanese', 'shawarma', 'grill', 'arabic'] },
+  { id: '4', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', rating: 4.6, eta: '20 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['lebanese', 'grill', 'chicken', 'arabic'] },
+  { id: '5', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', rating: 4.5, eta: '10 min', price: '$', image: require('../../../../assets/wajba_logo.png'), tags: ['vegetarian', 'falafel', 'healthy', 'quick'] },
+  { id: '6', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', rating: 4.8, eta: '22 min', price: '$$', image: require('../../../../assets/wajba_logo.png'), tags: ['breakfast', 'bakery', 'zaatar', 'manakish'] },
+  { id: '7', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.7, eta: '16 min', price: '$', image: require('../../../../assets/wajba_logo.png'), tags: ['lebanese', 'bakery', 'manakish', 'zaatar'] },
+  { id: '8', name: 'Spice Garden', cuisine: 'Indian • Curry', rating: 4.6, eta: '25 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['indian', 'curry', 'spicy', 'biryani'] },
+  { id: '9', name: 'Pizza Hut', cuisine: 'Italian • Pizza', rating: 4.4, eta: '30 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'cheese', 'pepperoni'] },
+  { id: '10', name: "Papa Johns", cuisine: 'Italian • Pizza', rating: 4.3, eta: '28 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'delivery'] },
+  { id: '11', name: "Mama's Pizza", cuisine: 'Italian • Home-Style', rating: 4.6, eta: '25 min', price: '$', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'homemade'] },
 ];
 
 const AllRestaurantsScreen: React.FC = () => {

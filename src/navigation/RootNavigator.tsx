@@ -1,30 +1,42 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import SplashScreen from '../screens/SplashScreen';
-import OnboardingScreen from '../screens/OnboardingScreen';
+
+// User Portal - Onboarding
+import SplashScreen from '../screens/user/onboarding/SplashScreen';
+import OnboardingScreen from '../screens/user/onboarding/OnboardingScreen';
+
+// User Portal - Restaurant & Home
+import RestaurantDetailScreen from '../screens/user/restaurant/RestaurantDetailScreen';
+import AllRestaurantsScreen from '../screens/user/restaurant/AllRestaurantsScreen';
+
+// User Portal - Cart & Checkout
+import CartScreen from '../screens/user/cart/CartScreen';
+import CheckoutScreen from '../screens/user/cart/CheckoutScreen';
+
+// User Portal - Orders
+import OrderConfirmationScreen from '../screens/user/orders/OrderConfirmationScreen';
+import OrderTrackingScreen from '../screens/user/orders/OrderTrackingScreen';
+import DeliveryCompleteScreen from '../screens/user/orders/DeliveryCompleteScreen';
+import ReviewConfirmationScreen from '../screens/user/orders/ReviewConfirmationScreen';
+import OrderDetailsScreen from '../screens/user/orders/OrderDetailsScreen';
+
+// User Portal - Profile
+import EditProfileScreen from '../screens/user/profile/EditProfileScreen';
+import FavoritesScreen from '../screens/user/profile/FavoritesScreen';
+import SavedAddressesScreen from '../screens/user/profile/SavedAddressesScreen';
+import PaymentMethodsScreen from '../screens/user/profile/PaymentMethodsScreen';
+import OffersScreen from '../screens/user/profile/OffersScreen';
+import HelpSupportScreen from '../screens/user/profile/HelpSupportScreen';
+import AddAddressScreen from '../screens/user/profile/AddAddressScreen';
+import EditAddressScreen from '../screens/user/profile/EditAddressScreen';
+import AddPaymentMethodScreen from '../screens/user/profile/AddPaymentMethodScreen';
+import ChangePasswordScreen from '../screens/user/profile/ChangePasswordScreen';
+import AIChatScreen from '../screens/user/profile/AIChatScreen';
+
+// Navigators
 import MainTabNavigator from './MainTabNavigator';
 import AuthNavigator from './AuthNavigator';
-import RestaurantDetailScreen from '../screens/RestaurantDetailScreen';
-import CartScreen from '../screens/CartScreen';
-import CheckoutScreen from '../screens/CheckoutScreen';
-import OrderConfirmationScreen from '../screens/OrderConfirmationScreen';
-import OrderTrackingScreen from '../screens/OrderTrackingScreen';
-import DeliveryCompleteScreen from '../screens/DeliveryCompleteScreen';
-import ReviewConfirmationScreen from '../screens/ReviewConfirmationScreen';
-import OrderDetailsScreen from '../screens/OrderDetailsScreen';
-import EditProfileScreen from '../screens/EditProfileScreen';
-import FavoritesScreen from '../screens/FavoritesScreen';
-import SavedAddressesScreen from '../screens/SavedAddressesScreen';
-import PaymentMethodsScreen from '../screens/PaymentMethodsScreen';
-import OffersScreen from '../screens/OffersScreen';
-import HelpSupportScreen from '../screens/HelpSupportScreen';
-import AddAddressScreen from '../screens/AddAddressScreen';
-import EditAddressScreen from '../screens/EditAddressScreen';
-import AddPaymentMethodScreen from '../screens/AddPaymentMethodScreen';
-import ChangePasswordScreen from '../screens/ChangePasswordScreen';
-import AIChatScreen from '../screens/AIChatScreen';
-import AllRestaurantsScreen from '../screens/AllRestaurantsScreen';
 import PartnerTabNavigator from './PartnerTabNavigator';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

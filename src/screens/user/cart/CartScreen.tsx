@@ -12,12 +12,12 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
+import { RootStackParamList } from '../../../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
-import { colors } from '../theme/colors';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import { formatCurrency } from '../utils';
+import { colors } from '../../../theme/colors';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import { formatCurrency } from '../../../utils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -60,7 +60,7 @@ const CartScreen: React.FC = () => {
       name: 'Kabsa Rice with Chicken',
       price: 8.5,
       quantity: 1,
-      image: require('../../assets/food.png'),
+      image: require('../../../../assets/food.png'),
       addOns: ['Extra Chicken (+BD 1.00)'],
     },
     {
@@ -68,7 +68,7 @@ const CartScreen: React.FC = () => {
       name: 'Lamb Mandi',
       price: 12.0,
       quantity: 2,
-      image: require('../../assets/food.png'),
+      image: require('../../../../assets/food.png'),
     },
   ]);
 

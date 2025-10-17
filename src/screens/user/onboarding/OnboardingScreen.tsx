@@ -10,11 +10,11 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { GradientButton } from '../components';
-import { colors } from '../theme/colors';
-import { tokens } from '../theme/theme';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import { RootStackParamList } from '../types';
+import { GradientButton } from '../../../components';
+import { colors } from '../../../theme/colors';
+import { tokens } from '../../../theme/theme';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import { RootStackParamList } from '../../../types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -41,21 +41,21 @@ const slides: OnboardingSlide[] = [
     id: '1',
     title: 'Discover local flavors with AI-powered recommendations',
     subtitle: 'Skip the endless scrolling — Wajba finds what fits your craving',
-    image: require('../../assets/SC_Search_logo.png'),
+    image: require('../../../../assets/SC_Search_logo.png'),
     backgroundColor: '#F8F9FB',
   },
   {
     id: '2',
     title: 'Personalize your meals based on your mood and taste',
     subtitle: 'Our AI learns what you love — whether it\'s spicy, sweet, or healthy',
-    image: require('../../assets/SC_Thinking.png'),
+    image: require('../../../../assets/SC_Thinking.png'),
     backgroundColor: '#F8F9FB',
   },
   {
     id: '3',
     title: 'Enjoy Middle Eastern warmth, delivered to your door',
     subtitle: 'Fast delivery, real flavor — Wajba brings your favorite dishes home',
-    image: require('../../assets/wajba_logo.png'),
+    image: require('../../../../assets/wajba_logo.png'),
     backgroundColor: '#F8F9FB',
   },
 ];

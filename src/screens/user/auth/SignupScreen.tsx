@@ -9,18 +9,18 @@ import {
 } from 'react-native';
 import { TextInput, Checkbox } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { tokens } from '../theme/theme';
-import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../constants';
-import { validateEmail, validatePassword, validatePasswordMatch, validatePhone } from '../utils';
+import { colors } from '../../../theme/colors';
+import { typography } from '../../../theme/typography';
+import { tokens } from '../../../theme/theme';
+import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import { validateEmail, validatePassword, validatePasswordMatch, validatePhone } from '../../../utils';
 import { 
   GradientButton, 
   Input, 
   Link, 
   SocialButton 
-} from '../components';
-import { AuthStackParamList } from '../types';
+} from '../../../components';
+import { AuthStackParamList } from '../../../types';
 
 type SignupScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,

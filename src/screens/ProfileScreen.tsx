@@ -247,7 +247,7 @@ const ProfileScreen: React.FC = () => {
         <View style={[styles.section, styles.firstSection]}>
           <TouchableOpacity
             style={styles.partnerButton}
-            onPress={() => navigation.navigate('PartnerOverview')}
+            onPress={() => navigation.navigate('PartnerPortal')}
             activeOpacity={0.9}
           >
             <LinearGradient

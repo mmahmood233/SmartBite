@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
+import PartnerTopNav from '../../components/partner/PartnerTopNav';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
@@ -131,35 +132,17 @@ const OverviewDashboard: React.FC = () => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
-      {/* Fixed Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.headerLeft}>
-            <LinearGradient
-              colors={['#00A896', '#4ECDC4']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.logoGradient}
-            >
-              <Icon name="briefcase" size={18} color="#FFFFFF" />
-            </LinearGradient>
-            <View>
-              <View style={styles.brandRow}>
-                <Text style={styles.logoText}>Wajba Partner</Text>
-                <Icon name="chevron-down" size={14} color="#9CA3AF" style={{ marginLeft: 4 }} />
-              </View>
-            </View>
-          </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.notificationButton} activeOpacity={0.7}>
-              <Icon name="bell" size={22} color="#333" />
-              <View style={styles.notificationDot} />
-            </TouchableOpacity>
-            <View style={styles.profileAvatar}>
-              <Text style={styles.profileAvatarText}>R</Text>
-            </View>
-          </View>
-        </View>
+      {/* Top Navigation */}
+      <PartnerTopNav 
+        title="Wajba Partner"
+        showBranding={true}
+        showDropdown={true}
+        showNotification={true}
+        hasNotification={true}
+      />
+      
+      {/* Date/Time Bar */}
+      <View style={styles.dateTimeBar}>
         <Text style={styles.dateTime}>{getCurrentDateTime()}</Text>
       </View>
 
@@ -311,71 +294,8 @@ const OverviewDashboard: React.FC = () => {
           </View>
         </View>
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: 20 }} />
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate('PartnerLiveOrders')}
-          activeOpacity={0.7}
-        >
-          <Icon
-            name="file-text"
-            size={24}
-            color={activeNav === 'orders' ? '#00A896' : '#A1A1A1'}
-          />
-          <Text style={[styles.navLabel, activeNav === 'orders' && styles.navLabelActive]}>
-            Live Orders
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => setActiveNav('overview')}
-          activeOpacity={0.7}
-        >
-          <Icon
-            name="bar-chart-2"
-            size={24}
-            color={activeNav === 'overview' ? '#00A896' : '#A1A1A1'}
-          />
-          <Text style={[styles.navLabel, activeNav === 'overview' && styles.navLabelActive]}>
-            Overview
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => setActiveNav('menu')}
-          activeOpacity={0.7}
-        >
-          <Icon
-            name="book-open"
-            size={24}
-            color={activeNav === 'menu' ? '#00A896' : '#A1A1A1'}
-          />
-          <Text style={[styles.navLabel, activeNav === 'menu' && styles.navLabelActive]}>
-            Menu
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => setActiveNav('more')}
-          activeOpacity={0.7}
-        >
-          <Icon
-            name="more-horizontal"
-            size={24}
-            color={activeNav === 'more' ? '#00A896' : '#A1A1A1'}
-          />
-          <Text style={[styles.navLabel, activeNav === 'more' && styles.navLabelActive]}>
-            More
-          </Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -383,87 +303,23 @@ const OverviewDashboard: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAF9',
+    backgroundColor: '#F9F7F4',
   },
   
-  // Header
-  header: {
+  // Date/Time Bar
+  dateTimeBar: {
     backgroundColor: '#FFFFFF',
-    paddingTop: STATUS_BAR_HEIGHT + 12,
     paddingHorizontal: 20,
-    paddingBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  logoGradient: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1A1A',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  notificationButton: {
-    position: 'relative',
-    padding: 8,
-  },
-  profileAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#00A896',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileAvatarText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(0, 0, 0, 0.08)',
   },
   dateTime: {
     fontSize: 13,
     color: '#A1A1A1',
   },
   
-  // Scroll View
+  // 2-Column Layout
   scrollView: {
     flex: 1,
   },

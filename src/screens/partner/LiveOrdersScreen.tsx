@@ -4,6 +4,9 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types';
 import {
   View,
   Text,
@@ -17,6 +20,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
+import PartnerTopNav from '../../components/partner/PartnerTopNav';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
@@ -88,7 +92,10 @@ const FILTER_TABS = [
   { id: 'cancelled', label: 'Cancelled', badge: null },
 ];
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 const LiveOrdersScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -117,16 +124,12 @@ const LiveOrdersScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
       {/* Top Navigation Bar */}
-      <View style={styles.topNav}>
-        <TouchableOpacity style={styles.menuButton} activeOpacity={0.7}>
-          <Icon name="menu" size={24} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.navTitle}>Live Orders</Text>
-        <TouchableOpacity style={styles.notificationButton} activeOpacity={0.7}>
-          <Icon name="bell" size={22} color="#1A1A1A" />
-          <View style={styles.notificationDot} />
-        </TouchableOpacity>
-      </View>
+      <PartnerTopNav 
+        title="Live Orders"
+        showMenu={true}
+        showNotification={true}
+        hasNotification={true}
+      />
 
       {/* Filter Tabs */}
       <View style={styles.filterWrapper}>
@@ -282,31 +285,8 @@ const LiveOrdersScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: 20 }} />
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-          <Icon name="file-text" size={24} color="#00A896" />
-          <Text style={[styles.navLabel, styles.navLabelActive]}>Live Orders</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-          <Icon name="bar-chart-2" size={24} color="#A1A1A1" />
-          <Text style={styles.navLabel}>Overview</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-          <Icon name="book-open" size={24} color="#A1A1A1" />
-          <Text style={styles.navLabel}>Menu</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-          <Icon name="more-horizontal" size={24} color="#A1A1A1" />
-          <Text style={styles.navLabel}>More</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -315,46 +295,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAFAF9',
-  },
-  
-  // Top Navigation
-  topNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    height: 56,
-    paddingTop: STATUS_BAR_HEIGHT,
-    paddingHorizontal: 20,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(0, 0, 0, 0.08)',
-  },
-  menuButton: {
-    padding: 8,
-  },
-  navTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#222222',
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    textAlign: 'center',
-  },
-  notificationButton: {
-    position: 'relative',
-    padding: 8,
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
   
   // Filter Tabs

@@ -41,8 +41,7 @@ export type RootStackParamList = {
   Offers: undefined;
   HelpSupport: undefined;
   ChangePassword: undefined;
-  PartnerOverview: undefined;
-  PartnerLiveOrders: undefined;
+  PartnerPortal: undefined;
 };
 
 export type AuthStackParamList = {

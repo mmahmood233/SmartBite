@@ -1,32 +1,71 @@
-# SmartBite Quick Start Guide
+# 🚀 Wajba Quick Start Guide
 
-## 🚀 Getting Started
+**Last Updated**: 2025-10-18
 
-### Installation
+## 📥 Installation
+
 ```bash
 cd "/Users/mohammed/Desktop/Uni Courses/Sem 7/SmartBite"
 npm install
 npm start
 ```
 
-Then press `i` for iOS or `a` for Android.
+Then press:
+- `i` for iOS Simulator
+- `a` for Android Emulator  
+- `w` for Web (limited functionality)
 
 ---
 
-## 📦 Using Components
+## 📁 Project Organization
 
-### Import Pattern
-```javascript
-import { 
-  GradientButton, 
-  Input, 
-  Link, 
-  AnimatedLogo, 
-  SocialButton 
-} from '../components';
+### Folder Structure
+```
+src/
+├── screens/
+│   ├── user/           # Customer app screens
+│   │   ├── auth/       # Login, Signup
+│   │   ├── onboarding/ # Splash, Onboarding
+│   │   ├── restaurant/ # Home, Browse, Details
+│   │   ├── cart/       # Cart, Checkout
+│   │   ├── orders/     # Order tracking
+│   │   └── profile/    # User settings
+│   └── partner/        # Restaurant portal
+│       ├── OverviewDashboard.tsx
+│       └── LiveOrdersScreen.tsx
+├── components/         # Reusable UI
+├── navigation/         # Navigation setup
+├── theme/             # Design system
+├── types/             # TypeScript types
+└── utils/             # Helper functions
+```
 
+---
+
+## 📦 Import Patterns
+
+### For User Portal Screens
+```typescript
+// From user/auth/, user/profile/, etc. (3 levels up)
+import { colors } from '../../../theme/colors';
+import { SPACING } from '../../../constants';
+import { GradientButton } from '../../../components';
+import { RootStackParamList } from '../../../types';
+```
+
+### For Partner Portal Screens
+```typescript
+// From partner/ (2 levels up)
+import { colors } from '../../theme/colors';
+import { SPACING } from '../../constants';
+import PartnerTopNav from '../../components/partner/PartnerTopNav';
+```
+
+### For Components
+```typescript
+// From components/ (1 level up)
 import { colors } from '../theme/colors';
-import { tokens } from '../theme/theme';
+import { typography } from '../theme/typography';
 ```
 
 ---

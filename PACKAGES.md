@@ -1,7 +1,7 @@
 # SmartBite Package Documentation
 
 **Version**: 1.0.0  
-**Last Updated**: 2025-10-06
+**Last Updated**: 2025-10-18
 
 Complete reference for all packages used in SmartBite, including purpose, version, and usage.
 
@@ -9,8 +9,8 @@ Complete reference for all packages used in SmartBite, including purpose, versio
 
 ## 📦 Package Overview
 
-**Total Packages**: 16  
-**Dependencies**: 13  
+**Total Packages**: 17  
+**Dependencies**: 14  
 **Dev Dependencies**: 3
 
 ---
@@ -73,8 +73,25 @@ Complete reference for all packages used in SmartBite, including purpose, versio
   - Native animations and gestures
   - Platform-specific behavior (iOS/Android)
   - Type-safe navigation with TypeScript
-- **Used In**: AuthNavigator.tsx (Login/Signup flow)
+- **Used In**: 
+  - RootNavigator.tsx (Main app navigation)
+  - AuthNavigator.tsx (Login/Signup flow)
+  - User portal screens (all user flows)
+  - Partner portal screens (restaurant management)
 - **Documentation**: https://reactnavigation.org/docs/native-stack-navigator
+
+### **@react-navigation/bottom-tabs** (^6.5.11)
+- **Category**: Navigation
+- **Purpose**: Bottom tab navigator for main app sections
+- **Why We Use It**: 
+  - Standard mobile navigation pattern
+  - Easy switching between main sections
+  - Customizable tab bar styling
+  - Icon and label support
+- **Used In**: 
+  - MainTabNavigator.tsx (User portal: Home, AI Chat, Orders, Profile)
+  - PartnerTabNavigator.tsx (Partner portal: Live Orders, Overview, Menu, More)
+- **Documentation**: https://reactnavigation.org/docs/bottom-tab-navigator
 
 ### **@react-navigation/stack** (^6.3.20)
 - **Category**: Navigation
@@ -83,7 +100,7 @@ Complete reference for all packages used in SmartBite, including purpose, versio
   - More customizable than native stack
   - Custom transition animations
   - Fallback for complex navigation needs
-- **Used In**: Reserved for future complex navigation
+- **Used In**: AuthNavigator.tsx (Auth flow)
 - **Documentation**: https://reactnavigation.org/docs/stack-navigator
 
 ### **react-native-screens** (~3.31.1)
@@ -244,9 +261,10 @@ Complete reference for all packages used in SmartBite, including purpose, versio
 - react
 - react-native
 
-### **Navigation (5 packages)**
+### **Navigation (6 packages)**
 - @react-navigation/native
 - @react-navigation/native-stack
+- @react-navigation/bottom-tabs
 - @react-navigation/stack
 - react-native-screens
 - react-native-safe-area-context
@@ -426,9 +444,9 @@ npm install react-native-safe-area-context@4.10.5
 5. **react-native-paper** - Input components
 
 ### **Least Used Packages**
-1. **@react-navigation/stack** - Reserved for future
-2. **react-native-reanimated** - Reserved for complex animations
-3. **react-native-vector-icons** - Only in TextInput icons
+1. **react-native-reanimated** - Reserved for complex animations
+2. **react-native-vector-icons** - Icons throughout app
+3. **expo-status-bar** - Status bar styling
 
 ---
 
@@ -525,7 +543,42 @@ npm install
 
 ---
 
-**Last Audit**: 2025-10-06  
+**Last Audit**: 2025-10-18  
 **Total Package Size**: ~180 MB (node_modules)  
 **Production Bundle**: ~15 MB (estimated)  
 **Status**: All packages documented ✅
+
+---
+
+## 📂 Project Structure Updates
+
+### **Screen Organization (As of 2025-10-18)**
+
+The project now follows a clean, organized folder structure:
+
+```
+src/screens/
+├── user/                    # USER PORTAL
+│   ├── auth/               # Authentication (Login, Signup)
+│   ├── onboarding/         # Splash, Onboarding
+│   ├── restaurant/         # Home, Browse, Restaurant Details
+│   ├── cart/               # Cart, Checkout
+│   ├── orders/             # Order tracking & history
+│   └── profile/            # User settings & account
+│
+└── partner/                # RESTAURANT PORTAL
+    ├── OverviewDashboard   # Analytics & stats
+    └── LiveOrdersScreen    # Order management
+```
+
+### **Navigation Structure**
+- **RootNavigator**: Main app navigation (Stack)
+- **AuthNavigator**: Login/Signup flow (Stack)
+- **MainTabNavigator**: User portal tabs (Bottom Tabs)
+- **PartnerTabNavigator**: Partner portal tabs (Bottom Tabs)
+
+### **Import Path Convention**
+- User screens: `../../../` (3 levels up to src/)
+- Partner screens: `../../` (2 levels up to src/)
+- Components: Always from `src/components/`
+- Theme: Always from `src/theme/`

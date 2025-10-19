@@ -4,26 +4,17 @@
  */
 
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../types';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Platform,
   StatusBar,
-  Dimensions,
-  Animated,
+  Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
 
 // Mock data
 const NEW_ORDERS = [
@@ -92,12 +83,8 @@ const FILTER_TABS = [
   { id: 'cancelled', label: 'Cancelled', badge: null },
 ];
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
 const LiveOrdersScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const handleAcceptOrder = (orderId: string) => {
     console.log('Accept order:', orderId);

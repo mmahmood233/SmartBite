@@ -164,7 +164,8 @@ export const PartnerStrings = {
  * @param lang - Language code ('en' or 'ar')
  */
 export const getStrings = (lang: 'en' | 'ar' = 'en') => {
-  return PartnerStrings[lang];
+  // Always return English structure for now (Arabic translations incomplete)
+  return PartnerStrings.en;
 };
 
 export default PartnerStrings;

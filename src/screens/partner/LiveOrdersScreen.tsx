@@ -15,6 +15,10 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
+import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
+import { getStrings } from '../../constants/partnerStrings';
+
+const strings = getStrings('en');
 
 // Mock data
 const NEW_ORDERS = [
@@ -112,7 +116,7 @@ const LiveOrdersScreen: React.FC = () => {
       
       {/* Top Navigation Bar */}
       <PartnerTopNav 
-        title="Live Orders"
+        title={strings.nav.liveOrders}
         showBranding={true}
         showDropdown={false}
         showNotification={true}

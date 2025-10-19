@@ -14,6 +14,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Feather';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
+import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
+import { getStrings } from '../../constants/partnerStrings';
+
+const strings = getStrings('en');
 
 interface MenuItem {
   id: string;
@@ -192,7 +196,7 @@ const MenuManagementScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <PartnerTopNav
-        title="Menu"
+        title={strings.nav.menu}
         showBranding={true}
         showDropdown={false}
         showNotification={true}
@@ -243,8 +247,8 @@ const MenuManagementScreen: React.FC = () => {
           <Icon name="search" size={18} color="#999" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search menu items..."
-            placeholderTextColor="#999"
+            placeholder={strings.menu.search}
+            placeholderTextColor={PartnerColors.light.text.placeholder}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -399,7 +403,7 @@ const MenuManagementScreen: React.FC = () => {
             style={styles.addItemButtonGradient}
           >
             <Icon name="plus" size={18} color="#FFFFFF" />
-            <Text style={styles.addItemButtonText}>Add Item</Text>
+            <Text style={styles.addItemButtonText}>{strings.menu.actions.addItem}</Text>
           </LinearGradient>
         </TouchableOpacity>
 
@@ -409,7 +413,7 @@ const MenuManagementScreen: React.FC = () => {
           activeOpacity={0.7}
         >
           <Icon name="folder" size={18} color="#00A896" />
-          <Text style={styles.manageCategoriesButtonText}>Manage Categories</Text>
+          <Text style={styles.manageCategoriesButtonText}>{strings.menu.actions.manageCategories}</Text>
         </TouchableOpacity>
       </View>
 
@@ -420,46 +424,49 @@ const MenuManagementScreen: React.FC = () => {
         transparent={true}
         onRequestClose={() => setShowCategoryModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.smallModalContent}>
-            <Text style={styles.modalTitle}>Add Category</Text>
-            
+        <View style={styles.centeredOverlay}>
+          <LinearGradient
+            colors={['rgba(255,255,255,0.9)', 'rgba(250,250,250,0.95)']}
+            style={styles.glassModal}
+          >
+            <Text style={styles.glassModalTitle}>Add Category</Text>
+
             <TextInput
-              style={styles.formInput}
+              style={styles.glassInput}
               placeholder="Category Name"
+              placeholderTextColor="#999"
               value={newCategoryName}
               onChangeText={setNewCategoryName}
-              autoFocus
             />
 
-            <View style={styles.smallModalActions}>
+            <View style={styles.glassButtonRow}>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={styles.glassCancelButton}
                 onPress={() => {
                   setNewCategoryName('');
                   setShowCategoryModal(false);
                 }}
-                activeOpacity={0.7}
+                activeOpacity={0.8}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.glassCancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={handleAddCategory}
-                activeOpacity={0.9}
+              <LinearGradient
+                colors={['#00A896', '#4ECDC4']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.glassAddButton}
               >
-                <LinearGradient
-                  colors={['#00A896', '#4ECDC4']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.saveButtonGradient}
+                <TouchableOpacity
+                  onPress={handleAddCategory}
+                  activeOpacity={0.9}
+                  style={styles.glassAddButtonInner}
                 >
-                  <Text style={styles.saveButtonText}>Add</Text>
-                </LinearGradient>
-              </TouchableOpacity>
+                  <Text style={styles.glassAddText}>Add</Text>
+                </TouchableOpacity>
+              </LinearGradient>
             </View>
-          </View>
+          </LinearGradient>
         </View>
       </Modal>
 
@@ -640,7 +647,7 @@ const MenuManagementScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAF9',
+    backgroundColor: PartnerColors.light.background,
   },
   topSection: {
     backgroundColor: '#FFFFFF',
@@ -663,16 +670,16 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   categoryScroll: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: PartnerColors.light.surface,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#EAEAEA',
+    borderBottomColor: PartnerColors.light.divider,
     maxHeight: 52,
     flexGrow: 0,
   },
   categoryScrollContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    gap: 8,
+    paddingHorizontal: PartnerSpacing.xl,
+    paddingVertical: PartnerSpacing.sm,
+    gap: PartnerSpacing.sm,
   },
   categoryTab: {
     paddingHorizontal: 16,
@@ -694,27 +701,27 @@ const styles = StyleSheet.create({
   },
   // Compact Category Chips (10/10 Design)
   categoryChip: {
-    paddingHorizontal: 12,
+    paddingHorizontal: PartnerSpacing.md,
     height: 36,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    borderRadius: PartnerBorderRadius.xxl,
+    backgroundColor: PartnerColors.light.surface,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    marginRight: 8,
+    borderColor: PartnerColors.light.border,
+    marginRight: PartnerSpacing.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
   categoryChipActive: {
-    backgroundColor: '#00A896',
-    borderColor: '#00A896',
+    backgroundColor: PartnerColors.primary,
+    borderColor: PartnerColors.primary,
   },
   categoryChipText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#444',
+    fontSize: PartnerTypography.fontSize.base,
+    fontWeight: PartnerTypography.fontWeight.medium,
+    color: PartnerColors.light.text.secondary,
   },
   categoryChipTextActive: {
-    color: '#FFFFFF',
+    color: PartnerColors.light.surface,
   },
   addCategoryChip: {
     flexDirection: 'row',
@@ -736,10 +743,10 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    backgroundColor: '#F9FAFA',
-    gap: 12,
+    paddingHorizontal: PartnerSpacing.xl,
+    paddingVertical: PartnerSpacing.sm,
+    backgroundColor: PartnerColors.light.surfaceAlt,
+    gap: PartnerSpacing.md,
   },
   searchInputContainer: {
     flex: 1,
@@ -1242,6 +1249,84 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(229, 57, 53, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // --- Premium Add Category Modal Styles ---
+  centeredOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  glassModal: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.6)',
+  },
+  glassModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  glassInput: {
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E6E6E6',
+    paddingHorizontal: 14,
+    backgroundColor: '#FFFFFF',
+    fontSize: 15,
+    color: '#1A1A1A',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  glassButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  glassCancelButton: {
+    flex: 1,
+    height: 46,
+    borderRadius: 12,
+    backgroundColor: '#F4F4F4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  glassCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666',
+  },
+  glassAddButton: {
+    flex: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  glassAddButtonInner: {
+    height: 46,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  glassAddText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
 

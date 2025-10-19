@@ -126,7 +126,8 @@ const LiveOrdersScreen: React.FC = () => {
       {/* Top Navigation Bar */}
       <PartnerTopNav 
         title="Live Orders"
-        showMenu={true}
+        showBranding={true}
+        showDropdown={false}
         showNotification={true}
         hasNotification={true}
       />

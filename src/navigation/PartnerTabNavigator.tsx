@@ -5,10 +5,11 @@
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import OverviewDashboard from '../screens/partner/OverviewDashboard';
 import LiveOrdersScreen from '../screens/partner/LiveOrdersScreen';
+import MenuManagementScreen from '../screens/partner/MenuManagementScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -60,7 +61,7 @@ const PartnerTabNavigator: React.FC = () => {
       />
       <Tab.Screen
         name="Menu"
-        component={OverviewDashboard} // Placeholder
+        component={MenuManagementScreen}
         options={{
           tabBarLabel: 'Menu',
           tabBarIcon: ({ color, size }) => (

@@ -167,9 +167,6 @@ const LiveOrdersScreen: React.FC = () => {
                 <Text style={styles.sectionIcon}>🆕</Text>
                 <Text style={styles.sectionTitle}>New Orders</Text>
               </View>
-              <TouchableOpacity activeOpacity={0.7}>
-                <Text style={styles.viewAll}>View All →</Text>
-              </TouchableOpacity>
             </View>
 
             {NEW_ORDERS.map((order) => (
@@ -223,9 +220,6 @@ const LiveOrdersScreen: React.FC = () => {
               <Text style={styles.sectionIcon}>📦</Text>
               <Text style={styles.sectionTitle}>Active Orders</Text>
             </View>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Text style={styles.viewAll}>View All →</Text>
-            </TouchableOpacity>
           </View>
 
           {ACTIVE_ORDERS.map((order) => (

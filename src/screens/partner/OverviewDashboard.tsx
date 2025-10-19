@@ -215,7 +215,10 @@ const OverviewDashboard: React.FC = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Active Orders</Text>
-            <TouchableOpacity activeOpacity={0.7}>
+            <TouchableOpacity 
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('LiveOrders' as never)}
+            >
               <Text style={styles.viewAll}>View All →</Text>
             </TouchableOpacity>
           </View>

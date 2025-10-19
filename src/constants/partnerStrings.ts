@@ -26,15 +26,15 @@ export const PartnerStrings = {
     
     // Navigation
     nav: {
-      liveOrders: 'Live Orders',
+      liveOrders: 'Orders',
       overview: 'Overview',
       menu: 'Menu',
       more: 'More',
     },
     
-    // Live Orders Screen
+    // Orders Screen
     liveOrders: {
-      title: 'Live Orders',
+      title: 'Orders',
       filters: {
         all: 'All',
         new: 'New',
@@ -150,7 +150,7 @@ export const PartnerStrings = {
       done: 'تم',
     },
     nav: {
-      liveOrders: 'الطلبات المباشرة',
+      liveOrders: 'الطلبات',
       overview: 'نظرة عامة',
       menu: 'القائمة',
       more: 'المزيد',

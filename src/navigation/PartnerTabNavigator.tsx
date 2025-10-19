@@ -43,7 +43,7 @@ const PartnerTabNavigator: React.FC = () => {
         name="LiveOrders"
         component={LiveOrdersScreen}
         options={{
-          tabBarLabel: 'Live Orders',
+          tabBarLabel: 'Orders',
           tabBarIcon: ({ color, size }) => (
             <Icon name="file-text" size={size} color={color} />
           ),

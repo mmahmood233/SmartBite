@@ -10,6 +10,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import OverviewDashboard from '../screens/partner/OverviewDashboard';
 import LiveOrdersScreen from '../screens/partner/LiveOrdersScreen';
 import MenuManagementScreen from '../screens/partner/MenuManagementScreen';
+import PartnerMoreScreen from '../screens/partner/PartnerMoreScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -71,11 +72,11 @@ const PartnerTabNavigator: React.FC = () => {
       />
       <Tab.Screen
         name="More"
-        component={OverviewDashboard} // Placeholder
+        component={PartnerMoreScreen}
         options={{
-          tabBarLabel: 'More',
+          tabBarLabel: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <Icon name="more-horizontal" size={size} color={color} />
+            <Icon name="user" size={size} color={color} />
           ),
         }}
       />

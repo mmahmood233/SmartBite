@@ -21,6 +21,7 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE, ICON_SIZE, AVATAR_SIZE } from '../..
 import { getInitials } from '../../../utils';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import Snackbar from '../../../components/Snackbar';
+import ProfileMenuItem from '../../../components/ProfileMenuItem';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -273,60 +274,47 @@ const ProfileScreen: React.FC = () => {
         {/* My Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Account</Text>
-          <View style={styles.card}>
-            {renderMenuItem({ icon: 'heart', label: 'Favorites', onPress: handleFavorites })}
-            <View style={styles.divider} />
-            {renderMenuItem({ icon: 'home', label: 'Saved Addresses', onPress: handleAddresses })}
-            <View style={styles.divider} />
-            {renderMenuItem({ icon: 'credit-card', label: 'Payment Methods', onPress: handlePaymentMethods })}
-            <View style={styles.divider} />
-            {renderMenuItem({ icon: 'gift', label: 'Offers & Promotions', onPress: handleOffers })}
-            <View style={styles.divider} />
-            {renderMenuItem({ icon: 'message-circle', label: 'Help & Support', onPress: handleHelp })}
-          </View>
+          <ProfileMenuItem icon="heart" label="Favorites" onPress={handleFavorites} color={colors.primary} />
+          <ProfileMenuItem icon="home" label="Saved Addresses" onPress={handleAddresses} color={colors.primary} />
+          <ProfileMenuItem icon="credit-card" label="Payment Methods" onPress={handlePaymentMethods} color={colors.primary} />
+          <ProfileMenuItem icon="gift" label="Offers & Promotions" onPress={handleOffers} color={colors.primary} />
+          <ProfileMenuItem icon="message-circle" label="Help & Support" onPress={handleHelp} color={colors.primary} />
         </View>
 
         {/* App Preferences Section */}
-        <View style={[styles.section, styles.preferencesSection]}>
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>App Preferences</Text>
-          <View style={styles.card}>
-            {/* Dark Mode Toggle */}
-            <View style={styles.preferenceItem}>
-              <View style={styles.preferenceLeft}>
-                <View style={styles.iconContainer}>
-                  <Icon name="moon" size={20} color={colors.primary} />
-                </View>
-                <Text style={styles.preferenceLabel}>Dark Mode</Text>
-              </View>
-              <Switch
-                value={isDarkMode}
-                onValueChange={handleDarkModeToggle}
-                trackColor={{ false: '#E0E0E0', true: colors.primary }}
-                thumbColor={isDarkMode ? '#FFFFFF' : '#F5F5F5'}
-                ios_backgroundColor="#E0E0E0"
-              />
+          
+          {/* Dark Mode Toggle */}
+          <View style={styles.preferenceCard}>
+            <View style={styles.menuLeft}>
+              <Icon name="moon" size={20} color={colors.primary} />
+              <Text style={styles.menuText}>Dark Mode</Text>
             </View>
-
-            <View style={styles.preferenceDivider} />
-
-            {/* Language Selector */}
-            <TouchableOpacity
-              style={styles.preferenceItem}
-              onPress={() => setLanguageModalVisible(true)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.preferenceLeft}>
-                <View style={styles.iconContainer}>
-                  <Icon name="globe" size={20} color={colors.primary} />
-                </View>
-                <Text style={styles.preferenceLabel}>Language</Text>
-              </View>
-              <View style={styles.languageSelector}>
-                <Text style={styles.languageText}>{currentLanguage}</Text>
-                <Icon name="chevron-down" size={18} color="#9E9E9E" />
-              </View>
-            </TouchableOpacity>
+            <Switch
+              value={isDarkMode}
+              onValueChange={handleDarkModeToggle}
+              trackColor={{ false: '#E0E0E0', true: colors.primary }}
+              thumbColor={isDarkMode ? '#FFFFFF' : '#F5F5F5'}
+              ios_backgroundColor="#E0E0E0"
+            />
           </View>
+
+          {/* Language Selector */}
+          <TouchableOpacity
+            style={styles.preferenceCard}
+            onPress={() => setLanguageModalVisible(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuLeft}>
+              <Icon name="globe" size={20} color={colors.primary} />
+              <Text style={styles.menuText}>Language</Text>
+            </View>
+            <View style={styles.languageSelector}>
+              <Text style={styles.languageText}>{currentLanguage}</Text>
+              <Icon name="chevron-down" size={18} color="#9E9E9E" />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Security & Account Section */}
@@ -509,11 +497,11 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xxl,
   },
   sectionTitle: {
-    fontSize: FONT_SIZE.lg,
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: SPACING.md,
-    marginLeft: SPACING.xs,
+    color: '#666',
+    marginTop: 8,
+    marginBottom: 8,
   },
   card: {
     backgroundColor: colors.surface,
@@ -707,6 +695,26 @@ const styles = StyleSheet.create({
   languageOptionDivider: {
     height: 1,
     backgroundColor: colors.border,
+  },
+  // New styles matching partner design
+  preferenceCard: {
+    backgroundColor: colors.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: 14,
+    marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  menuLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  menuText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.textPrimary,
   },
 });
 

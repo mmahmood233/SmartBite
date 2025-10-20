@@ -29,7 +29,7 @@ export const PartnerStrings = {
       liveOrders: 'Orders',
       overview: 'Overview',
       menu: 'Menu',
-      more: 'More',
+      more: 'Profile',
     },
     
     // Orders Screen
@@ -153,7 +153,7 @@ export const PartnerStrings = {
       liveOrders: 'الطلبات',
       overview: 'نظرة عامة',
       menu: 'القائمة',
-      more: 'المزيد',
+      more: 'الملف الشخصي',
     },
     // ... Add more Arabic translations as needed
   },

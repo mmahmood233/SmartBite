@@ -4,8 +4,8 @@
  * Supports English and Arabic (future expansion)
  */
 
-export const PartnerStrings = {
-  en: {
+// English strings (base language)
+const EnglishStrings = {
     // Common
     common: {
       save: 'Save',
@@ -129,10 +129,10 @@ export const PartnerStrings = {
         viewReports: 'View Reports',
       },
     },
-  },
-  
-  // Arabic translations (future)
-  ar: {
+};
+
+// Arabic strings (العربية)
+const ArabicStrings = {
     common: {
       save: 'حفظ',
       cancel: 'إلغاء',
@@ -184,7 +184,12 @@ export const PartnerStrings = {
       greeting: 'مرحباً بعودتك',
       stats: { todayOrders: 'طلبات اليوم', earnings: 'الأرباح', avgRating: 'التقييم', avgPrepTime: 'وقت التحضير' },
     },
-  },
+};
+
+// Combined strings object
+export const PartnerStrings = {
+  en: EnglishStrings,
+  ar: ArabicStrings,
 };
 
 /**
@@ -192,8 +197,7 @@ export const PartnerStrings = {
  * @param language - Language code ('en' or 'ar')
  */
 export const getStrings = (language: 'en' | 'ar' = 'en') => {
-  // Return the requested language, fallback to English if not available
-  return PartnerStrings[language] || PartnerStrings.en;
+  return PartnerStrings[language];
 };
 
 export default PartnerStrings;

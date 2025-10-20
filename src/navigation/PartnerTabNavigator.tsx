@@ -6,7 +6,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
+import { Feather as Icon } from '@expo/vector-icons';
 import OverviewDashboard from '../screens/partner/OverviewDashboard';
 import LiveOrdersScreen from '../screens/partner/LiveOrdersScreen';
 import MenuManagementScreen from '../screens/partner/MenuManagementScreen';

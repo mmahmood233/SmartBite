@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types';
 import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/Feather';
+import { Feather as Icon } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import SearchBar from '../../../components/SearchBar';
@@ -673,8 +673,17 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 11, color: '#555555' },
   metaDot: { marginHorizontal: 4, color: '#555555', fontSize: 11 },
 
-  gridWrap: { paddingHorizontal: SCREEN_WIDTH * 0.05, flexDirection: 'row', flexWrap: 'wrap', gap: SCREEN_WIDTH * 0.04, marginTop: 12 },
-  gridItem: { },
+  gridWrap: { 
+    paddingHorizontal: SCREEN_WIDTH * 0.05, 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    marginTop: 12,
+    justifyContent: 'space-between',
+  },
+  gridItem: { 
+    width: (SCREEN_WIDTH * 0.9 - SCREEN_WIDTH * 0.04) / 2,
+    marginBottom: SCREEN_WIDTH * 0.04,
+  },
   link: { color: colors.primary, fontWeight: '600', fontSize: 14, letterSpacing: 0.3 },
   
   // Search Suggestions

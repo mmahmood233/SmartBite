@@ -155,17 +155,45 @@ export const PartnerStrings = {
       menu: 'القائمة',
       more: 'الملف الشخصي',
     },
-    // ... Add more Arabic translations as needed
+    
+    // Orders Screen - TODO: Add Arabic translations
+    liveOrders: {
+      title: 'الطلبات',
+      filters: { all: 'الكل', new: 'جديد', preparing: 'قيد التحضير', ready: 'جاهز', completed: 'مكتمل', cancelled: 'ملغي' },
+      actions: { accept: 'قبول', reject: 'رفض', markReady: 'جاهز', viewDetails: 'التفاصيل' },
+      labels: { items: 'عناصر', preparing: 'قيد التحضير', readyForPickup: 'جاهز للاستلام' },
+      empty: { title: 'لا توجد طلبات', message: 'ستظهر الطلبات الجديدة هنا' },
+    },
+    
+    // Menu Screen - TODO: Add Arabic translations  
+    menu: {
+      title: 'القائمة',
+      search: 'بحث في القائمة...',
+      categories: { all: 'الكل', starters: 'المقبلات', mains: 'الأطباق الرئيسية', desserts: 'الحلويات', beverages: 'المشروبات', addCategory: 'فئة' },
+      actions: { addItem: 'إضافة عنصر', manageCategories: 'إدارة الفئات', edit: 'تعديل', markUnavailable: 'غير متوفر', markAvailable: 'متوفر' },
+      labels: { active: 'نشط', inactive: 'غير نشط', popular: 'شائع', price: 'د.ب' },
+      modals: { addItem: 'إضافة عنصر', editItem: 'تعديل عنصر', addCategory: 'إضافة فئة', manageCategories: 'إدارة الفئات' },
+      form: { itemName: 'اسم العنصر', description: 'الوصف', price: 'السعر (د.ب)', category: 'الفئة', categoryName: 'اسم الفئة', status: 'الحالة' },
+      empty: { title: 'لا توجد عناصر', searchMessage: 'جرب مصطلح بحث مختلف', emptyMessage: 'ابدأ بإضافة طبقك الأول!' },
+      confirmations: { deleteItem: 'هل أنت متأكد من حذف هذا العنصر؟', deleteCategory: 'هل أنت متأكد من حذف هذه الفئة؟' },
+    },
+    
+    // Overview Screen - TODO: Add Arabic translations
+    overview: {
+      title: 'نظرة عامة',
+      greeting: 'مرحباً بعودتك',
+      stats: { todayOrders: 'طلبات اليوم', earnings: 'الأرباح', avgRating: 'التقييم', avgPrepTime: 'وقت التحضير' },
+    },
   },
 };
 
 /**
  * Get localized strings based on current language
- * @param lang - Language code ('en' or 'ar')
+ * @param language - Language code ('en' or 'ar')
  */
-export const getStrings = (lang: 'en' | 'ar' = 'en') => {
-  // Always return English structure for now (Arabic translations incomplete)
-  return PartnerStrings.en;
+export const getStrings = (language: 'en' | 'ar' = 'en') => {
+  // Return the requested language, fallback to English if not available
+  return PartnerStrings[language] || PartnerStrings.en;
 };
 
 export default PartnerStrings;

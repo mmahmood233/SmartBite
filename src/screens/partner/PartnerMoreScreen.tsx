@@ -81,7 +81,7 @@ const PartnerMoreScreen: React.FC = () => {
 
   const handleSaveBusinessInfo = (updatedData: any) => {
     setBusinessData({ ...businessData, ...updatedData });
-    Alert.alert('Success', 'Business information updated successfully!');
+    // Success message is shown by the modal's snackbar
   };
 
   return (

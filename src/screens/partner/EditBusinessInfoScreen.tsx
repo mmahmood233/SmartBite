@@ -20,6 +20,7 @@ import {
 import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
+import Snackbar, { SnackbarType } from '../../components/Snackbar';
 
 interface EditBusinessInfoModalProps {
   visible: boolean;
@@ -72,6 +73,17 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
   const [contactNumber, setContactNumber] = useState(businessData.contactNumber);
   const [address, setAddress] = useState(businessData.address);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  
+  // Snackbar state
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarType, setSnackbarType] = useState<SnackbarType>('success');
+
+  const showSnackbar = (message: string, type: SnackbarType = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarType(type);
+    setSnackbarVisible(true);
+  };
 
   const toggleCategory = (category: string) => {
     if (selectedCategories.includes(category)) {
@@ -83,19 +95,19 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
 
   const handleSave = () => {
     if (!name.trim()) {
-      Alert.alert('Error', 'Restaurant name is required');
+      showSnackbar('Restaurant name is required', 'error');
       return;
     }
     if (selectedCategories.length === 0) {
-      Alert.alert('Error', 'Please select at least one category');
+      showSnackbar('Please select at least one category', 'error');
       return;
     }
     if (!contactNumber.trim()) {
-      Alert.alert('Error', 'Contact number is required');
+      showSnackbar('Contact number is required', 'error');
       return;
     }
     if (!address.trim()) {
-      Alert.alert('Error', 'Address is required');
+      showSnackbar('Address is required', 'error');
       return;
     }
 
@@ -111,7 +123,10 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
     };
 
     onSave(updatedData);
-    onClose();
+    showSnackbar('Business information updated successfully!', 'success');
+    setTimeout(() => {
+      onClose();
+    }, 1500);
   };
 
   return (
@@ -375,6 +390,14 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
             </View>
           </TouchableOpacity>
         </Modal>
+
+        {/* Snackbar */}
+        <Snackbar
+          visible={snackbarVisible}
+          message={snackbarMessage}
+          type={snackbarType}
+          onDismiss={() => setSnackbarVisible(false)}
+        />
       </View>
     </Modal>
   );

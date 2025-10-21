@@ -18,6 +18,7 @@ import { Feather as Icon } from '@expo/vector-icons';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import { getStrings } from '../../constants/partnerStrings';
+import Snackbar, { SnackbarType } from '../../components/Snackbar';
 
 const strings = getStrings('en');
 
@@ -90,24 +91,35 @@ const FILTER_TABS = [
 
 const LiveOrdersScreen: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
+  
+  // Snackbar state
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarType, setSnackbarType] = useState<SnackbarType>('success');
+
+  const showSnackbar = (message: string, type: SnackbarType = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarType(type);
+    setSnackbarVisible(true);
+  };
 
   const handleAcceptOrder = (orderId: string) => {
-    console.log('Accept order:', orderId);
+    showSnackbar(`Order ${orderId} accepted`, 'success');
     // TODO: API call to accept order
   };
 
   const handleRejectOrder = (orderId: string) => {
-    console.log('Reject order:', orderId);
+    showSnackbar(`Order ${orderId} rejected`, 'warning');
     // TODO: API call to reject order
   };
 
   const handleMarkReady = (orderId: string) => {
-    console.log('Mark ready:', orderId);
+    showSnackbar(`Order ${orderId} marked as ready`, 'success');
     // TODO: API call to mark ready
   };
 
   const handleMarkCompleted = (orderId: string) => {
-    console.log('Mark completed:', orderId);
+    showSnackbar(`Order ${orderId} completed`, 'success');
     // TODO: API call to mark completed
   };
 
@@ -274,6 +286,14 @@ const LiveOrdersScreen: React.FC = () => {
 
         <View style={{ height: 20 }} />
       </ScrollView>
+
+      {/* Snackbar */}
+      <Snackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        type={snackbarType}
+        onDismiss={() => setSnackbarVisible(false)}
+      />
     </View>
   );
 };

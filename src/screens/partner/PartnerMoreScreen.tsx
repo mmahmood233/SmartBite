@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Feather as Icon } from '@expo/vector-icons';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
 import ProfileMenuItem from '../../components/ProfileMenuItem';
+import EditBusinessInfoModal from './EditBusinessInfoScreen';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import { getStrings } from '../../constants/partnerStrings';
 
@@ -19,6 +20,22 @@ const PartnerMoreScreen: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('English');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
+  const [editBusinessModalVisible, setEditBusinessModalVisible] = useState(false);
+
+  // Mock business data
+  const [businessData, setBusinessData] = useState({
+    name: 'Burger Town',
+    category: 'Burgers & Sandwiches',
+    description: 'Serving freshly grilled burgers since 2019.',
+    logo: require('../../../assets/food.png'),
+    isOpen: true,
+    status: 'open' as 'open' | 'closed' | 'busy',
+    avgPrepTime: '20-25 min',
+    contactNumber: '+973 3999 8888',
+    address: 'Seef Mall, Manama',
+    rating: 4.7,
+    earnings: 'BD 1,230.400',
+  });
 
   const handleLogout = () => {
     Alert.alert('Confirm Logout', 'Are you sure you want to log out?', [
@@ -54,9 +71,17 @@ const PartnerMoreScreen: React.FC = () => {
       case 'Change Password':
         navigation.navigate('ChangePassword' as never);
         break;
+      case 'Edit Business Info':
+        setEditBusinessModalVisible(true);
+        break;
       default:
         console.log(`Pressed: ${label}`);
     }
+  };
+
+  const handleSaveBusinessInfo = (updatedData: any) => {
+    setBusinessData({ ...businessData, ...updatedData });
+    Alert.alert('Success', 'Business information updated successfully!');
   };
 
   return (
@@ -79,19 +104,22 @@ const PartnerMoreScreen: React.FC = () => {
         <View style={styles.profileCard}>
           <View style={styles.profileLeft}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>R</Text>
+              <Text style={styles.avatarText}>{businessData.name.charAt(0)}</Text>
             </View>
             <View>
-              <Text style={styles.restaurantName}>Burger Town</Text>
-              <Text style={styles.restaurantStatus}>Open • 4.7 ⭐</Text>
+              <Text style={styles.restaurantName}>{businessData.name}</Text>
+              <Text style={styles.restaurantStatus}>
+                {businessData.isOpen ? 'Open' : 'Closed'} • {businessData.rating} ⭐
+              </Text>
             </View>
           </View>
           <TouchableOpacity 
-            style={styles.editButton}
+            style={styles.manageButton}
             onPress={() => handleMenuPress('Edit Business Info')}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <Icon name="edit-2" size={16} color={PartnerColors.primary} />
+            <Icon name="settings" size={16} color={PartnerColors.primary} />
+            <Text style={styles.manageButtonText}>Manage</Text>
           </TouchableOpacity>
         </View>
 
@@ -191,6 +219,14 @@ const PartnerMoreScreen: React.FC = () => {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Edit Business Info Modal */}
+      <EditBusinessInfoModal
+        visible={editBusinessModalVisible}
+        onClose={() => setEditBusinessModalVisible(false)}
+        businessData={businessData}
+        onSave={handleSaveBusinessInfo}
+      />
     </View>
   );
 };
@@ -245,10 +281,19 @@ const styles = StyleSheet.create({
     color: PartnerColors.light.text.tertiary,
     marginTop: 2,
   },
-  editButton: {
-    padding: 6,
-    borderRadius: PartnerBorderRadius.sm,
-    backgroundColor: PartnerColors.light.surfaceAlt,
+  manageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${PartnerColors.primary}14`,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+  },
+  manageButtonText: {
+    fontSize: 13,
+    fontWeight: PartnerTypography.fontWeight.semibold,
+    color: PartnerColors.primary,
   },
   sectionTitle: {
     fontSize: PartnerTypography.fontSize.base,

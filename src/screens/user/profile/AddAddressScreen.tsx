@@ -37,6 +37,8 @@ const AddAddressScreen: React.FC = () => {
   const [contactNumber, setContactNumber] = useState('+973 3356 0803'); // Pre-filled from profile
   const [notes, setNotes] = useState('');
   const [isDefault, setIsDefault] = useState(false);
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
 
@@ -77,15 +79,17 @@ const AddAddressScreen: React.FC = () => {
   };
 
   const handlePickLocation = () => {
-    Alert.alert(
-      'Pick Location',
-      'Map integration will be implemented here',
-      [{ text: 'OK' }]
-    );
+    // Mock coordinates for Bahrain (can be replaced with real map picker)
+    const mockLat = '26.0667';
+    const mockLng = '50.5577';
+    
+    setLatitude(mockLat);
+    setLongitude(mockLng);
+    showSnackbar('Location selected: Manama, Bahrain', 'success');
   };
 
   const renderInput = (
-    icon: string,
+    icon: any,
     placeholder: string,
     value: string,
     onChangeText: (text: string) => void,
@@ -94,7 +98,7 @@ const AddAddressScreen: React.FC = () => {
   ) => (
     <View style={styles.inputContainer}>
       <View style={styles.inputIconContainer}>
-        <Icon name={icon} size={18} color={colors.primary} />
+        <Icon name={icon as any} size={18} color={colors.primary} />
       </View>
       <TextInput
         style={[styles.input, multiline && styles.inputMultiline]}
@@ -223,15 +227,27 @@ const AddAddressScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* Pick Location on Map */}
-          <TouchableOpacity
-            style={styles.mapButton}
-            onPress={handlePickLocation}
-            activeOpacity={0.7}
-          >
-            <Icon name="map-pin" size={20} color={colors.primary} />
-            <Text style={styles.mapButtonText}>Pick Location on Map</Text>
-            <Icon name="chevron-right" size={20} color="#94A3B8" />
-          </TouchableOpacity>
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>Location Pin</Text>
+            <TouchableOpacity
+              style={styles.mapButton}
+              onPress={handlePickLocation}
+              activeOpacity={0.7}
+            >
+              <Icon name="map-pin" size={20} color={colors.primary} />
+              <Text style={styles.mapButtonText}>
+                {latitude && longitude
+                  ? `Selected: ${latitude}, ${longitude}`
+                  : 'Pick Location on Map'}
+              </Text>
+              <Icon name="chevron-right" size={20} color="#94A3B8" />
+            </TouchableOpacity>
+            {latitude && longitude && (
+              <Text style={styles.locationHint}>
+                📍 Location will be used for accurate delivery
+              </Text>
+            )}
+          </View>
         </View>
 
         {/* Bottom Spacing */}
@@ -433,6 +449,11 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.base,
     fontWeight: '500',
     color: colors.primary,
+  },
+  locationHint: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 8,
   },
   bottomActions: {
     flexDirection: 'row',

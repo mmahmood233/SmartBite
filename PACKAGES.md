@@ -1,7 +1,7 @@
 # SmartBite Package Documentation
 
-**Version**: 1.0.0  
-**Last Updated**: 2025-10-18
+**Version**: 2.0.0  
+**Last Updated**: 2025-10-22
 
 Complete reference for all packages used in SmartBite, including purpose, version, and usage.
 
@@ -9,8 +9,8 @@ Complete reference for all packages used in SmartBite, including purpose, versio
 
 ## 📦 Package Overview
 
-**Total Packages**: 17  
-**Dependencies**: 14  
+**Total Packages**: 20  
+**Dependencies**: 17  
 **Dev Dependencies**: 3
 
 ---
@@ -173,6 +173,74 @@ Complete reference for all packages used in SmartBite, including purpose, versio
 - **Used In**: App.tsx
 - **Documentation**: https://docs.expo.dev/versions/latest/sdk/status-bar/
 
+### **@expo/vector-icons** (^15.0.2)
+- **Category**: Icons
+- **Purpose**: Icon library with multiple icon sets (Feather, Material, FontAwesome, etc.)
+- **Why We Use It**: 
+  - Thousands of icons available
+  - Scalable vector icons
+  - Multiple icon families in one package
+  - Customizable size and color
+  - TypeScript support
+- **Used In**: All screens (Feather icons primarily)
+- **Documentation**: https://docs.expo.dev/guides/icons/
+
+---
+
+## 📸 Media & Assets
+
+### **expo-image-picker** (~17.0.8)
+- **Category**: Media
+- **Purpose**: Access device camera and photo library
+- **Why We Use It**: 
+  - Upload profile photos
+  - Upload restaurant logos
+  - Built-in image editing (crop, rotate)
+  - Permission handling
+  - Works on iOS and Android
+- **Used In**: 
+  - EditProfileScreen.tsx (profile photo)
+  - RestaurantsManagementScreen.tsx (restaurant logos)
+- **Documentation**: https://docs.expo.dev/versions/latest/sdk/imagepicker/
+
+---
+
+## 📊 Charts & Data Visualization
+
+### **react-native-chart-kit** (^6.12.0)
+- **Category**: Charts
+- **Purpose**: Beautiful charts for React Native
+- **Why We Use It**: 
+  - Revenue trend charts
+  - Line charts, bar charts, pie charts
+  - Customizable colors and styles
+  - Smooth animations
+  - Works with react-native-svg
+- **Used In**: AdminDashboardScreen.tsx (revenue trends)
+- **Documentation**: https://github.com/indiespirit/react-native-chart-kit
+
+### **react-native-svg** (^15.14.0)
+- **Category**: Graphics
+- **Purpose**: SVG rendering for React Native
+- **Why We Use It**: 
+  - Required by react-native-chart-kit
+  - Renders SVG graphics
+  - High-performance vector graphics
+  - Cross-platform support
+- **Used In**: Chart components (automatic)
+- **Documentation**: https://github.com/software-mansion/react-native-svg
+
+### **react-native-worklets** (^0.5.1)
+- **Category**: Performance
+- **Purpose**: JavaScript worklets for high-performance operations
+- **Why We Use It**: 
+  - Required by react-native-reanimated
+  - Runs JavaScript on UI thread
+  - Enables smooth 60fps animations
+  - Better performance for complex calculations
+- **Used In**: Animation system (automatic)
+- **Documentation**: https://github.com/margelo/react-native-worklets
+
 ---
 
 ## 🎭 Animations
@@ -269,11 +337,20 @@ Complete reference for all packages used in SmartBite, including purpose, versio
 - react-native-screens
 - react-native-safe-area-context
 
-### **UI & Design (4 packages)**
+### **UI & Design (5 packages)**
 - react-native-paper
 - expo-linear-gradient
-- react-native-vector-icons
+- @expo/vector-icons
 - expo-status-bar
+- react-native-vector-icons (legacy)
+
+### **Media & Assets (1 package)**
+- expo-image-picker
+
+### **Charts & Data Visualization (3 packages)**
+- react-native-chart-kit
+- react-native-svg
+- react-native-worklets
 
 ### **Animations (2 packages)**
 - react-native-reanimated
@@ -284,8 +361,10 @@ Complete reference for all packages used in SmartBite, including purpose, versio
 - @types/react
 - @types/react-native
 
-### **Build Tools (1 package)**
+### **Build Tools (2 packages)**
 - @babel/core
+- expo-module-scripts
+- babel-preset-expo
 
 ---
 
@@ -314,14 +393,16 @@ Complete reference for all packages used in SmartBite, including purpose, versio
 - **Purpose**: Optimized image component with caching
 - **Why**: Better performance than default Image
 - **When**: Stage 4 - Store images and menus
+- **Status**: ⏳ Pending (currently using expo-image-picker for uploads)
 
 ### **Maps**
 ```json
 "react-native-maps": "^1.10.0"
 ```
 - **Purpose**: Native maps for iOS and Android
-- **Why**: Store locations, delivery tracking
+- **Why**: Store locations, delivery tracking, real map picker
 - **When**: Stage 5 - Location features
+- **Status**: ⏳ Pending (currently using mock coordinates)
 
 ### **Location**
 ```json
@@ -364,6 +445,15 @@ Complete reference for all packages used in SmartBite, including purpose, versio
 npm install
 ```
 
+### **Install New Packages (Already Installed)**
+```bash
+# Image Picker (✅ Installed)
+npx expo install expo-image-picker
+
+# Charts (✅ Installed)
+npm install react-native-chart-kit react-native-svg
+```
+
 ### **Install Future Packages (When Needed)**
 ```bash
 # Supabase
@@ -375,7 +465,7 @@ npm install zustand
 # Image Optimization
 npx expo install expo-image
 
-# Maps & Location
+# Maps & Location (Real Maps)
 npm install react-native-maps
 npx expo install expo-location
 
@@ -543,18 +633,24 @@ npm install
 
 ---
 
-**Last Audit**: 2025-10-18  
-**Total Package Size**: ~180 MB (node_modules)  
-**Production Bundle**: ~15 MB (estimated)  
+**Last Audit**: 2025-10-22  
+**Total Package Size**: ~190 MB (node_modules)  
+**Production Bundle**: ~16 MB (estimated)  
 **Status**: All packages documented ✅
+
+### **New Additions (v2.0.0)**
+- ✅ expo-image-picker - Profile photos & restaurant logos
+- ✅ react-native-chart-kit - Revenue trend charts
+- ✅ react-native-svg - Chart rendering
+- ✅ react-native-worklets - Animation performance
 
 ---
 
 ## 📂 Project Structure Updates
 
-### **Screen Organization (As of 2025-10-18)**
+### **Screen Organization (As of 2025-10-22)**
 
-The project now follows a clean, organized folder structure:
+The project now follows a clean, organized folder structure with 3 complete portals:
 
 ```
 src/screens/
@@ -566,9 +662,17 @@ src/screens/
 │   ├── orders/             # Order tracking & history
 │   └── profile/            # User settings & account
 │
-└── partner/                # RESTAURANT PORTAL
-    ├── OverviewDashboard   # Analytics & stats
-    └── LiveOrdersScreen    # Order management
+├── partner/                # RESTAURANT PORTAL
+│   ├── OverviewDashboard   # Analytics & stats
+│   └── LiveOrdersScreen    # Order management
+│
+└── admin/                  # ADMIN PORTAL (NEW!)
+    ├── AdminDashboardScreen          # Platform stats & charts
+    ├── RestaurantsManagementScreen   # CRUD operations
+    ├── CategoriesManagementScreen    # Category management
+    ├── PromotionsManagementScreen    # Promotions list
+    ├── AddPromotionScreen            # Create/Edit promotions
+    └── AdminSettingsScreen           # Admin settings
 ```
 
 ### **Navigation Structure**
@@ -576,9 +680,19 @@ src/screens/
 - **AuthNavigator**: Login/Signup flow (Stack)
 - **MainTabNavigator**: User portal tabs (Bottom Tabs)
 - **PartnerTabNavigator**: Partner portal tabs (Bottom Tabs)
+- **AdminTabNavigator**: Admin portal tabs (Bottom Tabs) ✨ NEW
 
 ### **Import Path Convention**
 - User screens: `../../../` (3 levels up to src/)
 - Partner screens: `../../` (2 levels up to src/)
+- Admin screens: `../../` (2 levels up to src/)
 - Components: Always from `src/components/`
 - Theme: Always from `src/theme/`
+
+### **New Features (v2.0.0)**
+- 📸 Image upload with expo-image-picker
+- 📍 Location picker (mock coordinates, ready for real maps)
+- 📊 Revenue charts with date filters
+- 🏪 Full restaurant CRUD
+- 🏷️ Promotions management
+- ⚙️ Admin settings

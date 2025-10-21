@@ -45,6 +45,21 @@ export type RootStackParamList = {
   PartnerOrderDetails: {
     orderId: string;
   };
+  AdminPortal: undefined;
+  AddPromotion: {
+    promotion?: {
+      id: string;
+      title: string;
+      description: string;
+      type: 'percentage' | 'fixed' | 'free_delivery';
+      discountValue: string;
+      minOrderAmount: string;
+      validFrom: string;
+      validUntil: string;
+      maxUsage: string;
+      isActive: boolean;
+    };
+  };
 };
 
 export type AuthStackParamList = {

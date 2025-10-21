@@ -39,9 +39,22 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleSignIn = (): void => {
-    // TODO: Replace with real auth; for now, go to MainTabs
+    // TODO: Replace with real auth
     console.log('Sign in with:', email, password);
-    rootNav.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+    
+    // Check user role based on email (temporary - replace with API response)
+    const emailLower = email.toLowerCase().trim();
+    
+    if (emailLower === 'admin@smartbite.com' || emailLower === 'admin@wajba.com') {
+      // Admin user - route to Admin Portal
+      rootNav.reset({ index: 0, routes: [{ name: 'AdminPortal' }] });
+    } else if (emailLower.includes('partner@') || emailLower.includes('restaurant@')) {
+      // Partner user - route to Partner Portal
+      rootNav.reset({ index: 0, routes: [{ name: 'PartnerPortal' }] });
+    } else {
+      // Regular user - route to Main Tabs
+      rootNav.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+    }
   };
 
   const handleForgotPassword = (): void => {

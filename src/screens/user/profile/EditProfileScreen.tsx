@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Platform,
   KeyboardAvoidingView,
-  Alert,
+  Image,
 } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -15,6 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types';
 import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE, ICON_SIZE, AVATAR_SIZE } from '../../../constants';
 import { getInitials, validateRequired, validateEmail, validatePhone } from '../../../utils';
@@ -32,6 +33,7 @@ const EditProfileScreen: React.FC = () => {
   const [email, setEmail] = useState('ahmed.faisal@example.com');
   const [phone, setPhone] = useState('+973 3356 0803');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const [profileImage, setProfileImage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
 
@@ -39,9 +41,27 @@ const EditProfileScreen: React.FC = () => {
     setSnackbar({ visible: true, message, type });
   };
 
-  const handleChangePhoto = () => {
-    // TODO: Open camera/gallery picker
-    Alert.alert('Change Photo', 'Camera/Gallery picker will open here');
+  const handleChangePhoto = async () => {
+    // Request permission
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      showSnackbar('Permission to access gallery is required!', 'error');
+      return;
+    }
+
+    // Launch image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setProfileImage(result.assets[0].uri);
+      showSnackbar('Profile photo updated!', 'success');
+    }
   };
 
   const handleSaveChanges = async () => {
@@ -92,14 +112,18 @@ const EditProfileScreen: React.FC = () => {
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
           <View style={styles.avatarContainer}>
-            <LinearGradient
-              colors={[colors.gradientStart, colors.gradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.avatar}
-            >
-              <Text style={styles.avatarInitials}>{getInitials(fullName)}</Text>
-            </LinearGradient>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={styles.avatar} />
+            ) : (
+              <LinearGradient
+                colors={[colors.gradientStart, colors.gradientEnd]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.avatar}
+              >
+                <Text style={styles.avatarInitials}>{getInitials(fullName)}</Text>
+              </LinearGradient>
+            )}
             <TouchableOpacity
               style={styles.editAvatarButton}
               onPress={handleChangePhoto}
@@ -109,7 +133,9 @@ const EditProfileScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
           <TouchableOpacity onPress={handleChangePhoto} activeOpacity={0.7}>
-            <Text style={styles.changePhotoText}>Edit Photo</Text>
+            <Text style={styles.changePhotoText}>
+              {profileImage ? 'Change Photo' : 'Edit Photo'}
+            </Text>
           </TouchableOpacity>
         </View>
 

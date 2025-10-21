@@ -24,6 +24,9 @@ import OrderDetailsScreen from '../screens/user/orders/OrderDetailsScreen';
 // Partner Portal - Screens
 import PartnerOrderDetailsScreen from '../screens/partner/OrderDetailsScreen';
 
+// Admin Portal - Screens
+import AddPromotionScreen from '../screens/admin/AddPromotionScreen';
+
 // User Portal - Profile
 import EditProfileScreen from '../screens/user/profile/EditProfileScreen';
 import FavoritesScreen from '../screens/user/profile/FavoritesScreen';
@@ -41,6 +44,7 @@ import AIChatScreen from '../screens/user/profile/AIChatScreen';
 import MainTabNavigator from './MainTabNavigator';
 import AuthNavigator from './AuthNavigator';
 import PartnerTabNavigator from './PartnerTabNavigator';
+import AdminTabNavigator from './AdminTabNavigator';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -81,6 +85,8 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="PartnerPortal" component={PartnerTabNavigator} />
       <Stack.Screen name="PartnerOrderDetails" component={PartnerOrderDetailsScreen} />
+      <Stack.Screen name="AdminPortal" component={AdminTabNavigator} />
+      <Stack.Screen name="AddPromotion" component={AddPromotionScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>
   );

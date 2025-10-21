@@ -5,9 +5,9 @@ An AI-powered delivery platform for food, groceries, and essentials - now with a
 **Brand**: Middle Eastern warmth meets intelligent personalization  
 **Keywords**: authentic • smart • local • appetizing • trustworthy
 
-**Version**: 1.0.0  
-**Last Updated**: 2025-10-18  
-**Status**: ✅ Production-Ready UI (Backend Integration Pending)
+**Version**: 2.0.0  
+**Last Updated**: 2025-10-22  
+**Status**: ✅ Production-Ready with Admin Portal, Image Picker & Location Services
 
 ## Setup
 
@@ -63,7 +63,9 @@ npm run android
 
 #### 👤 User Profile
 - **Profile Management** with edit capabilities
+- **Profile Photo Upload** with expo-image-picker
 - **Saved Addresses** (add, edit, delete)
+- **Location Picker** for accurate delivery (mock coordinates)
 - **Payment Methods** management
 - **Favorites** restaurants
 - **Offers & Promotions**
@@ -100,6 +102,49 @@ npm run android
 - **Consistent Top Navigation** with branding
 - **Responsive Layout** for all screen sizes
 
+### 👨‍💼 **ADMIN PORTAL** (Platform Management)
+
+#### 📊 Dashboard
+- **Platform Statistics** (Restaurants, Users, Orders, Revenue)
+- **Revenue Trends Chart** with Week/Month/Year filters
+- **Quick Actions** (Add Restaurant, Manage Categories, Create Promotion)
+- **Recent Activity Feed**
+
+#### 🏪 Restaurants Management
+- **Full CRUD Operations** (Create, Read, Update, Delete)
+- **Restaurant Logo Upload** with expo-image-picker
+- **Location Picker** for restaurant address (mock coordinates)
+- **Search & Filter** by name, category, status
+- **Status Management** (Activate/Deactivate)
+- **Restaurant Cards** with stats (rating, orders, prep time)
+- **Form Validation** for all required fields
+- **Loading States** with spinner overlay
+- **Success/Error Feedback** with snackbar
+
+#### 📂 Categories Management
+- **Add/Edit/Delete Categories** with modal form
+- **Category Icons** (emoji-based)
+- **Restaurant Count** per category
+- **Active/Inactive Toggle**
+- **Grid Layout** (2 columns)
+
+#### 🏷️ Promotions Management
+- **Create/Edit/Delete Promotions**
+- **Promotion Types** (Percentage, Fixed Amount, Free Delivery)
+- **Color-Coded Icons** by type
+- **Active/Inactive Toggle**
+- **Live Preview** of promotion card
+- **Validity Dates** tracking
+- **Full-Page Form** with type selection
+
+#### ⚙️ Settings
+- **Admin Profile** with avatar
+- **Default Delivery Fee** configuration
+- **Change Password**
+- **Platform Settings** menu
+- **Logout** functionality
+- **App Version** display
+
 ## 🛠️ Tech Stack
 
 - **Frontend**: React Native + Expo SDK 51
@@ -112,8 +157,11 @@ npm run android
 - **Icons**: Feather Icons + Material Community Icons
 - **Gradients**: Expo Linear Gradient
 - **Animations**: React Native Reanimated + Gesture Handler
+- **Image Picker**: expo-image-picker (gallery selection with editing)
+- **Charts**: react-native-chart-kit + react-native-svg (revenue trends)
+- **Location**: Mock coordinates (ready for react-native-maps integration)
 - **Theme**: Custom Wajba design system (Teal #00A896 primary)
-- **Total Packages**: 17 dependencies (see PACKAGES.md)
+- **Total Packages**: 20 dependencies (see PACKAGES.md)
 
 ## 📁 Project Structure
 
@@ -140,14 +188,22 @@ Wajba/
 │   │   │   ├── cart/            # Cart, Checkout
 │   │   │   ├── orders/          # Order tracking & history
 │   │   │   └── profile/         # User settings & account
-│   │   └── partner/             # PARTNER PORTAL
-│   │       ├── OverviewDashboard.tsx
-│   │       └── LiveOrdersScreen.tsx
+│   │   ├── partner/             # PARTNER PORTAL
+│   │   │   ├── OverviewDashboard.tsx
+│   │   │   └── LiveOrdersScreen.tsx
+│   │   └── admin/               # ADMIN PORTAL
+│   │       ├── AdminDashboardScreen.tsx
+│   │       ├── RestaurantsManagementScreen.tsx
+│   │       ├── CategoriesManagementScreen.tsx
+│   │       ├── PromotionsManagementScreen.tsx
+│   │       ├── AddPromotionScreen.tsx
+│   │       └── AdminSettingsScreen.tsx
 │   ├── navigation/
 │   │   ├── RootNavigator.tsx    # Main app navigation
 │   │   ├── AuthNavigator.tsx    # Auth flow
 │   │   ├── MainTabNavigator.tsx # User portal tabs
-│   │   └── PartnerTabNavigator.tsx # Partner portal tabs
+│   │   ├── PartnerTabNavigator.tsx # Partner portal tabs
+│   │   └── AdminTabNavigator.tsx # Admin portal tabs
 │   ├── theme/                   # Design system
 │   │   ├── colors.ts
 │   │   ├── typography.ts

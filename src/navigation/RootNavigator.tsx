@@ -21,6 +21,9 @@ import DeliveryCompleteScreen from '../screens/user/orders/DeliveryCompleteScree
 import ReviewConfirmationScreen from '../screens/user/orders/ReviewConfirmationScreen';
 import OrderDetailsScreen from '../screens/user/orders/OrderDetailsScreen';
 
+// Partner Portal - Screens
+import PartnerOrderDetailsScreen from '../screens/partner/OrderDetailsScreen';
+
 // User Portal - Profile
 import EditProfileScreen from '../screens/user/profile/EditProfileScreen';
 import FavoritesScreen from '../screens/user/profile/FavoritesScreen';
@@ -77,6 +80,7 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="PartnerPortal" component={PartnerTabNavigator} />
+      <Stack.Screen name="PartnerOrderDetails" component={PartnerOrderDetailsScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>
   );

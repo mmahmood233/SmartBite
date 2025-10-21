@@ -15,10 +15,16 @@ import {
   Platform,
 } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import { getStrings } from '../../constants/partnerStrings';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
+import LoadingSpinner from '../../components/LoadingSpinner';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const strings = getStrings('en');
 
@@ -90,12 +96,17 @@ const FILTER_TABS = [
 ];
 
 const LiveOrdersScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const [selectedFilter, setSelectedFilter] = useState('all');
   
   // Snackbar state
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarType, setSnackbarType] = useState<SnackbarType>('success');
+  
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Processing...');
 
   const showSnackbar = (message: string, type: SnackbarType = 'success') => {
     setSnackbarMessage(message);
@@ -103,22 +114,42 @@ const LiveOrdersScreen: React.FC = () => {
     setSnackbarVisible(true);
   };
 
-  const handleAcceptOrder = (orderId: string) => {
+  const handleAcceptOrder = async (orderId: string) => {
+    setIsLoading(true);
+    setLoadingMessage('Accepting order...');
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsLoading(false);
     showSnackbar(`Order ${orderId} accepted`, 'success');
     // TODO: API call to accept order
   };
 
-  const handleRejectOrder = (orderId: string) => {
+  const handleRejectOrder = async (orderId: string) => {
+    setIsLoading(true);
+    setLoadingMessage('Rejecting order...');
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsLoading(false);
     showSnackbar(`Order ${orderId} rejected`, 'warning');
     // TODO: API call to reject order
   };
 
-  const handleMarkReady = (orderId: string) => {
+  const handleMarkReady = async (orderId: string) => {
+    setIsLoading(true);
+    setLoadingMessage('Updating status...');
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsLoading(false);
     showSnackbar(`Order ${orderId} marked as ready`, 'success');
     // TODO: API call to mark ready
   };
 
-  const handleMarkCompleted = (orderId: string) => {
+  const handleMarkCompleted = async (orderId: string) => {
+    setIsLoading(true);
+    setLoadingMessage('Completing order...');
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsLoading(false);
     showSnackbar(`Order ${orderId} completed`, 'success');
     // TODO: API call to mark completed
   };
@@ -182,7 +213,12 @@ const LiveOrdersScreen: React.FC = () => {
             </View>
 
             {NEW_ORDERS.map((order) => (
-              <View key={order.id} style={styles.newOrderCard}>
+              <TouchableOpacity
+                key={order.id}
+                style={styles.newOrderCard}
+                onPress={() => navigation.navigate('PartnerOrderDetails', { orderId: order.id })}
+                activeOpacity={0.9}
+              >
                 {/* Timer Bar */}
                 <View style={styles.timerBar}>
                   <View style={[styles.timerProgress, { width: `${(order.timeLeft / 180) * 100}%` }]} />
@@ -220,7 +256,7 @@ const LiveOrdersScreen: React.FC = () => {
                     <Text style={styles.rejectButtonText}>Reject</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -235,7 +271,12 @@ const LiveOrdersScreen: React.FC = () => {
           </View>
 
           {ACTIVE_ORDERS.map((order) => (
-            <View key={order.id} style={styles.activeOrderCard}>
+            <TouchableOpacity
+              key={order.id}
+              style={styles.activeOrderCard}
+              onPress={() => navigation.navigate('PartnerOrderDetails', { orderId: order.id })}
+              activeOpacity={0.9}
+            >
               <View style={styles.orderHeader}>
                 <Text style={styles.orderId}>{order.id}</Text>
                 <Text style={styles.orderTime}>{order.time}</Text>
@@ -253,10 +294,12 @@ const LiveOrdersScreen: React.FC = () => {
                 </View>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => order.status === 'preparing' 
-                    ? handleMarkReady(order.id) 
-                    : handleMarkCompleted(order.id)
-                  }
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    order.status === 'preparing' 
+                      ? handleMarkReady(order.id) 
+                      : handleMarkCompleted(order.id);
+                  }}
                   activeOpacity={0.8}
                 >
                   <Text style={styles.actionButtonText}>
@@ -264,7 +307,7 @@ const LiveOrdersScreen: React.FC = () => {
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
 
@@ -293,6 +336,13 @@ const LiveOrdersScreen: React.FC = () => {
         message={snackbarMessage}
         type={snackbarType}
         onDismiss={() => setSnackbarVisible(false)}
+      />
+
+      {/* Loading Spinner */}
+      <LoadingSpinner
+        visible={isLoading}
+        message={loadingMessage}
+        overlay
       />
     </View>
   );

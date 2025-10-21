@@ -21,6 +21,7 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface EditBusinessInfoModalProps {
   visible: boolean;
@@ -78,6 +79,9 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarType, setSnackbarType] = useState<SnackbarType>('success');
+  
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
 
   const showSnackbar = (message: string, type: SnackbarType = 'success') => {
     setSnackbarMessage(message);
@@ -93,7 +97,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       showSnackbar('Restaurant name is required', 'error');
       return;
@@ -111,6 +115,11 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
       return;
     }
 
+    setIsLoading(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     const updatedData = {
       name,
       category: selectedCategories.join(' • '),
@@ -123,6 +132,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
     };
 
     onSave(updatedData);
+    setIsLoading(false);
     showSnackbar('Business information updated successfully!', 'success');
     setTimeout(() => {
       onClose();
@@ -397,6 +407,13 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
           message={snackbarMessage}
           type={snackbarType}
           onDismiss={() => setSnackbarVisible(false)}
+        />
+
+        {/* Loading Spinner */}
+        <LoadingSpinner
+          visible={isLoading}
+          message="Saving changes..."
+          overlay
         />
       </View>
     </Modal>

@@ -17,6 +17,7 @@ import PartnerTopNav from '../../components/partner/PartnerTopNav';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import { getStrings } from '../../constants/partnerStrings';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const strings = getStrings('en');
 
@@ -82,6 +83,10 @@ const MenuManagementScreen: React.FC = () => {
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarType, setSnackbarType] = useState<SnackbarType>('success');
+  
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Processing...');
 
   const showSnackbar = (message: string, type: SnackbarType = 'success') => {
     setSnackbarMessage(message);
@@ -122,11 +127,16 @@ const MenuManagementScreen: React.FC = () => {
     setShowAddModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name || !formData.price) {
       showSnackbar('Please fill in all required fields', 'error');
       return;
     }
+
+    setIsLoading(true);
+    setLoadingMessage(editingItem ? 'Updating item...' : 'Adding item...');
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     if (editingItem) {
       setMenuItems((prev) =>
@@ -164,6 +174,7 @@ const MenuManagementScreen: React.FC = () => {
       category: 'Starters',
       isActive: true,
     });
+    setIsLoading(false);
     showSnackbar('Item added successfully!', 'success');
   };
 
@@ -672,6 +683,13 @@ const MenuManagementScreen: React.FC = () => {
         message={snackbarMessage}
         type={snackbarType}
         onDismiss={() => setSnackbarVisible(false)}
+      />
+
+      {/* Loading Spinner */}
+      <LoadingSpinner
+        visible={isLoading}
+        message={loadingMessage}
+        overlay
       />
     </View>
   );

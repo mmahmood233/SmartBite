@@ -12,6 +12,7 @@ import ProfileMenuItem from '../../components/ProfileMenuItem';
 import EditBusinessInfoModal from './EditBusinessInfoScreen';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import { getStrings } from '../../constants/partnerStrings';
+import Snackbar, { SnackbarType } from '../../components/Snackbar';
 
 const strings = getStrings('en');
 
@@ -21,6 +22,17 @@ const PartnerMoreScreen: React.FC = () => {
   const [currentLanguage, setCurrentLanguage] = useState('English');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [editBusinessModalVisible, setEditBusinessModalVisible] = useState(false);
+  
+  // Snackbar state
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarType, setSnackbarType] = useState<SnackbarType>('success');
+
+  const showSnackbar = (message: string, type: SnackbarType = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarType(type);
+    setSnackbarVisible(true);
+  };
 
   // Mock business data
   const [businessData, setBusinessData] = useState({
@@ -46,14 +58,14 @@ const PartnerMoreScreen: React.FC = () => {
 
   const handleDarkModeToggle = (value: boolean) => {
     setIsDarkMode(value);
-    console.log('Dark Mode:', value);
+    showSnackbar(`Dark mode ${value ? 'enabled' : 'disabled'}`, 'success');
     // TODO: Apply dark mode theme
   };
 
   const handleLanguageSelect = (language: string) => {
     setCurrentLanguage(language);
     setLanguageModalVisible(false);
-    console.log('Language changed to:', language);
+    showSnackbar(`Language changed to ${language}`, 'success');
     // TODO: Apply language change
   };
 
@@ -226,6 +238,14 @@ const PartnerMoreScreen: React.FC = () => {
         onClose={() => setEditBusinessModalVisible(false)}
         businessData={businessData}
         onSave={handleSaveBusinessInfo}
+      />
+
+      {/* Snackbar */}
+      <Snackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        type={snackbarType}
+        onDismiss={() => setSnackbarVisible(false)}
       />
     </View>
   );

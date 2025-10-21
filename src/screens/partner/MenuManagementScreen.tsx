@@ -16,6 +16,7 @@ import { Feather as Icon } from '@expo/vector-icons';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import { getStrings } from '../../constants/partnerStrings';
+import Snackbar, { SnackbarType } from '../../components/Snackbar';
 
 const strings = getStrings('en');
 
@@ -77,6 +78,17 @@ const MenuManagementScreen: React.FC = () => {
     },
   ]);
 
+  // Snackbar state
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarType, setSnackbarType] = useState<SnackbarType>('success');
+
+  const showSnackbar = (message: string, type: SnackbarType = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarType(type);
+    setSnackbarVisible(true);
+  };
+
   const filteredItems = menuItems.filter((item) => {
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -89,6 +101,13 @@ const MenuManagementScreen: React.FC = () => {
         item.id === id ? { ...item, isActive: !item.isActive } : item
       )
     );
+    const item = menuItems.find(i => i.id === id);
+    if (item) {
+      showSnackbar(
+        item.isActive ? `${item.name} marked as unavailable` : `${item.name} is now available`,
+        'info'
+      );
+    }
   };
 
   const handleEdit = (item: MenuItem) => {
@@ -105,7 +124,7 @@ const MenuManagementScreen: React.FC = () => {
 
   const handleSave = () => {
     if (!formData.name || !formData.price) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      showSnackbar('Please fill in all required fields', 'error');
       return;
     }
 
@@ -145,6 +164,7 @@ const MenuManagementScreen: React.FC = () => {
       category: 'Starters',
       isActive: true,
     });
+    showSnackbar('Item added successfully!', 'success');
   };
 
   const handleDelete = (id: string) => {
@@ -156,7 +176,10 @@ const MenuManagementScreen: React.FC = () => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => setMenuItems((prev) => prev.filter((item) => item.id !== id)),
+          onPress: () => {
+            setMenuItems((prev) => prev.filter((item) => item.id !== id));
+            showSnackbar('Item deleted', 'warning');
+          },
         },
       ]
     );
@@ -164,10 +187,11 @@ const MenuManagementScreen: React.FC = () => {
 
   const handleAddCategory = () => {
     if (!newCategoryName.trim()) {
-      Alert.alert('Error', 'Please enter a category name');
+      showSnackbar('Please enter a category name', 'error');
       return;
     }
     setCategories((prev) => [...prev, newCategoryName.trim()]);
+    showSnackbar(`Category "${newCategoryName.trim()}" created!`, 'success');
     setNewCategoryName('');
     setShowCategoryModal(false);
   };
@@ -185,6 +209,7 @@ const MenuManagementScreen: React.FC = () => {
           onPress: () => {
             setCategories((prev) => prev.filter((cat) => cat !== category));
             if (selectedCategory === category) setSelectedCategory('All');
+            showSnackbar(`Category "${category}" deleted`, 'warning');
           },
         },
       ]
@@ -640,6 +665,14 @@ const MenuManagementScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Snackbar */}
+      <Snackbar
+        visible={snackbarVisible}
+        message={snackbarMessage}
+        type={snackbarType}
+        onDismiss={() => setSnackbarVisible(false)}
+      />
     </View>
   );
 };

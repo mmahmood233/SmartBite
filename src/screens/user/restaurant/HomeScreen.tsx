@@ -9,6 +9,7 @@ import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import SearchBar from '../../../components/SearchBar';
 import RestaurantCard from '../../../components/RestaurantCard';
+import { useRestaurantSearch } from '../../../hooks/useRestaurantSearch';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -47,15 +48,25 @@ const ALL_RESTAURANTS = [...aiPicks, ...nearby];
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [suggestionIndex, setSuggestionIndex] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>(['Shawarma House', 'Pizza Hut', 'Healthy Bowl']);
+  
+  // Use shared search hook
+  const {
+    searchQuery,
+    showSuggestions,
+    searchSuggestions,
+    isSearching,
+    recentSearches,
+    suggestionFadeAnim,
+    handleSearchChange,
+    handleSearchFocus,
+    handleSearchBlur,
+    handleSuggestionPress,
+    handleRecentSearchPress,
+    clearRecentSearches,
+  } = useRestaurantSearch();
+  
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const suggestionFadeAnim = useRef(new Animated.Value(0)).current;
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Rotate suggestions every 4 seconds with fade-slide animation
   useEffect(() => {
@@ -105,132 +116,14 @@ const HomeScreen: React.FC = () => {
     navigation.navigate('AllRestaurants');
   };
 
-  const handleSuggestionPress = () => {
+  const handleSmartSuggestionPress = () => {
     const currentSuggestion = smartSuggestions[suggestionIndex];
     handleAIChatPress(currentSuggestion.query);
   };
 
-  // Fuzzy search function with shimmer delay
-  const fuzzySearch = (query: string) => {
-    if (!query || query.length < 2) {
-      setSearchSuggestions([]);
-      setShowSuggestions(false);
-      setIsSearching(false);
-      return;
-    }
-
-    // Show shimmer loading
-    setIsSearching(true);
-    setShowSuggestions(true);
-
-    // Clear previous timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    // Simulate search delay (300ms)
-    searchTimeoutRef.current = setTimeout(() => {
-      const lowerQuery = query.toLowerCase();
-      const suggestions: any[] = [];
-
-    // Search restaurants
-    ALL_RESTAURANTS.forEach(restaurant => {
-      const nameMatch = restaurant.name.toLowerCase().includes(lowerQuery);
-      const cuisineMatch = restaurant.cuisine?.toLowerCase().includes(lowerQuery);
-      const tagMatch = restaurant.tags?.some((tag: string) => tag.includes(lowerQuery));
-
-      if (nameMatch || cuisineMatch || tagMatch) {
-        suggestions.push({
-          type: 'restaurant',
-          id: restaurant.id,
-          name: restaurant.name,
-          subtitle: restaurant.cuisine,
-          icon: 'map-pin',
-          data: restaurant,
-        });
-      }
-    });
-
-    // Add AI fallback
-    if (suggestions.length === 0) {
-      suggestions.push({
-        type: 'ai',
-        id: 'ai-fallback',
-        name: `Can't find "${query}"? Ask Wajba AI`,
-        subtitle: 'Get personalized recommendations',
-        icon: 'zap',
-        query: query,
-      });
-    } else if (suggestions.length <= 3) {
-      suggestions.push({
-        type: 'ai',
-        id: 'ai-suggestion',
-        name: `Ask Wajba AI about "${query}"`,
-        subtitle: 'Get more suggestions',
-        icon: 'zap',
-        query: query,
-      });
-    }
-
-      setSearchSuggestions(suggestions.slice(0, 6));
-      setIsSearching(false);
-      
-      // Fade in animation
-      Animated.timing(suggestionFadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }, 300);
-  };
-
-  const handleSearchChange = (text: string) => {
-    setSearchQuery(text);
-    fuzzySearch(text);
-  };
-
   const handleSearchSuggestionPress = (suggestion: any) => {
-    if (suggestion.type === 'ai') {
-      handleAIChatPress(suggestion.query);
-      setShowSuggestions(false);
-    } else if (suggestion.type === 'restaurant') {
-      // Add to recent searches
-      setRecentSearches(prev => {
-        const filtered = prev.filter(s => s !== suggestion.name);
-        return [suggestion.name, ...filtered].slice(0, 3);
-      });
-      
-      setSearchQuery(suggestion.name);
-      setShowSuggestions(false);
-      // Could navigate to restaurant detail here
-    }
-  };
-
-  const handleSearchFocus = () => {
-    if (searchQuery.length >= 2) {
-      setShowSuggestions(true);
-    } else if (searchQuery.length === 0 && recentSearches.length > 0) {
-      // Show recent searches
-      setShowSuggestions(true);
-    }
-    
-    // Fade in animation
-    Animated.timing(suggestionFadeAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleSearchBlur = () => {
-    // Fade out animation
-    Animated.timing(suggestionFadeAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      setTimeout(() => setShowSuggestions(false), 200);
-    });
+    const result = handleSuggestionPress(suggestion);
+    // Could navigate to restaurant detail here if needed
   };
 
   return (
@@ -257,7 +150,7 @@ const HomeScreen: React.FC = () => {
         {/* Smart Suggestion */}
         <TouchableOpacity 
           style={styles.smartSuggestion}
-          onPress={handleSuggestionPress}
+          onPress={handleSmartSuggestionPress}
           activeOpacity={0.8}
         >
           <Animated.View 
@@ -307,10 +200,7 @@ const HomeScreen: React.FC = () => {
                         styles.suggestionItem,
                         index === recentSearches.length - 1 && styles.suggestionItemLast,
                       ]}
-                      onPress={() => {
-                        setSearchQuery(search);
-                        fuzzySearch(search);
-                      }}
+                      onPress={() => handleRecentSearchPress(search)}
                       activeOpacity={0.7}
                     >
                       <View style={styles.suggestionIcon}>

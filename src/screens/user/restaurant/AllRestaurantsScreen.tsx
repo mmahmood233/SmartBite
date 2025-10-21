@@ -24,8 +24,10 @@ import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import RestaurantCard from '../../../components/RestaurantCard';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRestaurantSearch } from '../../../hooks/useRestaurantSearch';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type FeatherIconName = keyof typeof Icon.glyphMap;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // Perfect grid: (100% - 16px*2 margins - 12px gap) / 2 columns
@@ -35,14 +37,14 @@ const CARD_WIDTH = (SCREEN_WIDTH - PAGE_PADDING * 2 - COLUMN_GAP) / 2;
 
 type SortOption = 'recommended' | 'rating' | 'name' | 'ai_match';
 
-const SORT_OPTIONS = [
-  { id: 'recommended' as SortOption, label: 'Recommended', icon: 'thumbs-up', description: 'Our top picks for you' },
-  { id: 'rating' as SortOption, label: 'Rating: High to Low', icon: 'star', description: 'Best rated first' },
-  { id: 'name' as SortOption, label: 'Name: A-Z', icon: 'type', description: 'Alphabetical order' },
-  { id: 'ai_match' as SortOption, label: 'AI Match', icon: 'zap', description: 'Personalized ranking based on your chat and order history' },
+const SORT_OPTIONS: Array<{ id: SortOption; label: string; icon: FeatherIconName; description: string }> = [
+  { id: 'recommended', label: 'Recommended', icon: 'thumbs-up', description: 'Our top picks for you' },
+  { id: 'rating', label: 'Rating: High to Low', icon: 'star', description: 'Best rated first' },
+  { id: 'name', label: 'Name: A-Z', icon: 'type', description: 'Alphabetical order' },
+  { id: 'ai_match', label: 'AI Match', icon: 'zap', description: 'Personalized ranking based on your chat and order history' },
 ];
 
-const CUISINES = [
+const CUISINES: Array<{ id: string; label: string; icon: FeatherIconName }> = [
   { id: 'all', label: 'All', icon: 'grid' },
   { id: 'arabic', label: 'Arabic', icon: 'coffee' },
   { id: 'italian', label: 'Italian', icon: 'award' },
@@ -68,16 +70,26 @@ const MOCK_RESTAURANTS = [
 
 const AllRestaurantsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Use shared search hook
+  const {
+    searchQuery,
+    showSuggestions,
+    searchSuggestions,
+    isSearching,
+    recentSearches,
+    suggestionFadeAnim,
+    handleSearchChange,
+    handleSearchFocus,
+    handleSearchBlur,
+    handleSuggestionPress,
+    handleRecentSearchPress,
+    clearRecentSearches,
+  } = useRestaurantSearch();
+  
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<string>('all');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>(['Shawarma House', 'Pizza Hut', 'Healthy Bowl']);
-  const suggestionFadeAnim = useRef(new Animated.Value(0)).current;
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleAIChatPress = (_query?: string) => {
     // TODO: Pass contextual _query to AI Chat
@@ -89,146 +101,12 @@ const AllRestaurantsScreen: React.FC = () => {
     setShowSortModal(false);
   };
 
-  // Fuzzy search function with shimmer delay
-  const fuzzySearch = (query: string) => {
-    if (!query || query.length < 2) {
-      setSearchSuggestions([]);
-      setShowSuggestions(false);
-      setIsSearching(false);
-      return;
-    }
-
-    // Show shimmer loading
-    setIsSearching(true);
-    setShowSuggestions(true);
-
-    // Clear previous timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    // Simulate search delay (300ms)
-    searchTimeoutRef.current = setTimeout(() => {
-      const lowerQuery = query.toLowerCase();
-      const suggestions: any[] = [];
-
-    // Search restaurants
-    MOCK_RESTAURANTS.forEach(restaurant => {
-      const nameMatch = restaurant.name.toLowerCase().includes(lowerQuery);
-      const cuisineMatch = restaurant.cuisine.toLowerCase().includes(lowerQuery);
-      const tagMatch = restaurant.tags?.some(tag => tag.includes(lowerQuery));
-
-      if (nameMatch || cuisineMatch || tagMatch) {
-        suggestions.push({
-          type: 'restaurant',
-          id: restaurant.id,
-          name: restaurant.name,
-          subtitle: restaurant.cuisine,
-          icon: 'map-pin',
-          data: restaurant,
-        });
-      }
-    });
-
-    // Search cuisines
-    const cuisineMatches = CUISINES.filter(cuisine => 
-      cuisine.label.toLowerCase().includes(lowerQuery)
-    );
-    cuisineMatches.forEach(cuisine => {
-      suggestions.push({
-        type: 'cuisine',
-        id: cuisine.id,
-        name: cuisine.label,
-        subtitle: 'Cuisine',
-        icon: cuisine.icon,
-        data: cuisine,
-      });
-    });
-
-    // Add AI fallback if no results or few results
-    if (suggestions.length === 0) {
-      suggestions.push({
-        type: 'ai',
-        id: 'ai-fallback',
-        name: `Can't find "${query}"? Ask Wajba AI`,
-        subtitle: 'Get personalized recommendations',
-        icon: 'zap',
-        query: query,
-      });
-    } else if (suggestions.length <= 3) {
-      suggestions.push({
-        type: 'ai',
-        id: 'ai-suggestion',
-        name: `Ask Wajba AI about "${query}"`,
-        subtitle: 'Get more suggestions',
-        icon: 'zap',
-        query: query,
-      });
-    }
-
-      setSearchSuggestions(suggestions.slice(0, 6)); // Limit to 6 results
-      setIsSearching(false);
-      
-      // Fade in animation
-      Animated.timing(suggestionFadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }, 300);
-  };
-
-  const handleSearchChange = (text: string) => {
-    setSearchQuery(text);
-    fuzzySearch(text);
-  };
-
-  const handleSuggestionPress = (suggestion: any) => {
-    if (suggestion.type === 'ai') {
-      handleAIChatPress(suggestion.query);
-      setShowSuggestions(false);
-    } else if (suggestion.type === 'restaurant') {
-      // Add to recent searches
-      setRecentSearches(prev => {
-        const filtered = prev.filter(s => s !== suggestion.name);
-        return [suggestion.name, ...filtered].slice(0, 3);
-      });
-      
-      setSearchQuery(suggestion.name);
-      setShowSuggestions(false);
-      // Navigate to restaurant detail
-    } else if (suggestion.type === 'cuisine') {
+  const handleSearchSuggestionPress = (suggestion: any) => {
+    const result = handleSuggestionPress(suggestion);
+    // Additional logic specific to AllRestaurantsScreen
+    if (suggestion.type === 'cuisine') {
       setSelectedCuisine(suggestion.id);
-      setSearchQuery('');
-      setShowSuggestions(false);
     }
-  };
-
-  const handleSearchFocus = () => {
-    if (searchQuery.length >= 2) {
-      setShowSuggestions(true);
-    } else if (searchQuery.length === 0 && recentSearches.length > 0) {
-      // Show recent searches
-      setShowSuggestions(true);
-    }
-    
-    // Fade in animation
-    Animated.timing(suggestionFadeAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleSearchBlur = () => {
-    // Fade out animation
-    Animated.timing(suggestionFadeAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      setTimeout(() => setShowSuggestions(false), 200);
-    });
   };
 
   const getSortedRestaurants = () => {
@@ -308,10 +186,7 @@ const AllRestaurantsScreen: React.FC = () => {
                       styles.suggestionItem,
                       index === recentSearches.length - 1 && styles.suggestionItemLast,
                     ]}
-                    onPress={() => {
-                      setSearchQuery(search);
-                      fuzzySearch(search);
-                    }}
+                    onPress={() => handleRecentSearchPress(search)}
                     activeOpacity={0.7}
                   >
                     <View style={styles.suggestionIcon}>

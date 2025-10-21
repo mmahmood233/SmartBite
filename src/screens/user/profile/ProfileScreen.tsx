@@ -26,7 +26,7 @@ import ProfileMenuItem from '../../../components/ProfileMenuItem';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface MenuItem {
-  icon: string;
+  icon: keyof typeof Icon.glyphMap;
   label: string;
   onPress: () => void;
   color?: string;
@@ -320,11 +320,31 @@ const ProfileScreen: React.FC = () => {
         {/* Security & Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Security & Account</Text>
-          <View style={styles.card}>
-            {renderMenuItem({ icon: 'lock', label: 'Change Password', onPress: handleChangePassword })}
-            <View style={styles.divider} />
-            {renderMenuItem({ icon: 'log-out', label: 'Logout', onPress: handleLogout, showChevron: false })}
-          </View>
+          
+          {/* Change Password */}
+          <TouchableOpacity
+            style={styles.preferenceCard}
+            onPress={handleChangePassword}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuLeft}>
+              <Icon name="lock" size={20} color={colors.primary} />
+              <Text style={styles.menuText}>Change Password</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color="#9E9E9E" />
+          </TouchableOpacity>
+
+          {/* Logout */}
+          <TouchableOpacity
+            style={styles.preferenceCard}
+            onPress={handleLogout}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuLeft}>
+              <Icon name="log-out" size={20} color={colors.primary} />
+              <Text style={styles.menuText}>Logout</Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Delete Account */}

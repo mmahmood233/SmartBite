@@ -51,6 +51,9 @@ const PartnerMoreScreen: React.FC = () => {
       case 'View Earnings':
         navigation.navigate('Overview' as never);
         break;
+      case 'Change Password':
+        navigation.navigate('ChangePassword' as never);
+        break;
       default:
         console.log(`Pressed: ${label}`);
     }
@@ -100,61 +103,48 @@ const PartnerMoreScreen: React.FC = () => {
 
         {/* App Preferences Section */}
         <Text style={styles.sectionTitle}>App Preferences</Text>
-        <View style={styles.preferencesCard}>
-          {/* Dark Mode Toggle */}
-          <View style={styles.preferenceItem}>
-            <View style={styles.menuLeft}>
-              <Icon name="moon" size={20} color={PartnerColors.primary} />
-              <Text style={styles.menuText}>Dark Mode</Text>
-            </View>
-            <Switch
-              value={isDarkMode}
-              onValueChange={handleDarkModeToggle}
-              trackColor={{ false: '#E0E0E0', true: PartnerColors.primary }}
-              thumbColor={isDarkMode ? '#FFFFFF' : '#F5F5F5'}
-              ios_backgroundColor="#E0E0E0"
-            />
+        
+        {/* Dark Mode Toggle */}
+        <View style={styles.preferenceCard}>
+          <View style={styles.menuLeft}>
+            <Icon name="moon" size={20} color={PartnerColors.primary} />
+            <Text style={styles.menuText}>Dark Mode</Text>
           </View>
-
-          <View style={styles.preferenceDivider} />
-
-          {/* Language Selector */}
-          <TouchableOpacity
-            style={styles.preferenceItem}
-            onPress={() => setLanguageModalVisible(true)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.menuLeft}>
-              <Icon name="globe" size={20} color={PartnerColors.primary} />
-              <Text style={styles.menuText}>Language</Text>
-            </View>
-            <View style={styles.languageSelector}>
-              <Text style={styles.languageText}>{currentLanguage}</Text>
-              <Icon name="chevron-down" size={18} color="#9E9E9E" />
-            </View>
-          </TouchableOpacity>
+          <Switch
+            value={isDarkMode}
+            onValueChange={handleDarkModeToggle}
+            trackColor={{ false: '#E0E0E0', true: PartnerColors.primary }}
+            thumbColor={isDarkMode ? '#FFFFFF' : '#F5F5F5'}
+            ios_backgroundColor="#E0E0E0"
+          />
         </View>
 
-        {/* Account Settings Section */}
-        <Text style={styles.sectionTitle}>Account & Settings</Text>
-        <ProfileMenuItem icon="user" label="Account Settings" onPress={() => handleMenuPress('Account Settings')} color={PartnerColors.primary} />
+        {/* Language Selector */}
+        <TouchableOpacity
+          style={styles.preferenceCard}
+          onPress={() => setLanguageModalVisible(true)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.menuLeft}>
+            <Icon name="globe" size={20} color={PartnerColors.primary} />
+            <Text style={styles.menuText}>Language</Text>
+          </View>
+          <View style={styles.languageSelector}>
+            <Text style={styles.languageText}>{currentLanguage}</Text>
+            <Icon name="chevron-down" size={18} color="#9E9E9E" />
+          </View>
+        </TouchableOpacity>
+
+        {/* Security & Account Section */}
+        <Text style={styles.sectionTitle}>Security & Account</Text>
         <ProfileMenuItem icon="lock" label="Change Password" onPress={() => handleMenuPress('Change Password')} color={PartnerColors.primary} />
+        <ProfileMenuItem icon="log-out" label="Logout" onPress={handleLogout} color={PartnerColors.primary} showChevron={false} />
 
         {/* Support Section */}
         <Text style={styles.sectionTitle}>Support</Text>
         <ProfileMenuItem icon="headphones" label="Contact Support" onPress={() => handleMenuPress('Contact Support')} color={PartnerColors.primary} />
         <ProfileMenuItem icon="file-text" label="Terms & Conditions" onPress={() => handleMenuPress('Terms & Conditions')} color={PartnerColors.primary} />
         <ProfileMenuItem icon="shield" label="Privacy Policy" onPress={() => handleMenuPress('Privacy Policy')} color={PartnerColors.primary} />
-
-        {/* Logout */}
-        <TouchableOpacity 
-          style={styles.logoutButton} 
-          onPress={handleLogout} 
-          activeOpacity={0.8}
-        >
-          <Icon name="log-out" size={18} color={PartnerColors.error} />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -286,38 +276,15 @@ const styles = StyleSheet.create({
     fontWeight: PartnerTypography.fontWeight.medium,
     color: PartnerColors.light.text.primary,
   },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFF0F0',
-    borderRadius: PartnerBorderRadius.lg,
-    paddingVertical: 14,
-    marginTop: PartnerSpacing.xxl,
-    gap: PartnerSpacing.sm,
-  },
-  logoutText: {
-    fontSize: PartnerTypography.fontSize.lg,
-    fontWeight: PartnerTypography.fontWeight.bold,
-    color: PartnerColors.error,
-  },
-  // Preferences Section
-  preferencesCard: {
+  // Preferences Section - Individual cards
+  preferenceCard: {
     backgroundColor: PartnerColors.light.surface,
     borderRadius: PartnerBorderRadius.lg,
     padding: 14,
     marginBottom: PartnerSpacing.sm,
-  },
-  preferenceItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 4,
-  },
-  preferenceDivider: {
-    height: 1,
-    backgroundColor: PartnerColors.light.borderLight,
-    marginVertical: 12,
   },
   languageSelector: {
     flexDirection: 'row',

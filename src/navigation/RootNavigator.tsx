@@ -31,7 +31,7 @@ import HelpSupportScreen from '../screens/user/profile/HelpSupportScreen';
 import AddAddressScreen from '../screens/user/profile/AddAddressScreen';
 import EditAddressScreen from '../screens/user/profile/EditAddressScreen';
 import AddPaymentMethodScreen from '../screens/user/profile/AddPaymentMethodScreen';
-import ChangePasswordScreen from '../screens/user/profile/ChangePasswordScreen';
+import ChangePasswordScreen from '../screens/shared/ChangePasswordScreen';
 import AIChatScreen from '../screens/user/profile/AIChatScreen';
 
 // Navigators

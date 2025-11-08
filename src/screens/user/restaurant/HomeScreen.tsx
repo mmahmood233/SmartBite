@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Platform, StatusBar, Animated, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types';
@@ -10,6 +10,7 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import SearchBar from '../../../components/SearchBar';
 import RestaurantCard from '../../../components/RestaurantCard';
 import { useRestaurantSearch } from '../../../hooks/useRestaurantSearch';
+import { fetchRestaurants, fetchFeaturedRestaurants } from '../../../services/restaurants.service';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -28,26 +29,15 @@ const smartSuggestions = [
   { emoji: '🍛', text: 'Craving comfort food tonight?', query: 'I want comfort food' },
 ];
 
-const aiPicks = [
-  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['saudi', 'traditional', 'arabic'] },
-  { id: '2', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../../../assets/food.png'), tags: ['lebanese', 'shawarma', 'grill'] },
-  { id: '3', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.8, eta: '15 min', price: '$$', image: require('../../../../assets/wajba_logo.png'), tags: ['lebanese', 'bakery', 'manakish'] },
-];
-
-const nearby = [
-  { id: 'n1', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', image: require('../../../../assets/food.png'), tags: ['lebanese', 'grill', 'chicken'] },
-  { id: 'n2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', image: require('../../../../assets/food.png'), tags: ['saudi', 'homestyle', 'comfort'] },
-  { id: 'n3', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', image: require('../../../../assets/wajba_logo.png'), tags: ['vegetarian', 'falafel', 'healthy'] },
-  { id: 'n4', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', image: require('../../../../assets/wajba_logo.png'), tags: ['breakfast', 'bakery', 'zaatar'] },
-  { id: 'n5', name: 'Pizza Hut', cuisine: 'Italian • Pizza', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'cheese'] },
-  { id: 'n6', name: "Papa Johns", cuisine: 'Italian • Pizza', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'delivery'] },
-];
-
-const ALL_RESTAURANTS = [...aiPicks, ...nearby];
+// Mock data removed - now using real Supabase data
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [suggestionIndex, setSuggestionIndex] = useState(0);
+  const [featuredRestaurants, setFeaturedRestaurants] = useState<any[]>([]);
+  const [allRestaurants, setAllRestaurants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   
   // Use shared search hook
   const {
@@ -67,6 +57,31 @@ const HomeScreen: React.FC = () => {
   
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
+
+  // Fetch restaurants from Supabase
+  useEffect(() => {
+    loadRestaurants();
+  }, []);
+
+  const loadRestaurants = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Fetch featured restaurants (top rated)
+      const featured = await fetchFeaturedRestaurants(3);
+      setFeaturedRestaurants(featured);
+
+      // Fetch all restaurants
+      const all = await fetchRestaurants();
+      setAllRestaurants(all);
+    } catch (err: any) {
+      console.error('Error loading restaurants:', err);
+      setError('Failed to load restaurants. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Rotate suggestions every 4 seconds with fade-slide animation
   useEffect(() => {
@@ -356,30 +371,44 @@ const HomeScreen: React.FC = () => {
             </View>
           </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 18 }}>
-          {aiPicks.map(item => {
-            const isFoodImage = item.image === require('../../../../assets/food.png');
-            const isLogoImage = !isFoodImage;
-            
-            return (
-              <View key={item.id} style={styles.aiCard}>
-                <View style={styles.imageContainer}>
-                  {isLogoImage && <View style={styles.logoBackground} />}
-                  <Image source={item.image} style={[styles.aiImage, isLogoImage && styles.logoImage]} />
-                  {isFoodImage && <View style={styles.tealOverlay} />}
-                </View>
-                <View style={styles.aiCardBody}>
-                  <Text style={styles.aiName}>{item.name}</Text>
-                  <View style={styles.metaRow}>
-                    <Text style={styles.metaText}>⭐ {item.rating}</Text>
-                    <Text style={styles.metaDot}>•</Text>
-                    <Text style={styles.metaText}>{item.eta}</Text>
-                    <Text style={styles.metaDot}>•</Text>
-                    <Text style={styles.metaText}>{item.price}</Text>
+          {loading ? (
+            <View style={{ padding: 40 }}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : featuredRestaurants.length > 0 ? (
+            featuredRestaurants.map(restaurant => (
+              <TouchableOpacity
+                key={restaurant.id}
+                activeOpacity={0.9}
+                onPress={() => navigation.navigate('RestaurantDetail', { 
+                  restaurantId: restaurant.id,
+                  restaurantName: restaurant.name 
+                })}
+              >
+                <View style={styles.aiCard}>
+                  <View style={styles.imageContainer}>
+                    <View style={styles.logoBackground} />
+                    <Image 
+                      source={restaurant.logo ? { uri: restaurant.logo } : require('../../../../assets/wajba_logo.png')} 
+                      style={[styles.aiImage, styles.logoImage]} 
+                    />
+                  </View>
+                  <View style={styles.aiCardBody}>
+                    <Text style={styles.aiName}>{restaurant.name}</Text>
+                    <View style={styles.metaRow}>
+                      <Text style={styles.metaText}>⭐ {restaurant.rating.toFixed(1)}</Text>
+                      <Text style={styles.metaDot}>•</Text>
+                      <Text style={styles.metaText}>{restaurant.avg_prep_time || '20-30 mins'}</Text>
+                      <Text style={styles.metaDot}>•</Text>
+                      <Text style={styles.metaText}>{restaurant.category}</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            );
-          })}
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={{ padding: 20, color: colors.textSecondary }}>No featured restaurants available</Text>
+          )}
         </ScrollView>
         </LinearGradient>
 
@@ -407,9 +436,31 @@ const HomeScreen: React.FC = () => {
           </View>
 
         <View style={styles.gridWrap}>
-          {nearby.map(item => (
-            <RestaurantCard key={item.id} image={item.image} name={item.name} tags={item.cuisine} style={styles.gridItem} />
-          ))}
+          {loading ? (
+            <View style={{ padding: 40, width: '100%', alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : allRestaurants.length > 0 ? (
+            allRestaurants.slice(0, 6).map(restaurant => (
+              <TouchableOpacity
+                key={restaurant.id}
+                activeOpacity={0.9}
+                onPress={() => navigation.navigate('RestaurantDetail', { 
+                  restaurantId: restaurant.id,
+                  restaurantName: restaurant.name 
+                })}
+                style={styles.gridItem}
+              >
+                <RestaurantCard 
+                  image={restaurant.logo ? { uri: restaurant.logo } : require('../../../../assets/wajba_logo.png')} 
+                  name={restaurant.name} 
+                  tags={`${restaurant.category} • ${restaurant.avg_prep_time || '20-30 mins'}`}
+                />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={{ padding: 20, color: colors.textSecondary }}>No restaurants available</Text>
+          )}
         </View>
 
         </LinearGradient>

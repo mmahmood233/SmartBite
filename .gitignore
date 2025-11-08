@@ -26,3 +26,14 @@ web-build/
 .env
 .env.local
 .env.*.local
+
+# iOS
+ios/
+*.xcworkspace
+*.xcodeproj
+Pods/
+
+# Android
+android/
+*.apk
+*.aab

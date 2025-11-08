@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { TextInput, Checkbox } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -20,7 +21,10 @@ import {
   Link, 
   SocialButton 
 } from '../../../components';
-import { AuthStackParamList } from '../../../types';
+import { AuthStackParamList, RootStackParamList } from '../../../types';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp as RootNav } from '@react-navigation/native-stack';
+import { signUp, signInWithApple, signInWithGoogle } from '../../../services/auth.service';
 
 type SignupScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -32,6 +36,7 @@ interface SignupScreenProps {
 }
 
 const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
+  const rootNav = useNavigation<RootNav<RootStackParamList>>();
   const [fullName, setFullName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
@@ -40,25 +45,92 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [agreeToTerms, setAgreeToTerms] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   // Check if form is valid
   const isFormValid: boolean = Boolean(
     fullName && email && password && confirmPassword && agreeToTerms
   );
 
-  const handleSignUp = (): void => {
-    // TODO: Implement sign up logic
-    console.log('Sign up with:', { fullName, email, phone, password });
+  const handleSignUp = async (): Promise<void> => {
+    // Validate inputs
+    if (!fullName.trim()) {
+      setError('Please enter your full name');
+      return;
+    }
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    if (!validatePassword(password)) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    if (!validatePasswordMatch(password, confirmPassword)) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (!agreeToTerms) {
+      setError('Please agree to the terms and conditions');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Sign up with Supabase
+      const { auth, user } = await signUp(email.trim(), password, fullName.trim());
+
+      if (!auth.user || !user) {
+        setError('Sign up failed. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      // Show success message
+      Alert.alert(
+        'Account Created!',
+        'Welcome to Wajba! Your account has been created successfully.',
+        [
+          {
+            text: 'Continue',
+            onPress: () => {
+              // Navigate to main app
+              rootNav.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+            },
+          },
+        ]
+      );
+    } catch (err: any) {
+      console.error('Sign up error:', err);
+      setError(err.message || 'Sign up failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAppleSignUp = (): void => {
-    // TODO: Implement Apple sign up
-    console.log('Apple sign up');
+  const handleAppleSignUp = async (): Promise<void> => {
+    // TODO: Configure Apple OAuth in Supabase Dashboard
+    Alert.alert(
+      'Coming Soon',
+      'Apple Sign Up will be available soon. Please use email/password for now.',
+      [{ text: 'OK' }]
+    );
   };
 
-  const handleGoogleSignUp = (): void => {
-    // TODO: Implement Google sign up
-    console.log('Google sign up');
+  const handleGoogleSignUp = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      // Supabase will handle the redirect
+    } catch (err: any) {
+      console.error('Google sign up error:', err);
+      Alert.alert('Error', 'Google sign up failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -155,11 +227,19 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
             </Text>
           </View>
 
+          {/* Error Message */}
+          {error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
           {/* Sign Up Button */}
           <GradientButton
-            title="Create Account"
+            title={loading ? "Creating Account..." : "Create Account"}
             onPress={handleSignUp}
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
+            loading={loading}
             accessibilityLabel="Create your SmartBite account"
           />
 
@@ -251,6 +331,17 @@ const styles = StyleSheet.create({
   linkText: {
     color: colors.primary,
     fontWeight: '600',
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
   },
   dividerContainer: {
     flexDirection: 'row',

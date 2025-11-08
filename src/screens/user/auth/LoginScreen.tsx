@@ -6,6 +6,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -22,6 +24,7 @@ import {
 import { AuthStackParamList, RootStackParamList } from '../../../types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp as RootNav } from '@react-navigation/native-stack';
+import { signIn, signInWithApple, signInWithGoogle } from '../../../services/auth.service';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -37,39 +40,86 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  const handleSignIn = (): void => {
-    // TODO: Replace with real auth
-    console.log('Sign in with:', email, password);
-    
-    // Check user role based on email (temporary - replace with API response)
-    const emailLower = email.toLowerCase().trim();
-    
-    if (emailLower === 'admin@smartbite.com' || emailLower === 'admin@wajba.com') {
-      // Admin user - route to Admin Portal
-      rootNav.reset({ index: 0, routes: [{ name: 'AdminPortal' }] });
-    } else if (emailLower.includes('partner@') || emailLower.includes('restaurant@')) {
-      // Partner user - route to Partner Portal
-      rootNav.reset({ index: 0, routes: [{ name: 'PartnerPortal' }] });
-    } else {
-      // Regular user - route to Main Tabs
-      rootNav.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+  const handleSignIn = async (): Promise<void> => {
+    // Validate inputs
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Sign in with Supabase
+      const { session, user } = await signIn(email.trim(), password);
+
+      if (!session || !user) {
+        setError('Login failed. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      // Route based on user role
+      const userRole = user.role || 'customer';
+
+      if (userRole === 'admin') {
+        rootNav.reset({ index: 0, routes: [{ name: 'AdminPortal' }] });
+      } else if (userRole === 'partner') {
+        rootNav.reset({ index: 0, routes: [{ name: 'PartnerPortal' }] });
+      } else {
+        rootNav.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleForgotPassword = (): void => {
-    // TODO: Implement forgot password logic
-    console.log('Forgot password');
+    Alert.alert(
+      'Reset Password',
+      'Password reset functionality will be available soon.',
+      [{ text: 'OK' }]
+    );
   };
 
-  const handleAppleSignIn = (): void => {
-    // TODO: Implement Apple sign in
-    console.log('Apple sign in');
+  const handleAppleSignIn = async (): Promise<void> => {
+    // TODO: Configure Apple OAuth in Supabase Dashboard
+    Alert.alert(
+      'Coming Soon',
+      'Apple Sign In will be available soon. Please use email/password for now.',
+      [{ text: 'OK' }]
+    );
+    
+    // Uncomment when Apple OAuth is configured:
+    // setLoading(true);
+    // try {
+    //   await signInWithApple();
+    // } catch (err: any) {
+    //   console.error('Apple sign in error:', err);
+    //   Alert.alert('Error', 'Apple sign in failed. Please try again.');
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
-  const handleGoogleSignIn = (): void => {
-    // TODO: Implement Google sign in
-    console.log('Google sign in');
+  const handleGoogleSignIn = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      // Supabase will handle the redirect
+    } catch (err: any) {
+      console.error('Google sign in error:', err);
+      Alert.alert('Error', 'Google sign in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -116,6 +166,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             }
           />
 
+          {/* Error Message */}
+          {error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
           {/* Forgot Password */}
           <Link 
             onPress={handleForgotPassword}
@@ -127,8 +184,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           {/* Login Button */}
           <GradientButton
-            title="Sign In"
+            title={loading ? "Signing In..." : "Sign In"}
             onPress={handleSignIn}
+            disabled={loading}
+            loading={loading}
             accessibilityLabel="Sign in to SmartBite"
           />
 
@@ -212,6 +271,17 @@ const styles = StyleSheet.create({
     fontWeight: '400', // Inter 400
     color: colors.textSecondary,
     marginBottom: 24,
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
   },
   forgotPassword: {
     alignSelf: 'flex-end',

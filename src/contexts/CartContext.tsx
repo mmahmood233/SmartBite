@@ -99,36 +99,47 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setItemCount(count);
     } catch (error: any) {
       if (error.message === 'DIFFERENT_RESTAURANT') {
-        Alert.alert(
-          'Different Restaurant',
-          'Your cart contains items from another restaurant. Would you like to clear your cart and add this item?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Clear Cart',
-              style: 'destructive',
-              onPress: async () => {
-                await clearCart();
-                await addToCart(
-                  dishId,
-                  restaurantId,
-                  restaurantName,
-                  name,
-                  price,
-                  quantity,
-                  addOns,
-                  specialRequest,
-                  image
-                );
+        // Return a promise that resolves when user makes a choice
+        return new Promise<void>((resolve, reject) => {
+          Alert.alert(
+            'Different Restaurant',
+            'Your cart contains items from another restaurant. Would you like to clear your cart and add this item?',
+            [
+              { 
+                text: 'Cancel', 
+                style: 'cancel',
+                onPress: () => reject(new Error('USER_CANCELLED'))
               },
-            },
-          ]
-        );
-        throw error; // Re-throw so caller knows it failed
+              {
+                text: 'Clear Cart',
+                style: 'destructive',
+                onPress: async () => {
+                  try {
+                    await clearCart();
+                    await addToCart(
+                      dishId,
+                      restaurantId,
+                      restaurantName,
+                      name,
+                      price,
+                      quantity,
+                      addOns,
+                      specialRequest,
+                      image
+                    );
+                    resolve(); // Success!
+                  } catch (err) {
+                    reject(err);
+                  }
+                },
+              },
+            ]
+          );
+        });
       } else {
         console.error('Error adding to cart:', error);
         Alert.alert('Error', 'Failed to add item to cart');
-        throw error; // Re-throw so caller knows it failed
+        throw error;
       }
     }
   };

@@ -9,6 +9,8 @@ import {
   Dimensions,
   Platform,
   TextInput,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,6 +20,7 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency } from '../../../utils';
+import { useCart } from '../../../contexts/CartContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -44,75 +47,44 @@ interface Restaurant {
 
 const CartScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { cart, loading, updateQuantity, removeFromCart, clearCart: clearCartContext } = useCart();
   
-  // Mock data - will be replaced with actual cart state
-  const [restaurant] = useState<Restaurant>({
-    name: 'Al Qariah',
-    cuisine: 'Saudi • Home-Style • Grill',
-    location: 'Manama',
-    deliveryTime: '25 min',
-    deliveryFee: 0.5,
-  });
-
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: '1',
-      name: 'Kabsa Rice with Chicken',
-      price: 8.5,
-      quantity: 1,
-      image: require('../../../../assets/food.png'),
-      addOns: ['Extra Chicken (+BD 1.00)'],
-    },
-    {
-      id: '2',
-      name: 'Lamb Mandi',
-      price: 12.0,
-      quantity: 2,
-      image: require('../../../../assets/food.png'),
-    },
-  ]);
-
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
 
-  const calculateSubtotal = () => {
-    return cartItems.reduce((sum, item) => {
-      const itemTotal = item.price * item.quantity;
-      return sum + itemTotal;
-    }, 0);
+  const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
+    await updateQuantity(itemId, newQuantity);
   };
 
-  const calculateTotal = () => {
-    const subtotal = calculateSubtotal();
-    return subtotal + restaurant.deliveryFee - discount;
-  };
-
-  const updateQuantity = (id: string, change: number) => {
-    setCartItems(prev =>
-      prev
-        .map(item =>
-          item.id === id
-            ? { ...item, quantity: Math.max(0, item.quantity + change) }
-            : item
-        )
-        .filter(item => item.quantity > 0)
+  const handleRemoveItem = async (itemId: string) => {
+    Alert.alert(
+      'Remove Item',
+      'Are you sure you want to remove this item?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Remove', 
+          style: 'destructive',
+          onPress: async () => await removeFromCart(itemId)
+        },
+      ]
     );
   };
 
-  const removeItem = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
-  };
-
-  const [showClearModal, setShowClearModal] = useState(false);
-
-  const clearCart = () => {
-    setShowClearModal(true);
-  };
-
-  const confirmClearCart = () => {
-    setCartItems([]);
-    setShowClearModal(false);
+  const handleClearCart = () => {
+    Alert.alert(
+      'Clear Cart',
+      'Are you sure you want to clear your entire cart?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Clear', 
+          style: 'destructive',
+          onPress: async () => await clearCartContext()
+        },
+      ]
+    );
   };
 
   const applyPromoCode = () => {
@@ -127,7 +99,15 @@ const CartScreen: React.FC = () => {
     navigation.navigate('Checkout');
   };
 
-  if (cartItems.length === 0) {
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (cart.items.length === 0) {
     return (
       <View style={styles.container}>
         {/* Header */}
@@ -164,7 +144,7 @@ const CartScreen: React.FC = () => {
           <Icon name="arrow-left" size={24} color={colors.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Your Order</Text>
-        <TouchableOpacity onPress={clearCart} style={styles.clearButton}>
+        <TouchableOpacity onPress={handleClearCart} style={styles.clearButton}>
           <Icon name="trash-2" size={20} color="#E74C3C" />
         </TouchableOpacity>
       </View>
@@ -176,22 +156,12 @@ const CartScreen: React.FC = () => {
             <Text style={styles.thumbnailEmoji}>🍽️</Text>
           </View>
           <View style={styles.restaurantInfo}>
-            <Text style={styles.restaurantName}>{restaurant.name}</Text>
-            <Text style={styles.restaurantCuisine}>{restaurant.cuisine}</Text>
+            <Text style={styles.restaurantName}>{cart.restaurantName || 'Restaurant'}</Text>
+            <Text style={styles.restaurantCuisine}>Delicious Food</Text>
             <View style={styles.restaurantMeta}>
               <View style={styles.metaItem}>
-                <Icon name="map-pin" size={12} color="#6D6D6D" />
-                <Text style={styles.metaText}>{restaurant.location}</Text>
-              </View>
-              <Text style={styles.metaDot}>•</Text>
-              <View style={styles.metaItem}>
-                <Icon name="clock" size={12} color="#6D6D6D" />
-                <Text style={styles.metaText}>{restaurant.deliveryTime}</Text>
-              </View>
-              <Text style={styles.metaDot}>•</Text>
-              <View style={styles.metaItem}>
                 <Icon name="truck" size={12} color="#6D6D6D" />
-                <Text style={styles.metaText}>BD {restaurant.deliveryFee.toFixed(2)}</Text>
+                <Text style={styles.metaText}>BD {cart.deliveryFee.toFixed(2)}</Text>
               </View>
             </View>
           </View>
@@ -200,14 +170,14 @@ const CartScreen: React.FC = () => {
         {/* Items List */}
         <View style={styles.itemsSection}>
           <Text style={styles.sectionTitle}>Order Items</Text>
-          {cartItems.map(item => (
+          {cart.items.map((item: any) => (
             <View key={item.id} style={styles.cartItem}>
               <Image source={item.image} style={styles.itemImage} />
               <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>{item.name}</Text>
                 {item.addOns && item.addOns.length > 0 && (
                   <View style={styles.addOnsContainer}>
-                    {item.addOns.map((addOn, index) => (
+                    {item.addOns.map((addOn: any, index: number) => (
                       <Text key={index} style={styles.addOnText}>+ {addOn}</Text>
                     ))}
                   </View>
@@ -216,7 +186,7 @@ const CartScreen: React.FC = () => {
                   <View style={styles.quantityControls}>
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => updateQuantity(item.id, -1)}
+                      onPress={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                       activeOpacity={0.7}
                     >
                       <Icon name="minus" size={16} color={colors.primary} />
@@ -224,7 +194,7 @@ const CartScreen: React.FC = () => {
                     <Text style={styles.quantityText}>{item.quantity}</Text>
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => updateQuantity(item.id, 1)}
+                      onPress={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                       activeOpacity={0.7}
                     >
                       <Icon name="plus" size={16} color={colors.primary} />
@@ -275,11 +245,11 @@ const CartScreen: React.FC = () => {
           <View style={styles.summaryCard}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>BD {calculateSubtotal().toFixed(2)}</Text>
+              <Text style={styles.summaryValue}>BD {cart.subtotal.toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>BD {restaurant.deliveryFee.toFixed(2)}</Text>
+              <Text style={styles.summaryValue}>BD {cart.deliveryFee.toFixed(2)}</Text>
             </View>
             {discount > 0 && (
               <View style={styles.summaryRow}>
@@ -292,7 +262,7 @@ const CartScreen: React.FC = () => {
             <View style={styles.divider} />
             <View style={styles.summaryRow}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>BD {calculateTotal().toFixed(2)}</Text>
+              <Text style={styles.totalValue}>BD {(cart.total - discount).toFixed(2)}</Text>
             </View>
           </View>
         </View>
@@ -305,7 +275,7 @@ const CartScreen: React.FC = () => {
       <View style={styles.checkoutFooter}>
         <View style={styles.footerLeft}>
           <Text style={styles.footerLabel}>Total</Text>
-          <Text style={styles.footerTotal}>BD {calculateTotal().toFixed(2)}</Text>
+          <Text style={styles.checkoutButtonText}>Checkout • BD {(cart.total - discount).toFixed(2)}</Text>
         </View>
         <TouchableOpacity
           style={styles.checkoutButton}

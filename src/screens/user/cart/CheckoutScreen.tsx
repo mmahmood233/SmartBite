@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -41,6 +42,10 @@ const CheckoutScreen: React.FC = () => {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [newAddress, setNewAddress] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
 
   // Fetch user profile
   useEffect(() => {
@@ -81,9 +86,56 @@ const CheckoutScreen: React.FC = () => {
     brand: 'Mastercard',
   };
 
+  const handleSaveAddress = async () => {
+    if (!newAddress.trim() || !newPhone.trim()) {
+      Alert.alert('Error', 'Please fill in both address and phone number');
+      return;
+    }
+
+    setSavingProfile(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { error } = await supabase
+          .from('users')
+          .update({
+            address: newAddress.trim(),
+            phone: newPhone.trim(),
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+
+        // Reload profile
+        await loadUserProfile();
+        setShowAddressModal(false);
+        Alert.alert('Success', 'Address and phone number saved!');
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      Alert.alert('Error', 'Failed to save information');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (cart.items.length === 0) {
       Alert.alert('Empty Cart', 'Your cart is empty');
+      return;
+    }
+
+    // Check if user has address and phone
+    const missingFields = [];
+    if (!userProfile?.address) missingFields.push('address');
+    if (!userProfile?.phone) missingFields.push('phone number');
+
+    if (missingFields.length > 0) {
+      // Pre-fill existing data
+      setNewAddress(userProfile?.address || '');
+      setNewPhone(userProfile?.phone || '');
+      setShowAddressModal(true);
       return;
     }
 
@@ -378,6 +430,70 @@ const CheckoutScreen: React.FC = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
+      {/* Address & Phone Modal */}
+      <Modal
+        visible={showAddressModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowAddressModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Delivery Information</Text>
+            <Text style={styles.modalSubtitle}>
+              Please provide your address and phone number to continue
+            </Text>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Phone Number</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="+973 XXXX XXXX"
+                value={newPhone}
+                onChangeText={setNewPhone}
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Delivery Address</Text>
+              <TextInput
+                style={[styles.modalInput, styles.addressInput]}
+                placeholder="Building, Road, Block, Area"
+                value={newAddress}
+                onChangeText={setNewAddress}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+              <Text style={styles.inputHint}>
+                📍 Location picker coming soon
+              </Text>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setShowAddressModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalSaveButton}
+                onPress={handleSaveAddress}
+                disabled={savingProfile}
+              >
+                {savingProfile ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.modalSaveText}>Save & Continue</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -812,6 +928,88 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: 0.2,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 24,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333333',
+    marginBottom: 8,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 15,
+    color: '#1A1A1A',
+  },
+  addressInput: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  inputHint: {
+    fontSize: 12,
+    color: '#999999',
+    marginTop: 6,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  modalCancelButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666666',
+  },
+  modalSaveButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+  },
+  modalSaveText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
 

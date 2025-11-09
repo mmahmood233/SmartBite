@@ -8,7 +8,7 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,31 +18,30 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency, formatOrderNumber } from '../../../utils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type OrderConfirmationRouteProp = RouteProp<RootStackParamList, 'OrderConfirmation'>;
 
 const OrderConfirmationScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-
-  // Mock order data
-  const orderData = {
-    orderNumber: 'WAJ1234',
-    restaurant: {
-      name: 'Al Qariah',
-      logo: '🍽️',
-    },
-    items: [
-      { name: 'Kabsa Rice with Chicken', quantity: 1, price: 8.5 },
-      { name: 'Lamb Mandi', quantity: 2, price: 12.0 },
-    ],
-    total: 32.0,
-    eta: '25–30 min',
-  };
+  const route = useRoute<OrderConfirmationRouteProp>();
+  
+  // Get real order data from route params or use defaults
+  const {
+    orderId = '',
+    orderNumber = 'WAJ' + Math.floor(Math.random() * 10000),
+    restaurantName = 'Restaurant',
+    items = [],
+    total = 0,
+  } = route.params || {};
 
   const handleTrackOrder = () => {
-    navigation.navigate('OrderTracking', { orderNumber: orderData.orderNumber });
+    navigation.navigate('OrderTracking', { orderNumber });
   };
 
   const handleBackToHome = () => {
-    navigation.navigate('MainTabs');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainTabs' }],
+    });
   };
 
   return (
@@ -60,7 +59,7 @@ const OrderConfirmationScreen: React.FC = () => {
           </View>
           <Text style={styles.successTitle}>Order Placed Successfully!</Text>
           <Text style={styles.successSubtext}>
-            We've sent your order to {orderData.restaurant.name}. Get ready for delicious food!
+            We've sent your order to {restaurantName}. Get ready for delicious food!
           </Text>
         </View>
 
@@ -70,17 +69,17 @@ const OrderConfirmationScreen: React.FC = () => {
           <View style={styles.summaryCard}>
             <View style={styles.restaurantHeader}>
               <View style={styles.restaurantLogo}>
-                <Text style={styles.restaurantLogoText}>{orderData.restaurant.logo}</Text>
+                <Text style={styles.restaurantLogoText}>🍽️</Text>
               </View>
               <View style={styles.restaurantInfo}>
-                <Text style={styles.restaurantName}>{orderData.restaurant.name}</Text>
-                <Text style={styles.orderNumber}>Order #{orderData.orderNumber}</Text>
+                <Text style={styles.restaurantName}>{restaurantName}</Text>
+                <Text style={styles.orderNumber}>Order #{orderNumber}</Text>
               </View>
             </View>
 
             <View style={styles.divider} />
 
-            {orderData.items.map((item, index) => (
+            {items.map((item: any, index: number) => (
               <View key={index} style={styles.orderItem}>
                 <Text style={styles.itemName}>
                   {item.name} ×{item.quantity}
@@ -95,12 +94,12 @@ const OrderConfirmationScreen: React.FC = () => {
 
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>BD {orderData.total.toFixed(2)}</Text>
+              <Text style={styles.totalValue}>BD {total.toFixed(2)}</Text>
             </View>
 
             <View style={styles.etaContainer}>
               <Icon name="clock" size={16} color={colors.primary} />
-              <Text style={styles.etaText}>ETA: {orderData.eta}</Text>
+              <Text style={styles.etaText}>ETA: 25–30 min</Text>
             </View>
           </View>
         </View>

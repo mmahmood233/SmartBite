@@ -142,16 +142,63 @@ const CheckoutScreen: React.FC = () => {
     setPlacingOrder(true);
     
     try {
-      // TODO: Create order in Supabase
-      // For now, simulate order placement
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const { data: { user } } = await supabase.auth.getUser();
       
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Create order in Supabase
+      const orderData = {
+        user_id: user.id,
+        restaurant_id: cart.restaurantId,
+        status: 'pending',
+        total_amount: cart.total,
+        delivery_fee: cart.deliveryFee,
+        subtotal: cart.subtotal,
+        delivery_address: userProfile?.address,
+        delivery_phone: userProfile?.phone,
+        delivery_notes: deliveryNotes || null,
+        payment_method: selectedPayment,
+        contactless_delivery: contactlessDelivery,
+      };
+
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert(orderData)
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = cart.items.map(item => ({
+        order_id: order.id,
+        dish_id: item.dishId,
+        dish_name: item.name,
+        quantity: item.quantity,
+        unit_price: item.price,
+        subtotal: item.price * item.quantity,
+        special_request: item.specialRequest || null,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
       // Clear cart after successful order
       await clearCart();
       
-      // Navigate to order confirmation screen
-      console.log('Navigating to OrderConfirmation...');
-      navigation.replace('OrderConfirmation');
+      // Navigate to order confirmation screen with order data
+      navigation.replace('OrderConfirmation', {
+        orderId: order.id,
+        orderNumber: order.order_number,
+        restaurantName: cart.restaurantName,
+        items: cart.items,
+        total: cart.total,
+      });
     } catch (error) {
       console.error('Error placing order:', error);
       Alert.alert('Error', 'Failed to place order. Please try again.');

@@ -469,9 +469,13 @@ const RestaurantDetailScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* Rating Badge */}
-          <View style={styles.ratingBadge}>
-            <Text style={styles.ratingBadgeText}>⭐ 4.8 • 15 min • $$</Text>
-          </View>
+          {restaurant && (
+            <View style={styles.ratingBadge}>
+              <Text style={styles.ratingBadgeText}>
+                ⭐ {restaurant.rating.toFixed(1)} • {restaurant.avg_prep_time || '20-30 mins'}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Restaurant Info Card */}

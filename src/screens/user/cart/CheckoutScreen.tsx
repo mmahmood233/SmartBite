@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   ScrollView,
   TextInput,
   Platform,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -16,6 +18,8 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency } from '../../../utils';
+import { useCart } from '../../../contexts/CartContext';
+import { supabase } from '../../../lib/supabase';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -29,16 +33,45 @@ interface OrderItem {
 
 const CheckoutScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { cart, clearCart } = useCart();
   
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [selectedPayment, setSelectedPayment] = useState<'apple' | 'paypal' | 'card' | 'cash'>('card');
   const [contactlessDelivery, setContactlessDelivery] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data
+  // Fetch user profile
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
+
+  const loadUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Fetch user profile from users table
+        const { data: profile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        setUserProfile(profile);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deliveryAddress = {
-    name: "Ahmed's Home",
-    address: 'Building 227, Road 15, Manama',
-    phone: '+973 33560803',
+    name: userProfile?.full_name || 'User',
+    address: userProfile?.address || 'No address set',
+    phone: userProfile?.phone || 'No phone set',
     eta: '25–30 min',
   };
 
@@ -48,35 +81,44 @@ const CheckoutScreen: React.FC = () => {
     brand: 'Mastercard',
   };
 
-  const restaurant = {
-    name: 'Al Qariah',
-  };
+  const handlePlaceOrder = async () => {
+    if (cart.items.length === 0) {
+      Alert.alert('Empty Cart', 'Your cart is empty');
+      return;
+    }
 
-  const orderItems: OrderItem[] = [
-    {
-      id: '1',
-      name: 'Kabsa Rice with Chicken',
-      quantity: 1,
-      price: 8.5,
-      addOns: ['Extra Chicken (+BD 1.00)'],
-    },
-    {
-      id: '2',
-      name: 'Lamb Mandi',
-      quantity: 2,
-      price: 12.0,
-    },
-  ];
-
-  const subtotal = 33.5;
-  const deliveryFee = 0.5;
-  const discount = 2.0;
-  const total = subtotal + deliveryFee - discount;
-
-  const handlePlaceOrder = () => {
-    // TODO: Process payment
-    // Navigate to order confirmation
-    navigation.navigate('OrderConfirmation');
+    setPlacingOrder(true);
+    
+    try {
+      // TODO: Create order in Supabase
+      // For now, simulate order placement
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Clear cart after successful order
+      await clearCart();
+      
+      // Navigate to order confirmation
+      Alert.alert(
+        'Order Placed!',
+        'Your order has been placed successfully',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'MainTabs' }],
+              });
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error placing order:', error);
+      Alert.alert('Error', 'Failed to place order. Please try again.');
+    } finally {
+      setPlacingOrder(false);
+    }
   };
 
   return (
@@ -237,17 +279,21 @@ const CheckoutScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your Order</Text>
           <View style={styles.summaryCard}>
-            <Text style={styles.restaurantNameBold}>{restaurant.name}</Text>
+            <Text style={styles.restaurantNameBold}>{cart.restaurantName || 'Restaurant'}</Text>
             
-            {orderItems.map(item => (
+            {cart.items.map((item: any) => (
               <View key={item.id} style={styles.orderItem}>
                 <View style={styles.orderItemLeft}>
                   <Text style={styles.orderItemName}>
                     {item.name} ×{item.quantity}
                   </Text>
-                  {item.addOns && item.addOns.map((addOn, index) => (
-                    <Text key={index} style={styles.addOnText}>+ {addOn}</Text>
-                  ))}
+                  {item.addOns && item.addOns.length > 0 && (
+                    <View style={styles.addOnsContainer}>
+                      {item.addOns.map((addOn: any, index: number) => (
+                        <Text key={index} style={styles.addOnText}>+ {addOn}</Text>
+                      ))}
+                    </View>
+                  )}
                 </View>
                 <Text style={styles.orderItemPrice}>
                   BD {(item.price * item.quantity).toFixed(2)}
@@ -259,17 +305,17 @@ const CheckoutScreen: React.FC = () => {
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>BD {subtotal.toFixed(2)}</Text>
+              <Text style={styles.summaryValue}>BD {cart.subtotal.toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>BD {deliveryFee.toFixed(2)}</Text>
+              <Text style={styles.summaryValue}>BD {cart.deliveryFee.toFixed(2)}</Text>
             </View>
-            {discount > 0 && (
+            {false && ( 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Promo Discount</Text>
                 <Text style={[styles.summaryValue, styles.discountText]}>
-                  -BD {discount.toFixed(2)}
+                  -BD 0.00
                 </Text>
               </View>
             )}
@@ -278,7 +324,7 @@ const CheckoutScreen: React.FC = () => {
 
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>BD {total.toFixed(2)}</Text>
+              <Text style={styles.totalValue}>BD {cart.total.toFixed(2)}</Text>
             </View>
           </View>
         </View>
@@ -313,7 +359,7 @@ const CheckoutScreen: React.FC = () => {
       <View style={styles.footerEnhanced}>
         <View style={styles.footerLeft}>
           <Text style={styles.footerLabel}>Total</Text>
-          <Text style={styles.footerTotalEnhanced}>BD {total.toFixed(2)}</Text>
+          <Text style={styles.footerTotalEnhanced}>BD {cart.total.toFixed(2)}</Text>
           <Text style={styles.footerSubtextEnhanced}>Includes delivery</Text>
         </View>
         <TouchableOpacity
@@ -611,6 +657,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#212121',
+  },
+  addOnsContainer: {
+    marginTop: 4,
   },
   divider: {
     height: 1,

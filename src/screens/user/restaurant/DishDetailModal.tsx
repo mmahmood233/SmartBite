@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency } from '../../../utils';
+import { fetchDishAddons } from '../../../services/restaurants.service';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const IMAGE_HEIGHT = 240;
@@ -52,11 +53,34 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [specialRequest, setSpecialRequest] = useState('');
-  const [addOns, setAddOns] = useState<AddOn[]>([
-    { id: '1', name: 'Extra Chicken', price: 1.0, selected: false },
-    { id: '2', name: 'Salad', price: 0.5, selected: false },
-    { id: '3', name: 'Garlic Sauce', price: 0.3, selected: false },
-  ]);
+  const [addOns, setAddOns] = useState<AddOn[]>([]);
+  const [loadingAddons, setLoadingAddons] = useState(false);
+
+  // Fetch add-ons when dish changes
+  useEffect(() => {
+    if (visible && dish.id) {
+      loadAddOns();
+    }
+  }, [visible, dish.id]);
+
+  const loadAddOns = async () => {
+    try {
+      setLoadingAddons(true);
+      const addonsData = await fetchDishAddons(dish.id);
+      const formattedAddons = addonsData.map((addon: any) => ({
+        id: addon.id,
+        name: addon.name,
+        price: addon.price,
+        selected: false,
+      }));
+      setAddOns(formattedAddons);
+    } catch (error) {
+      console.error('Error loading add-ons:', error);
+      setAddOns([]);
+    } finally {
+      setLoadingAddons(false);
+    }
+  };
 
   const pan = useRef(new Animated.Value(0)).current;
 

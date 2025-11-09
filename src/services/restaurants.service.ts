@@ -175,3 +175,24 @@ export const fetchCategories = async () => {
 
   return data || [];
 };
+
+/**
+ * Fetch add-ons for a specific dish
+ * 
+ * @param dishId - Dish ID
+ * @returns List of add-ons
+ */
+export const fetchDishAddons = async (dishId: string) => {
+  const { data, error } = await supabase
+    .from('dish_addons')
+    .select('*')
+    .eq('dish_id', dishId)
+    .eq('is_available', true);
+
+  if (error) {
+    console.error('Error fetching dish add-ons:', error);
+    throw error;
+  }
+
+  return data || [];
+};

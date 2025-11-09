@@ -442,21 +442,16 @@ const HomeScreen: React.FC = () => {
             </View>
           ) : allRestaurants.length > 0 ? (
             allRestaurants.slice(0, 6).map(restaurant => (
-              <TouchableOpacity
+              <RestaurantCard 
                 key={restaurant.id}
-                activeOpacity={0.9}
-                onPress={() => navigation.navigate('RestaurantDetail', { 
-                  restaurantId: restaurant.id,
-                  restaurantName: restaurant.name 
-                })}
+                restaurantId={restaurant.id}
+                image={restaurant.logo ? { uri: restaurant.logo } : require('../../../../assets/wajba_logo.png')} 
+                name={restaurant.name} 
+                tags={`${restaurant.category} • ${restaurant.avg_prep_time || '20-30 mins'}`}
+                rating={restaurant.rating}
+                eta={restaurant.avg_prep_time || '20-30 mins'}
                 style={styles.gridItem}
-              >
-                <RestaurantCard 
-                  image={restaurant.logo ? { uri: restaurant.logo } : require('../../../../assets/wajba_logo.png')} 
-                  name={restaurant.name} 
-                  tags={`${restaurant.category} • ${restaurant.avg_prep_time || '20-30 mins'}`}
-                />
-              </TouchableOpacity>
+              />
             ))
           ) : (
             <Text style={{ padding: 20, color: colors.textSecondary }}>No restaurants available</Text>

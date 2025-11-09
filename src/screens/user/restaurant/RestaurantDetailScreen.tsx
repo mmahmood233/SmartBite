@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,16 +8,22 @@ import {
   Dimensions,
   Platform,
   Animated,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types';
+import { fetchRestaurantById, fetchRestaurantMenu } from '../../../services/restaurants.service';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather as Icon } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency, formatRating } from '../../../utils';
 import DishDetailModal from './DishDetailModal';
+import ReviewModal from '../../../components/ReviewModal';
+import { createReview, fetchRestaurantReviews } from '../../../services/reviews.service';
+import { supabase } from '../../../lib/supabase';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -37,47 +43,36 @@ interface MenuItem {
   tags?: string[];
 }
 
-const mockMenuItems: MenuItem[] = [
-  {
-    id: '1',
-    name: 'Kabsa Rice with Chicken',
-    description: 'Traditional Saudi rice dish with aromatic spices',
-    price: 8.5,
-    image: require('../../../../assets/food.png'),
-    category: 'Mains',
-    isPopular: true,
-  },
-  {
-    id: '2',
-    name: 'Lamb Mandi',
-    description: 'Slow-cooked lamb with fragrant basmati rice',
-    price: 12.0,
-    image: require('../../../../assets/food.png'),
-    category: 'Mains',
-    isPopular: true,
-  },
-  {
-    id: '3',
-    name: 'Hummus & Pita',
-    description: 'Creamy chickpea dip with warm pita bread',
-    price: 4.5,
-    image: require('../../../../assets/food.png'),
-    category: 'Sides',
-  },
-  {
-    id: '4',
-    name: 'Baklava',
-    description: 'Sweet pastry with honey and pistachios',
-    price: 3.5,
-    image: require('../../../../assets/food.png'),
-    category: 'Desserts',
-  },
-];
+// Mock data removed - now using real Supabase data
+
+type RestaurantDetailRouteProp = RouteProp<RootStackParamList, 'RestaurantDetail'>;
+
+// Helper function to format time ago
+const getTimeAgo = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+  if (seconds < 2592000) return `${Math.floor(seconds / 604800)} weeks ago`;
+  return `${Math.floor(seconds / 2592000)} months ago`;
+};
 
 const RestaurantDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<RestaurantDetailRouteProp>();
+  const { restaurantId } = route.params;
+  
+  const [restaurant, setRestaurant] = useState<any>(null);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'menu' | 'about' | 'reviews'>('menu');
-  const [activeCategory, setActiveCategory] = useState<string>('Mains');
+  const [activeCategory, setActiveCategory] = useState<string>('All');
   const [isFavorite, setIsFavorite] = useState(false);
   const [cartItems, setCartItems] = useState<number>(0);
   const [cartTotal, setCartTotal] = useState<number>(0);
@@ -86,6 +81,46 @@ const RestaurantDetailScreen: React.FC = () => {
   // Dish Detail Modal State
   const [dishModalVisible, setDishModalVisible] = useState(false);
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
+  
+  // Review Modal State
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+
+  // Fetch restaurant and menu data
+  useEffect(() => {
+    loadRestaurantData();
+  }, [restaurantId]);
+
+  const loadRestaurantData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Fetch restaurant details
+      const restaurantData = await fetchRestaurantById(restaurantId);
+      setRestaurant(restaurantData);
+
+      // Fetch menu items
+      const menu = await fetchRestaurantMenu(restaurantId);
+      setMenuItems(menu);
+
+      // Fetch reviews
+      const reviewsData = await fetchRestaurantReviews(restaurantId);
+      setReviews(reviewsData);
+
+      // Set first category as active if available
+      if (menu.length > 0) {
+        const categories = [...new Set(menu.map((item: any) => item.menu_categories?.name || 'Other'))];
+        if (categories.length > 0) {
+          setActiveCategory(categories[0] as string);
+        }
+      }
+    } catch (err: any) {
+      console.error('Error loading restaurant:', err);
+      setError('Failed to load restaurant details');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDishPress = (item: MenuItem) => {
     setSelectedDish({
@@ -110,15 +145,16 @@ const RestaurantDetailScreen: React.FC = () => {
     // TODO: Add success toast animation
   };
 
-  const groupedMenu = mockMenuItems.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
+  const groupedMenu = menuItems.reduce((acc: Record<string, any[]>, item: any) => {
+    const category = item.menu_categories?.name || 'Other';
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    acc[item.category].push(item);
+    acc[category].push(item);
     return acc;
-  }, {} as Record<string, MenuItem[]>);
+  }, {} as Record<string, any[]>);
 
-  const renderMenuItem = (item: MenuItem) => (
+  const renderMenuItem = (item: any) => (
     <TouchableOpacity
       key={item.id}
       style={styles.menuItem}
@@ -126,8 +162,11 @@ const RestaurantDetailScreen: React.FC = () => {
       activeOpacity={0.7}
     >
       <View style={styles.menuItemImageContainer}>
-        <Image source={item.image} style={styles.menuItemImage} />
-        {item.isPopular && (
+        <Image 
+          source={item.image ? { uri: item.image } : require('../../../../assets/food.png')} 
+          style={styles.menuItemImage} 
+        />
+        {item.is_popular && (
           <View style={styles.popularBadge}>
             <Text style={styles.popularText}>🔥 Popular</Text>
           </View>
@@ -136,7 +175,7 @@ const RestaurantDetailScreen: React.FC = () => {
       <View style={styles.menuItemInfo}>
         <Text style={styles.menuItemName}>{item.name}</Text>
         {item.description && (
-          <Text style={styles.menuItemDescription}>{item.description}</Text>
+          <Text style={styles.menuItemDescription} numberOfLines={2}>{item.description}</Text>
         )}
         <Text style={styles.menuItemPrice}>BD {item.price.toFixed(2)}</Text>
       </View>
@@ -203,64 +242,112 @@ const RestaurantDetailScreen: React.FC = () => {
     </View>
   );
 
-  const renderAboutSection = () => (
-    <View style={styles.aboutSection}>
-      <View style={styles.aboutItem}>
-        <Icon name="book-open" size={22} color={colors.primary} style={{ opacity: 1 }} />
-        <View style={styles.aboutItemText}>
-          <Text style={styles.aboutLabel}>Overview</Text>
-          <Text style={styles.aboutValue}>
-            Wajba brings you the true flavor of Saudi home cooking, known for its rich rice and meat dishes.
-          </Text>
+  const renderAboutSection = () => {
+    if (!restaurant) return null;
+    
+    return (
+      <View style={styles.aboutSection}>
+        <View style={styles.aboutItem}>
+          <Icon name="book-open" size={22} color={colors.primary} style={{ opacity: 1 }} />
+          <View style={styles.aboutItemText}>
+            <Text style={styles.aboutLabel}>Overview</Text>
+            <Text style={styles.aboutValue}>
+              {restaurant.description || 'Delicious food prepared with care and quality ingredients.'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.aboutItem}>
+          <Icon name="clock" size={22} color={colors.primary} style={{ opacity: 1 }} />
+          <View style={styles.aboutItemText}>
+            <Text style={styles.aboutLabel}>Preparation Time</Text>
+            <Text style={styles.aboutValue}>{restaurant.avg_prep_time || '20-30 mins'}</Text>
+          </View>
+        </View>
+
+        <View style={styles.aboutItem}>
+          <Icon name="truck" size={22} color={colors.primary} style={{ opacity: 1 }} />
+          <View style={styles.aboutItemText}>
+            <Text style={styles.aboutLabel}>Delivery</Text>
+            <Text style={styles.aboutValue}>
+              BD {restaurant.delivery_fee.toFixed(2)} • Min order BD {restaurant.min_order.toFixed(2)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.aboutItem}>
+          <Icon name="phone" size={22} color={colors.primary} style={{ opacity: 1 }} />
+          <View style={styles.aboutItemText}>
+            <Text style={styles.aboutLabel}>Contact</Text>
+            <Text style={styles.aboutValue}>{restaurant.phone}</Text>
+          </View>
+        </View>
+
+        <View style={styles.aboutItem}>
+          <Icon name="map-pin" size={22} color={colors.primary} style={{ opacity: 1 }} />
+          <View style={styles.aboutItemText}>
+            <Text style={styles.aboutLabel}>Address</Text>
+            <Text style={styles.aboutValue}>{restaurant.address}</Text>
+          </View>
+        </View>
+
+        <View style={styles.aboutItem}>
+          <Icon name="star" size={22} color={colors.primary} style={{ opacity: 1 }} />
+          <View style={styles.aboutItemText}>
+            <Text style={styles.aboutLabel}>Rating</Text>
+            <Text style={styles.aboutValue}>
+              {restaurant.rating.toFixed(1)} ⭐ ({restaurant.total_reviews} reviews)
+            </Text>
+          </View>
         </View>
       </View>
-
-      <View style={styles.aboutItem}>
-        <Icon name="clock" size={22} color={colors.primary} style={{ opacity: 1 }} />
-        <View style={styles.aboutItemText}>
-          <Text style={styles.aboutLabel}>Opening Hours</Text>
-          <Text style={styles.aboutValue}>10:00 AM – 11:00 PM</Text>
-        </View>
-      </View>
-
-      <View style={styles.aboutItem}>
-        <Icon name="truck" size={22} color={colors.primary} style={{ opacity: 1 }} />
-        <View style={styles.aboutItemText}>
-          <Text style={styles.aboutLabel}>Delivery</Text>
-          <Text style={styles.aboutValue}>BD 0.5 • Free over BD 5</Text>
-        </View>
-      </View>
-
-      <View style={styles.aboutItem}>
-        <Icon name="phone" size={22} color={colors.primary} style={{ opacity: 1 }} />
-        <View style={styles.aboutItemText}>
-          <Text style={styles.aboutLabel}>Contact</Text>
-          <Text style={styles.aboutValue}>+973 XXXX XXXX</Text>
-        </View>
-      </View>
-
-      <View style={styles.aboutItem}>
-        <Icon name="map-pin" size={22} color={colors.primary} style={{ opacity: 1 }} />
-        <View style={styles.aboutItemText}>
-          <Text style={styles.aboutLabel}>Address</Text>
-          <Text style={styles.aboutValue}>Manama, Bahrain</Text>
-        </View>
-      </View>
-    </View>
-  );
-
-  const handleAddReview = () => {
-    // TODO: Navigate to review submission screen or open modal
-    console.log('Add review tapped');
+    );
   };
 
-  const renderReviewsSection = () => (
-    <View style={styles.reviewsSection}>
-      <View style={styles.ratingHeader}>
-        <Text style={styles.ratingScore}>4.8</Text>
-        <Text style={styles.ratingOutOf}>/ 5</Text>
-      </View>
-      <Text style={styles.ratingSubtext}>Based on 127 reviews</Text>
+  const handleAddReview = () => {
+    setReviewModalVisible(true);
+  };
+
+  const handleSubmitReview = async (rating: number, comment: string) => {
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        Alert.alert('Error', 'You must be logged in to leave a review');
+        return;
+      }
+
+      // Create review (order_id can be null for general reviews)
+      await createReview({
+        user_id: user.id,
+        restaurant_id: restaurantId,
+        order_id: null as any,
+        rating,
+        comment,
+      });
+
+      Alert.alert('Success', 'Thank you for your review!');
+      
+      // Reload restaurant data to get updated rating
+      loadRestaurantData();
+    } catch (error: any) {
+      console.error('Error submitting review:', error);
+      Alert.alert('Error', 'Failed to submit review. Please try again.');
+      throw error;
+    }
+  };
+
+  const renderReviewsSection = () => {
+    if (!restaurant) return null;
+    
+    return (
+      <View style={styles.reviewsSection}>
+        <View style={styles.ratingHeader}>
+          <Text style={styles.ratingScore}>{restaurant.rating.toFixed(1)}</Text>
+          <Text style={styles.ratingOutOf}>/ 5</Text>
+        </View>
+        <Text style={styles.ratingSubtext}>Based on {restaurant.total_reviews} reviews</Text>
 
       {/* Filter Chips */}
       <View style={styles.reviewFilters}>
@@ -281,43 +368,40 @@ const RestaurantDetailScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Sample Review */}
-      <View style={styles.reviewCard}>
-        <View style={styles.reviewHeader}>
-          <View style={styles.reviewAvatar}>
-            <Text style={styles.reviewAvatarText}>AH</Text>
-          </View>
-          <View style={styles.reviewHeaderInfo}>
-            <Text style={styles.reviewerName}>Ahmed Hassan</Text>
-            <Text style={styles.reviewDate}>2 days ago</Text>
-          </View>
-          <View style={styles.reviewStars}>
-            <Text style={styles.reviewRating}>⭐ 5.0</Text>
-          </View>
+      {/* Real Reviews */}
+      {reviews.length > 0 ? (
+        reviews.map((review) => {
+          const userName = review.users?.full_name || 'Anonymous';
+          const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+          const timeAgo = getTimeAgo(review.created_at);
+          
+          return (
+            <View key={review.id} style={styles.reviewCard}>
+              <View style={styles.reviewHeader}>
+                <View style={styles.reviewAvatar}>
+                  <Text style={styles.reviewAvatarText}>{initials}</Text>
+                </View>
+                <View style={styles.reviewHeaderInfo}>
+                  <Text style={styles.reviewerName}>{userName}</Text>
+                  <Text style={styles.reviewDate}>{timeAgo}</Text>
+                </View>
+                <View style={styles.reviewStars}>
+                  <Text style={styles.reviewRating}>⭐ {review.rating.toFixed(1)}</Text>
+                </View>
+              </View>
+              {review.comment && (
+                <Text style={styles.reviewText}>{review.comment}</Text>
+              )}
+            </View>
+          );
+        })
+      ) : (
+        <View style={{ padding: 40, alignItems: 'center' }}>
+          <Text style={{ color: colors.textSecondary, textAlign: 'center' }}>
+            No reviews yet. Be the first to review!
+          </Text>
         </View>
-        <Text style={styles.reviewText}>
-          Amazing food! The Kabsa was perfectly seasoned and the portions were generous. Highly recommend!
-        </Text>
-      </View>
-
-      {/* Another Sample Review */}
-      <View style={styles.reviewCard}>
-        <View style={styles.reviewHeader}>
-          <View style={styles.reviewAvatar}>
-            <Text style={styles.reviewAvatarText}>SK</Text>
-          </View>
-          <View style={styles.reviewHeaderInfo}>
-            <Text style={styles.reviewerName}>Sara Khalid</Text>
-            <Text style={styles.reviewDate}>1 week ago</Text>
-          </View>
-          <View style={styles.reviewStars}>
-            <Text style={styles.reviewRating}>⭐ 4.5</Text>
-          </View>
-        </View>
-        <Text style={styles.reviewText}>
-          Great authentic flavors. Delivery was quick and food arrived hot. Will order again!
-        </Text>
-      </View>
+      )}
 
       {/* Add Review CTA */}
       <View style={styles.addReviewContainer}>
@@ -333,7 +417,8 @@ const RestaurantDetailScreen: React.FC = () => {
         <Text style={styles.addReviewSubtext}>Help others discover great meals!</Text>
       </View>
     </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -390,40 +475,40 @@ const RestaurantDetailScreen: React.FC = () => {
         </View>
 
         {/* Restaurant Info Card */}
-        <View style={styles.infoCard}>
-          <Text style={styles.restaurantName}>Al Qariah</Text>
-          <Text style={styles.cuisineType}>Saudi • Home-Style • Grill</Text>
-          
-          {/* Key Stats Row */}
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Icon name="star" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-              <Text style={styles.statTextBold}>4.8</Text>
-              <Text style={styles.statText}> (127)</Text>
-            </View>
-            <Text style={styles.statDivider}>•</Text>
-            <View style={styles.statItem}>
-              <Icon name="clock" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-              <Text style={styles.statText}>25 min</Text>
-            </View>
-            <Text style={styles.statDivider}>•</Text>
-            <View style={styles.statItem}>
-              <Icon name="truck" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-              <Text style={styles.statText}>BD 0.5 Delivery</Text>
-            </View>
+        {loading ? (
+          <View style={[styles.infoCard, { alignItems: 'center', justifyContent: 'center', padding: 40 }]}>
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
+        ) : restaurant ? (
+          <View style={styles.infoCard}>
+            <Text style={styles.restaurantName}>{restaurant.name}</Text>
+            <Text style={styles.cuisineType}>{restaurant.category} • {restaurant.description?.substring(0, 50) || 'Delicious food'}</Text>
+            
+            {/* Key Stats Row */}
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Icon name="star" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                <Text style={styles.statTextBold}>{restaurant.rating.toFixed(1)}</Text>
+                <Text style={styles.statText}> ({restaurant.total_reviews})</Text>
+              </View>
+              <Text style={styles.statDivider}>•</Text>
+              <View style={styles.statItem}>
+                <Icon name="clock" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                <Text style={styles.statText}>{restaurant.avg_prep_time || '20-30 mins'}</Text>
+              </View>
+              <Text style={styles.statDivider}>•</Text>
+              <View style={styles.statItem}>
+                <Icon name="truck" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                <Text style={styles.statText}>BD {restaurant.delivery_fee.toFixed(2)} Delivery</Text>
+              </View>
+            </View>
 
-          <View style={styles.locationRow}>
-            <Icon name="map-pin" size={14} color="#9E9E9E" />
-            <Text style={styles.locationText}>1.2 km away • Manama</Text>
+            <View style={styles.locationRow}>
+              <Icon name="map-pin" size={14} color="#9E9E9E" />
+              <Text style={styles.locationText}>{restaurant.address}</Text>
+            </View>
           </View>
-          <View style={styles.moodMatchTag}>
-            <Text style={styles.moodMatchText}>🧠 Matched for your mood</Text>
-          </View>
-          <Text style={styles.description}>
-            Authentic Gulf cuisine served with warmth and tradition.
-          </Text>
-        </View>
+        ) : null}
 
         {/* Tabs Navigation */}
         <View style={styles.tabsContainer}>
@@ -495,6 +580,14 @@ const RestaurantDetailScreen: React.FC = () => {
           onAddToCart={handleAddToCart}
         />
       )}
+
+      {/* Review Modal */}
+      <ReviewModal
+        visible={reviewModalVisible}
+        onClose={() => setReviewModalVisible(false)}
+        onSubmit={handleSubmitReview}
+        restaurantName={restaurant?.name || ''}
+      />
     </View>
   );
 };

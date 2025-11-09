@@ -3,7 +3,7 @@
  * Expanded restaurant list with filtering, sorting, and AI matching
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import {
   Dimensions,
   Modal,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -25,6 +26,7 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import RestaurantCard from '../../../components/RestaurantCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRestaurantSearch } from '../../../hooks/useRestaurantSearch';
+import { fetchRestaurants } from '../../../services/restaurants.service';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type FeatherIconName = keyof typeof Icon.glyphMap;
@@ -54,22 +56,14 @@ const CUISINES: Array<{ id: string; label: string; icon: FeatherIconName }> = [
   { id: 'desserts', label: 'Desserts', icon: 'gift' },
 ];
 
-const MOCK_RESTAURANTS = [
-  { id: '1', name: 'Al Qariah', cuisine: 'Saudi • Traditional', rating: 4.9, eta: '12 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['saudi', 'traditional', 'arabic', 'kabsa'] },
-  { id: '2', name: "Mama's Kitchen", cuisine: 'Saudi • Home-Style', rating: 4.8, eta: '15 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['saudi', 'homestyle', 'comfort', 'arabic'] },
-  { id: '3', name: 'Shawarma House', cuisine: 'Lebanese • Grill', rating: 4.7, eta: '18 min', price: '$', image: require('../../../../assets/food.png'), tags: ['lebanese', 'shawarma', 'grill', 'arabic'] },
-  { id: '4', name: 'Al Tazaj', cuisine: 'Lebanese • Grill', rating: 4.6, eta: '20 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['lebanese', 'grill', 'chicken', 'arabic'] },
-  { id: '5', name: 'Falafel Corner', cuisine: 'Vegetarian • Quick', rating: 4.5, eta: '10 min', price: '$', image: require('../../../../assets/wajba_logo.png'), tags: ['vegetarian', 'falafel', 'healthy', 'quick'] },
-  { id: '6', name: 'Zaatar & Oil', cuisine: 'Breakfast • Bakery', rating: 4.8, eta: '22 min', price: '$$', image: require('../../../../assets/wajba_logo.png'), tags: ['breakfast', 'bakery', 'zaatar', 'manakish'] },
-  { id: '7', name: 'Manousheh Spot', cuisine: 'Lebanese • Bakery', rating: 4.7, eta: '16 min', price: '$', image: require('../../../../assets/wajba_logo.png'), tags: ['lebanese', 'bakery', 'manakish', 'zaatar'] },
-  { id: '8', name: 'Spice Garden', cuisine: 'Indian • Curry', rating: 4.6, eta: '25 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['indian', 'curry', 'spicy', 'biryani'] },
-  { id: '9', name: 'Pizza Hut', cuisine: 'Italian • Pizza', rating: 4.4, eta: '30 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'cheese', 'pepperoni'] },
-  { id: '10', name: "Papa Johns", cuisine: 'Italian • Pizza', rating: 4.3, eta: '28 min', price: '$$', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'delivery'] },
-  { id: '11', name: "Mama's Pizza", cuisine: 'Italian • Home-Style', rating: 4.6, eta: '25 min', price: '$', image: require('../../../../assets/food.png'), tags: ['pizza', 'italian', 'homemade'] },
-];
+// Mock data removed - now using real Supabase data
 
 const AllRestaurantsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   
   // Use shared search hook
   const {
@@ -91,6 +85,25 @@ const AllRestaurantsScreen: React.FC = () => {
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<string>('all');
 
+  // Fetch restaurants from Supabase
+  useEffect(() => {
+    loadRestaurants();
+  }, []);
+
+  const loadRestaurants = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await fetchRestaurants();
+      setRestaurants(data);
+    } catch (err: any) {
+      console.error('Error loading restaurants:', err);
+      setError('Failed to load restaurants');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAIChatPress = (_query?: string) => {
     // TODO: Pass contextual _query to AI Chat
     navigation.navigate('AIChat');
@@ -110,7 +123,7 @@ const AllRestaurantsScreen: React.FC = () => {
   };
 
   const getSortedRestaurants = () => {
-    let sorted = [...MOCK_RESTAURANTS];
+    let sorted = [...restaurants];
     switch (sortBy) {
       case 'rating':
         return sorted.sort((a, b) => b.rating - a.rating);
@@ -124,7 +137,28 @@ const AllRestaurantsScreen: React.FC = () => {
     }
   };
 
-  const filteredRestaurants = getSortedRestaurants();
+  const getFilteredRestaurants = () => {
+    const sorted = getSortedRestaurants();
+    
+    // Filter by cuisine
+    if (selectedCuisine !== 'all') {
+      return sorted.filter(r => 
+        r.category?.toLowerCase().includes(selectedCuisine.toLowerCase())
+      );
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      return sorted.filter(r =>
+        r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.category?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    return sorted;
+  };
+
+  const filteredRestaurants = getFilteredRestaurants();
 
   return (
     <View style={styles.container}>
@@ -340,20 +374,29 @@ const AllRestaurantsScreen: React.FC = () => {
         contentContainerStyle={styles.gridContainer}
         showsVerticalScrollIndicator={false}
       >
-        {filteredRestaurants.map((restaurant) => (
-          <View key={restaurant.id} style={styles.cardWrapper}>
-            <RestaurantCard
-              image={restaurant.image}
-              name={restaurant.name}
-              tags={restaurant.cuisine}
-              rating={restaurant.rating}
-              eta={restaurant.eta}
-              price={restaurant.price}
-              restaurantId={restaurant.id}
-              style={styles.restaurantCard}
-            />
+        {loading ? (
+          <View style={{ padding: 40, width: '100%', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
-        ))}
+        ) : filteredRestaurants.length > 0 ? (
+          filteredRestaurants.map((restaurant) => (
+            <View key={restaurant.id} style={styles.cardWrapper}>
+              <RestaurantCard
+                image={restaurant.logo ? { uri: restaurant.logo } : require('../../../../assets/wajba_logo.png')}
+                name={restaurant.name}
+                tags={`${restaurant.category} • ${restaurant.avg_prep_time || '20-30 mins'}`}
+                rating={restaurant.rating}
+                eta={restaurant.avg_prep_time || '20-30 mins'}
+                restaurantId={restaurant.id}
+                style={styles.restaurantCard}
+              />
+            </View>
+          ))
+        ) : (
+          <View style={{ padding: 40, alignItems: 'center' }}>
+            <Text style={{ color: colors.textSecondary }}>No restaurants found</Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Sort Modal */}

@@ -71,7 +71,7 @@ const RestaurantDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RestaurantDetailRouteProp>();
   const { restaurantId } = route.params;
-  const { cart, itemCount } = useCart();
+  const { cart, itemCount, addToCart } = useCart();
   
   const [restaurant, setRestaurant] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<any[]>([]);
@@ -139,15 +139,28 @@ const RestaurantDetailScreen: React.FC = () => {
     setDishModalVisible(true);
   };
 
-  const handleQuickAdd = (item: any, event: any) => {
+  const handleQuickAdd = async (item: any, event: any) => {
     event.stopPropagation(); // Prevent card click
-    // Open dish detail modal for quick add
-    setSelectedDish({
-      ...item,
-      restaurant_id: restaurantId,
-      restaurants: { id: restaurantId, name: restaurant?.name || 'Restaurant' },
-    });
-    setDishModalVisible(true);
+    
+    try {
+      // Add item directly to cart with quantity 1 and no add-ons
+      await addToCart(
+        item.id,
+        restaurantId,
+        restaurant?.name || 'Restaurant',
+        item.name,
+        item.price,
+        1, // quantity
+        [], // no add-ons
+        undefined, // no special request
+        item.image
+      );
+      
+      Alert.alert('Success', 'Item added to cart!');
+    } catch (error: any) {
+      // Error already handled by CartContext (different restaurant alert)
+      console.log('Quick add cancelled or failed');
+    }
   };
 
   const groupedMenu = menuItems.reduce((acc: Record<string, any[]>, item: any) => {

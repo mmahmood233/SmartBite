@@ -149,22 +149,9 @@ const CheckoutScreen: React.FC = () => {
       // Clear cart after successful order
       await clearCart();
       
-      // Navigate to order confirmation
-      Alert.alert(
-        'Order Placed!',
-        'Your order has been placed successfully',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'MainTabs' }],
-              });
-            },
-          },
-        ]
-      );
+      // Navigate to order confirmation screen
+      console.log('Navigating to OrderConfirmation...');
+      navigation.replace('OrderConfirmation');
     } catch (error) {
       console.error('Error placing order:', error);
       Alert.alert('Error', 'Failed to place order. Please try again.');

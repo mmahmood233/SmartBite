@@ -18,7 +18,6 @@ import CheckoutScreen from '../screens/user/cart/CheckoutScreen';
 import OrderConfirmationScreen from '../screens/user/orders/OrderConfirmationScreen';
 import OrderTrackingScreen from '../screens/user/orders/OrderTrackingScreen';
 import DeliveryCompleteScreen from '../screens/user/orders/DeliveryCompleteScreen';
-import ReviewConfirmationScreen from '../screens/user/orders/ReviewConfirmationScreen';
 import OrderDetailsScreen from '../screens/user/orders/OrderDetailsScreen';
 
 // Partner Portal - Screens
@@ -71,7 +70,6 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="OrderConfirmation" component={OrderConfirmationScreen} />
       <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />
       <Stack.Screen name="DeliveryComplete" component={DeliveryCompleteScreen} />
-      <Stack.Screen name="ReviewConfirmation" component={ReviewConfirmationScreen} />
       <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Favorites" component={FavoritesScreen} />

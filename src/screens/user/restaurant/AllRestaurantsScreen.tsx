@@ -70,6 +70,7 @@ const AllRestaurantsScreen: React.FC = () => {
     searchQuery,
     showSuggestions,
     searchSuggestions,
+    searchResults,
     isSearching,
     recentSearches,
     suggestionFadeAnim,
@@ -138,20 +139,22 @@ const AllRestaurantsScreen: React.FC = () => {
   };
 
   const getFilteredRestaurants = () => {
+    // If there's a search query with results, use search results
+    if (searchQuery.trim() && searchResults.length > 0) {
+      return searchResults;
+    }
+    
+    // If searching but no results, return empty
+    if (searchQuery.trim() && searchResults.length === 0 && !isSearching) {
+      return [];
+    }
+    
     const sorted = getSortedRestaurants();
     
     // Filter by cuisine
     if (selectedCuisine !== 'all') {
       return sorted.filter(r => 
         r.category?.toLowerCase().includes(selectedCuisine.toLowerCase())
-      );
-    }
-    
-    // Filter by search query
-    if (searchQuery.trim()) {
-      return sorted.filter(r =>
-        r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.category?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     

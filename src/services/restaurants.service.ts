@@ -196,3 +196,4 @@ export const fetchDishAddons = async (dishId: string) => {
 
   return data || [];
 };
+

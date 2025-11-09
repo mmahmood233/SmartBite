@@ -5,44 +5,39 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Animated } from 'react-native';
-
-// Mock data - will be replaced with API calls
-const MOCK_SUGGESTIONS = [
-  { id: '1', name: 'Shawarma House', cuisine: 'Middle Eastern', rating: 4.8, image: require('../../assets/food.png') },
-  { id: '2', name: 'Burger Palace', cuisine: 'American', rating: 4.5, image: require('../../assets/food.png') },
-  { id: '3', name: 'Sushi Express', cuisine: 'Japanese', rating: 4.9, image: require('../../assets/wajba_logo.png') },
-];
-
-const MOCK_RECENT_SEARCHES = ['Pizza', 'Burger', 'Sushi'];
+import { searchRestaurants } from '../services/restaurants.service';
 
 export const useRestaurantSearch = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>(MOCK_RECENT_SEARCHES);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const suggestionFadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Simulate search API call
+  // Search restaurants from database
   const performSearch = async (query: string) => {
     if (query.length < 2) {
       setSearchSuggestions([]);
+      setSearchResults([]);
       return;
     }
 
     setIsSearching(true);
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Filter mock data based on query
-    const results = MOCK_SUGGESTIONS.filter(item =>
-      item.name.toLowerCase().includes(query.toLowerCase()) ||
-      item.cuisine.toLowerCase().includes(query.toLowerCase())
-    );
-
-    setSearchSuggestions(results);
-    setIsSearching(false);
+    try {
+      // Search restaurants from Supabase
+      const results = await searchRestaurants(query);
+      setSearchSuggestions(results.slice(0, 5)); // Show top 5 as suggestions
+      setSearchResults(results); // Store all results
+    } catch (error) {
+      console.error('Error searching restaurants:', error);
+      setSearchSuggestions([]);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleSearchChange = (text: string) => {
@@ -130,6 +125,7 @@ export const useRestaurantSearch = () => {
     showSuggestions,
     setShowSuggestions,
     searchSuggestions,
+    searchResults,
     isSearching,
     recentSearches,
     suggestionFadeAnim,

@@ -24,6 +24,7 @@ import DishDetailModal from './DishDetailModal';
 import ReviewModal from '../../../components/ReviewModal';
 import { createReview, fetchRestaurantReviews } from '../../../services/reviews.service';
 import { supabase } from '../../../lib/supabase';
+import { useCart } from '../../../contexts/CartContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -41,6 +42,11 @@ interface MenuItem {
   rating?: number;
   reviewCount?: number;
   tags?: string[];
+  restaurant_id?: string;
+  restaurants?: {
+    id: string;
+    name: string;
+  };
 }
 
 // Mock data removed - now using real Supabase data
@@ -65,6 +71,7 @@ const RestaurantDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RestaurantDetailRouteProp>();
   const { restaurantId } = route.params;
+  const { cart, itemCount } = useCart();
   
   const [restaurant, setRestaurant] = useState<any>(null);
   const [menuItems, setMenuItems] = useState<any[]>([]);
@@ -74,8 +81,6 @@ const RestaurantDetailScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'menu' | 'about' | 'reviews'>('menu');
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [isFavorite, setIsFavorite] = useState(false);
-  const [cartItems, setCartItems] = useState<number>(0);
-  const [cartTotal, setCartTotal] = useState<number>(0);
   const scrollY = new Animated.Value(0);
   
   // Dish Detail Modal State
@@ -128,6 +133,8 @@ const RestaurantDetailScreen: React.FC = () => {
       rating: 4.8,
       reviewCount: 127,
       tags: item.isPopular ? ['🔥 Popular', '🌶️ Spicy'] : ['🥗 Healthy'],
+      restaurant_id: restaurantId,
+      restaurants: { id: restaurantId, name: restaurant?.name || 'Restaurant' },
     });
     setDishModalVisible(true);
   };
@@ -135,7 +142,11 @@ const RestaurantDetailScreen: React.FC = () => {
   const handleQuickAdd = (item: any, event: any) => {
     event.stopPropagation(); // Prevent card click
     // Open dish detail modal for quick add
-    setSelectedDish(item);
+    setSelectedDish({
+      ...item,
+      restaurant_id: restaurantId,
+      restaurants: { id: restaurantId, name: restaurant?.name || 'Restaurant' },
+    });
     setDishModalVisible(true);
   };
 
@@ -545,11 +556,11 @@ const RestaurantDetailScreen: React.FC = () => {
       </Animated.ScrollView>
 
       {/* Sticky Bottom Order Bar */}
-      {cartItems > 0 && (
+      {itemCount > 0 && cart.restaurantId === restaurantId && (
         <View style={styles.stickyBar}>
           <View style={styles.stickyBarLeft}>
-            <Text style={styles.stickyBarItems}>{cartItems} items</Text>
-            <Text style={styles.stickyBarTotal}>BD {cartTotal.toFixed(2)}</Text>
+            <Text style={styles.stickyBarItems}>{itemCount} {itemCount === 1 ? 'item' : 'items'}</Text>
+            <Text style={styles.stickyBarTotal}>BD {cart.total.toFixed(2)}</Text>
           </View>
           <TouchableOpacity 
             style={styles.stickyBarButton} 

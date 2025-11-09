@@ -178,7 +178,9 @@ const CartScreen: React.FC = () => {
                 {item.addOns && item.addOns.length > 0 && (
                   <View style={styles.addOnsContainer}>
                     {item.addOns.map((addOn: any, index: number) => (
-                      <Text key={index} style={styles.addOnText}>+ {addOn}</Text>
+                      <Text key={index} style={styles.addOnText}>
+                        + {addOn.name} (+BD {addOn.price.toFixed(2)})
+                      </Text>
                     ))}
                   </View>
                 )}
@@ -275,7 +277,7 @@ const CartScreen: React.FC = () => {
       <View style={styles.checkoutFooter}>
         <View style={styles.footerLeft}>
           <Text style={styles.footerLabel}>Total</Text>
-          <Text style={styles.checkoutButtonText}>Checkout • BD {(cart.total - discount).toFixed(2)}</Text>
+          <Text style={styles.footerTotal}>BD {(cart.total - discount).toFixed(2)}</Text>
         </View>
         <TouchableOpacity
           style={styles.checkoutButton}

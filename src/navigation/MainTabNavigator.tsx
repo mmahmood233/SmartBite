@@ -1,17 +1,21 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, Text } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import HomeScreen from '../screens/user/restaurant/HomeScreen';
 import AIChatScreen from '../screens/user/profile/AIChatScreen';
+import CartScreen from '../screens/user/cart/CartScreen';
 import OrdersScreen from '../screens/user/orders/OrdersScreen';
 import ProfileScreen from '../screens/user/profile/ProfileScreen';
 import { colors } from '../theme/colors';
+import { useCart } from '../contexts/CartContext';
 
 const Tab = createBottomTabNavigator();
 
 const MainTabNavigator: React.FC = () => {
+  const { itemCount } = useCart();
+  
   return (
     <Tab.Navigator
       screenOptions={{
@@ -57,6 +61,23 @@ const MainTabNavigator: React.FC = () => {
                   <Icon name="message-circle" size={28} color={colors.primary} />
                 </View>
               )}
+            </View>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="CartTab"
+        component={CartScreen}
+        options={{
+          tabBarLabel: 'Cart',
+          tabBarBadge: itemCount > 0 ? itemCount : undefined,
+          tabBarBadgeStyle: styles.badge,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
+              <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
+                <Icon name="shopping-cart" size={24} color={color} style={{ opacity: focused ? 1 : 0.8 }} />
+              </View>
+              {focused && <View style={styles.activeIndicator} />}
             </View>
           ),
         }}
@@ -170,6 +191,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#E8F5F2',
+  },
+  badge: {
+    backgroundColor: '#E74C3C',
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '600',
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    top: 2,
   },
 });
 

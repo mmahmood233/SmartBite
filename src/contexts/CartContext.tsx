@@ -124,9 +124,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             },
           ]
         );
+        throw error; // Re-throw so caller knows it failed
       } else {
         console.error('Error adding to cart:', error);
         Alert.alert('Error', 'Failed to add item to cart');
+        throw error; // Re-throw so caller knows it failed
       }
     }
   };

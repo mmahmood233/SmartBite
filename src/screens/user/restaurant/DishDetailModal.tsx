@@ -134,13 +134,13 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
   };
 
   const handleAddToCart = async () => {
+    setAdding(true);
+    
+    const selectedAddOns = addOns.filter(a => a.selected);
+    const restaurantId = dish.restaurant_id || dish.restaurants?.id || '';
+    const restaurantName = dish.restaurants?.name || 'Restaurant';
+    
     try {
-      setAdding(true);
-      
-      const selectedAddOns = addOns.filter(a => a.selected);
-      const restaurantId = dish.restaurant_id || dish.restaurants?.id || '';
-      const restaurantName = dish.restaurants?.name || 'Restaurant';
-      
       await addToCart(
         dish.id,
         restaurantId,
@@ -153,6 +153,7 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
         dish.image
       );
       
+      // Only show success and close if addToCart didn't throw an error
       Alert.alert('Success', 'Item added to cart!');
       onClose();
       
@@ -160,8 +161,9 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
       setQuantity(1);
       setSpecialRequest('');
       setAddOns(prev => prev.map(a => ({ ...a, selected: false })));
-    } catch (error) {
-      console.error('Error adding to cart:', error);
+    } catch (error: any) {
+      // Don't show error - CartContext already handles it with alert
+      console.log('Add to cart cancelled or failed');
     } finally {
       setAdding(false);
     }

@@ -132,17 +132,11 @@ const RestaurantDetailScreen: React.FC = () => {
     setDishModalVisible(true);
   };
 
-  const handleQuickAdd = (item: MenuItem, event: any) => {
+  const handleQuickAdd = (item: any, event: any) => {
     event.stopPropagation(); // Prevent card click
-    setCartItems(prev => prev + 1);
-    setCartTotal(prev => prev + item.price);
-    // TODO: Add success toast animation
-  };
-
-  const handleAddToCart = (quantity: number, addOns: any[], totalPrice: number) => {
-    setCartItems(prev => prev + quantity);
-    setCartTotal(prev => prev + totalPrice);
-    // TODO: Add success toast animation
+    // Open dish detail modal for quick add
+    setSelectedDish(item);
+    setDishModalVisible(true);
   };
 
   const groupedMenu = menuItems.reduce((acc: Record<string, any[]>, item: any) => {
@@ -581,7 +575,6 @@ const RestaurantDetailScreen: React.FC = () => {
           visible={dishModalVisible}
           onClose={() => setDishModalVisible(false)}
           dish={selectedDish}
-          onAddToCart={handleAddToCart}
         />
       )}
 

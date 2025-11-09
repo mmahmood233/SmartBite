@@ -18,6 +18,8 @@ import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency } from '../../../utils';
 import { fetchDishAddons } from '../../../services/restaurants.service';
+import { useCart } from '../../../contexts/CartContext';
+import { Alert } from 'react-native';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const IMAGE_HEIGHT = 240;
@@ -41,20 +43,25 @@ interface DishDetailModalProps {
     rating?: number;
     reviewCount?: number;
     tags?: string[];
+    restaurant_id?: string;
+    restaurants?: {
+      id: string;
+      name: string;
+    };
   };
-  onAddToCart: (quantity: number, addOns: AddOn[], totalPrice: number) => void;
 }
 
 const DishDetailModal: React.FC<DishDetailModalProps> = ({
   visible,
   onClose,
   dish,
-  onAddToCart,
 }) => {
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [specialRequest, setSpecialRequest] = useState('');
   const [addOns, setAddOns] = useState<AddOn[]>([]);
   const [loadingAddons, setLoadingAddons] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   // Fetch add-ons when dish changes
   useEffect(() => {
@@ -126,10 +133,38 @@ const DishDetailModal: React.FC<DishDetailModalProps> = ({
     return basePrice + addOnsPrice;
   };
 
-  const handleAddToCart = () => {
-    const total = calculateTotal();
-    onAddToCart(quantity, addOns.filter(a => a.selected), total);
-    onClose();
+  const handleAddToCart = async () => {
+    try {
+      setAdding(true);
+      
+      const selectedAddOns = addOns.filter(a => a.selected);
+      const restaurantId = dish.restaurant_id || dish.restaurants?.id || '';
+      const restaurantName = dish.restaurants?.name || 'Restaurant';
+      
+      await addToCart(
+        dish.id,
+        restaurantId,
+        restaurantName,
+        dish.name,
+        dish.price,
+        quantity,
+        selectedAddOns,
+        specialRequest || undefined,
+        dish.image
+      );
+      
+      Alert.alert('Success', 'Item added to cart!');
+      onClose();
+      
+      // Reset form
+      setQuantity(1);
+      setSpecialRequest('');
+      setAddOns(prev => prev.map(a => ({ ...a, selected: false })));
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setAdding(false);
+    }
   };
 
   const incrementQuantity = () => setQuantity(prev => prev + 1);

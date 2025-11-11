@@ -286,8 +286,6 @@ const OrdersScreen: React.FC = () => {
           emoji="🍽️"
           title="No Active Orders"
           message="You don't have any orders in progress right now"
-          buttonText="Browse Restaurants"
-          onButtonPress={handleBrowseRestaurants}
         />
       );
     } else {

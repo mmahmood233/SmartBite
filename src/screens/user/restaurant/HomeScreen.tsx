@@ -11,6 +11,7 @@ import SearchBar from '../../../components/SearchBar';
 import RestaurantCard from '../../../components/RestaurantCard';
 import { useRestaurantSearch } from '../../../hooks/useRestaurantSearch';
 import { fetchRestaurants, fetchFeaturedRestaurants } from '../../../services/restaurants.service';
+import { supabase } from '../../../lib/supabase';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -38,6 +39,8 @@ const HomeScreen: React.FC = () => {
   const [allRestaurants, setAllRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userName, setUserName] = useState('Guest');
+  const [greeting, setGreeting] = useState('Good evening');
   
   // Use shared search hook
   const {
@@ -58,10 +61,46 @@ const HomeScreen: React.FC = () => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  // Fetch restaurants from Supabase
+  // Fetch user profile and restaurants from Supabase
   useEffect(() => {
+    loadUserProfile();
     loadRestaurants();
+    updateGreeting();
   }, []);
+
+  const loadUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Fetch user profile from users table
+        const { data: profile, error } = await supabase
+          .from('users')
+          .select('full_name')
+          .eq('id', user.id)
+          .single() as { data: { full_name: string } | null; error: any };
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else if (profile?.full_name) {
+          setUserName(profile.full_name);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading user profile:', err);
+    }
+  };
+
+  const updateGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      setGreeting('Good morning');
+    } else if (hour < 18) {
+      setGreeting('Good afternoon');
+    } else {
+      setGreeting('Good evening');
+    }
+  };
 
   const loadRestaurants = async () => {
     try {
@@ -149,8 +188,8 @@ const HomeScreen: React.FC = () => {
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={styles.greeting}>
-                <Text style={styles.greetingLight}>Good evening, </Text>
-                <Text style={styles.greetingBold}>Ahmed</Text>
+                <Text style={styles.greetingLight}>{greeting}, </Text>
+                <Text style={styles.greetingBold}>{userName}</Text>
               </Text>
               <Text style={styles.waveEmoji}> 👋</Text>
             </View>

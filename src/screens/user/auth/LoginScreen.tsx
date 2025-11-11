@@ -74,7 +74,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         rootNav.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
       }
     } catch (err: any) {
-      console.error('Login error:', err);
+      // Show user-friendly error message
       setError(err.message || 'Invalid email or password');
     } finally {
       setLoading(false);

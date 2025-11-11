@@ -26,11 +26,9 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const ChangePasswordScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -58,18 +56,16 @@ const ChangePasswordScreen: React.FC = () => {
     setPasswordsMatch(newPassword === confirmPassword && confirmPassword !== '');
 
     // Check if form is valid
-    const allFieldsFilled = currentPassword !== '' && newPassword !== '' && confirmPassword !== '';
+    const allFieldsFilled = newPassword !== '' && confirmPassword !== '';
     const newPasswordValid = hasMinLength && hasNumber && hasSpecialChar;
-    const passwordsDifferent = currentPassword !== newPassword;
     const passwordsMatchValid = newPassword === confirmPassword && confirmPassword !== '';
 
     setIsValid(
       allFieldsFilled &&
       newPasswordValid &&
-      passwordsDifferent &&
       passwordsMatchValid
     );
-  }, [currentPassword, newPassword, confirmPassword, hasMinLength, hasNumber, hasSpecialChar]);
+  }, [newPassword, confirmPassword, hasMinLength, hasNumber, hasSpecialChar]);
 
   const handleBack = () => {
     navigation.goBack();
@@ -93,7 +89,6 @@ const ChangePasswordScreen: React.FC = () => {
       showSnackbar('Password updated successfully', 'success');
       
       // Clear form
-      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       
@@ -180,16 +175,13 @@ const ChangePasswordScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.formContainer}>
-          {/* Current Password */}
-          {renderPasswordInput(
-            'lock',
-            'Current Password *',
-            'Enter your current password',
-            currentPassword,
-            setCurrentPassword,
-            showCurrentPassword,
-            () => setShowCurrentPassword(!showCurrentPassword)
-          )}
+          {/* Info Message */}
+          <View style={styles.infoNote}>
+            <Icon name="info" size={16} color={colors.primary} />
+            <Text style={styles.infoText}>
+              You're logged in securely. Just enter your new password below.
+            </Text>
+          </View>
 
           {/* New Password */}
           {renderPasswordInput(
@@ -417,6 +409,21 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     color: colors.error,
     fontWeight: '500',
+  },
+  infoNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#E6F7F4',
+    borderRadius: 10,
+    padding: SPACING.md,
+    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: FONT_SIZE.sm,
+    color: '#0F172A',
+    lineHeight: 18,
   },
   securityNote: {
     flexDirection: 'row',

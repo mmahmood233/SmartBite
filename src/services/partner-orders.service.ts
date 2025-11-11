@@ -243,8 +243,8 @@ export const getOrderDetails = async (orderId: string) => {
     .from('orders')
     .select(`
       *,
-      users(full_name, phone, email),
-      user_addresses(building, road, block, area, city, label, contact_number),
+      users!user_id(full_name, phone, email),
+      user_addresses!delivery_address_id(building, road, block, area, city, label, contact_number),
       order_items(
         id,
         dish_name,

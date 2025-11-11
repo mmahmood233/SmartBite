@@ -3,7 +3,7 @@
  * Talabat Partner inspired design - Mobile-first, clean, professional
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types';
@@ -20,96 +20,180 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather as Icon } from '@expo/vector-icons';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
+import { supabase } from '../../lib/supabase';
+import { getOrderStats, getActiveOrders, PartnerOrder } from '../../services/partner-orders.service';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
 
-// Mock data
-const STATS = [
-  {
-    id: '1',
-    icon: 'shopping-bag',
-    label: "Today's Orders",
-    value: '45',
-    subtext: '+5 from yesterday',
-    color: '#00A896',
-    bgColor: '#E6F7F5',
-  },
-  {
-    id: '2',
-    icon: 'dollar-sign',
-    label: 'Earnings Today',
-    value: 'BD 128.50',
-    subtext: 'Weekly +12%',
-    color: '#FFB703',
-    bgColor: '#FFF8E6',
-  },
-  {
-    id: '3',
-    icon: 'star',
-    label: 'Avg. Rating',
-    value: '4.6 ★',
-    subtext: 'From 256 reviews',
-    color: '#FF6B9D',
-    bgColor: '#FFE6F0',
-  },
-  {
-    id: '4',
-    icon: 'clock',
-    label: 'Avg. Prep Time',
-    value: '18 min',
-    subtext: 'Goal ≤ 20 min',
-    color: '#4ECDC4',
-    bgColor: '#E6F9F7',
-  },
-];
-
-const ACTIVE_ORDERS = [
-  {
-    id: '#12345',
-    customer: 'Ahmed Isa',
-    time: '4:10 PM',
-    items: '3 items',
-    status: 'preparing',
-    statusLabel: 'Preparing',
-    statusColor: '#FFB703',
-  },
-  {
-    id: '#12346',
-    customer: 'Sara Ali',
-    time: '4:22 PM',
-    items: '2 items',
-    status: 'ready',
-    statusLabel: 'Ready for Pickup',
-    statusColor: '#00A896',
-  },
-  {
-    id: '#12347',
-    customer: 'Mohammed Hassan',
-    time: '4:25 PM',
-    items: '5 items',
-    status: 'preparing',
-    statusLabel: 'Preparing',
-    statusColor: '#FFB703',
-  },
-];
-
-const TOP_ITEMS = [
-  { emoji: '🍔', name: 'Chicken Burger', orders: 45 },
-  { emoji: '🥤', name: 'Pepsi', orders: 38 },
-  { emoji: '🍕', name: 'Margherita Pizza', orders: 32 },
-  { emoji: '🥗', name: 'Caesar Salad', orders: 28 },
-  { emoji: '🍟', name: 'French Fries', orders: 25 },
-];
-
-const CHART_DATA = [30, 45, 38, 52, 48, 60, 55]; // Mon-Sun
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
 const OverviewDashboard: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  
+  // State
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [stats, setStats] = useState<any>(null);
+  const [activeOrders, setActiveOrders] = useState<PartnerOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('today');
   const [activeNav, setActiveNav] = useState('overview');
+
+  // Get partner's restaurant ID
+  useEffect(() => {
+    const fetchRestaurantId = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', user.id)
+          .single();
+
+        if (userData) {
+          const { data: restaurant } = await supabase
+            .from('restaurants')
+            .select('id')
+            .eq('partner_id', userData.id)
+            .single();
+
+          if (restaurant) {
+            setRestaurantId(restaurant.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching restaurant ID:', error);
+      }
+    };
+
+    fetchRestaurantId();
+  }, []);
+
+  // Get number of days based on selected tab
+  const getDaysForTab = (tab: string) => {
+    switch (tab) {
+      case 'today': return 1;
+      case 'yesterday': return 2;
+      case '7days': return 7;
+      case '30days': return 30;
+      default: return 1;
+    }
+  };
+
+  // Fetch dashboard data
+  const fetchDashboardData = useCallback(async () => {
+    if (!restaurantId) return;
+
+    try {
+      const days = getDaysForTab(selectedTab);
+      const [statsData, ordersData] = await Promise.all([
+        getOrderStats(restaurantId, days),
+        getActiveOrders(restaurantId),
+      ]);
+
+      setStats(statsData);
+      setActiveOrders(ordersData);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [restaurantId, selectedTab]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (restaurantId) {
+        fetchDashboardData();
+      }
+    }, [restaurantId, fetchDashboardData])
+  );
+
+  // Real-time subscription for orders
+  useEffect(() => {
+    if (!restaurantId) return;
+
+    console.log('OverviewDashboard: Setting up real-time subscription');
+
+    // Subscribe to orders table changes
+    const ordersSubscription = supabase
+      .channel('overview-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events
+          schema: 'public',
+          table: 'orders',
+          filter: `restaurant_id=eq.${restaurantId}`,
+        },
+        (payload) => {
+          console.log('OverviewDashboard: Real-time update:', payload.eventType);
+          
+          // Refresh dashboard data
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('OverviewDashboard: Cleaning up real-time subscription');
+      supabase.removeChannel(ordersSubscription);
+    };
+  }, [restaurantId, fetchDashboardData]);
+
+  const getTimePeriodLabel = () => {
+    switch (selectedTab) {
+      case 'today': return 'Today';
+      case 'yesterday': return 'Yesterday';
+      case '7days': return 'Last 7 Days';
+      case '30days': return 'Last 30 Days';
+      default: return 'Today';
+    }
+  };
+
+  const STATS = stats ? [
+    {
+      id: '1',
+      icon: 'shopping-bag',
+      label: `${getTimePeriodLabel()} Orders`,
+      value: stats.totalOrders.toString(),
+      subtext: `${stats.completedOrders} completed`,
+      color: '#00A896',
+      bgColor: '#E6F7F5',
+    },
+    {
+      id: '2',
+      icon: 'dollar-sign',
+      label: `Earnings ${getTimePeriodLabel()}`,
+      value: `BD ${stats.totalRevenue.toFixed(3)}`,
+      subtext: `${stats.totalOrders} orders`,
+      color: '#FFB703',
+      bgColor: '#FFF8E6',
+    },
+    {
+      id: '3',
+      icon: 'check-circle',
+      label: 'Completed',
+      value: stats.completedOrders.toString(),
+      subtext: getTimePeriodLabel(),
+      color: '#00A896',
+      bgColor: '#E6F7F5',
+    },
+    {
+      id: '4',
+      icon: 'x-circle',
+      label: 'Cancelled',
+      value: stats.cancelledOrders.toString(),
+      subtext: getTimePeriodLabel(),
+      color: '#FF6B6B',
+      bgColor: '#FFE6E6',
+    },
+  ] : [];
 
   const getCurrentDateTime = () => {
     const now = new Date();
@@ -223,79 +307,39 @@ const OverviewDashboard: React.FC = () => {
             </TouchableOpacity>
           </View>
           
-          {ACTIVE_ORDERS.map((order, index) => (
-            <View key={order.id} style={[styles.orderCard, index > 0 && { marginTop: 12 }]}>
-              <View style={styles.orderHeader}>
-                <Text style={styles.orderId}>{order.id}</Text>
-                <Text style={styles.orderTime}>{order.time}</Text>
-              </View>
-              <Text style={styles.orderCustomer}>{order.customer}</Text>
-              <View style={styles.orderFooter}>
-                <View style={styles.orderInfo}>
-                  <Icon name="shopping-bag" size={14} color="#9CA3AF" />
-                  <Text style={styles.orderItems}>{order.items}</Text>
-                  <View style={[styles.statusBadge, { backgroundColor: `${order.statusColor}20` }]}>
-                    <View style={[styles.statusDot, { backgroundColor: order.statusColor }]} />
-                    <Text style={[styles.statusText, { color: order.statusColor }]}>
-                      {order.statusLabel}
-                    </Text>
+          {activeOrders.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Icon name="inbox" size={48} color="#D1D5DB" />
+              <Text style={styles.emptyStateTitle}>No Active Orders</Text>
+              <Text style={styles.emptyStateText}>
+                When you have orders being prepared or ready for pickup, they'll appear here
+              </Text>
+            </View>
+          ) : (
+            activeOrders.slice(0, 3).map((order: PartnerOrder, index: number) => (
+              <View key={order.id} style={[styles.orderCard, index > 0 && { marginTop: 12 }]}>
+                <View style={styles.orderHeader}>
+                  <Text style={styles.orderId}>{order.order_number}</Text>
+                  <Text style={styles.orderTime}>{new Date(order.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</Text>
+                </View>
+                <Text style={styles.orderCustomer}>{order.users?.full_name || 'Customer'}</Text>
+                <View style={styles.orderFooter}>
+                  <View style={styles.orderInfo}>
+                    <Icon name="shopping-bag" size={14} color="#9CA3AF" />
+                    <Text style={styles.orderItems}>{order.order_items?.length || 0} items</Text>
+                    <View style={[styles.statusBadge, { backgroundColor: order.status === 'preparing' ? '#FFF5CC' : '#E3F2FD' }]}>
+                      <View style={[styles.statusDot, { backgroundColor: order.status === 'preparing' ? '#FFB703' : '#2196F3' }]} />
+                      <Text style={[styles.statusText, { color: order.status === 'preparing' ? '#FFB703' : '#2196F3' }]}>
+                        {order.status === 'preparing' ? 'Preparing' : 'Ready'}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-                <TouchableOpacity style={styles.markReadyButton} activeOpacity={0.7}>
-                  <Text style={styles.markReadyText}>Mark Ready</Text>
-                </TouchableOpacity>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
 
-        {/* Performance Overview */}
-        <View style={styles.performanceSection}>
-          <Text style={styles.sectionTitle}>Performance Overview</Text>
-          
-          {/* Bar Chart */}
-          <View style={styles.chartContainer}>
-            <Text style={styles.chartTitle}>Orders Trend (Last 7 Days)</Text>
-            <View style={styles.chart}>
-              {CHART_DATA.map((value, index) => (
-                <View key={index} style={styles.chartBarContainer}>
-                  <LinearGradient
-                    colors={['#00A896', '#00796B']}
-                    style={[styles.chartBar, { height: `${(value / 60) * 100}%` }]}
-                  />
-                  <Text style={styles.chartLabel}>
-                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'][index]}
-                  </Text>
-                </View>
-              ))}
-            </View>
-            <Text style={styles.chartSubtext}>+8% vs previous week</Text>
-          </View>
-
-          {/* Top 5 Items */}
-          <View style={styles.topItemsContainer}>
-            <Text style={styles.chartTitle}>Top 5 Items</Text>
-            {TOP_ITEMS.map((item, index) => (
-              <View key={index} style={styles.topItem}>
-                <View style={styles.topItemLeft}>
-                  <Text style={styles.topItemEmoji}>{item.emoji}</Text>
-                  <Text style={styles.topItemName}>{item.name}</Text>
-                </View>
-                <View style={styles.topItemRight}>
-                  <View style={styles.topItemBarContainer}>
-                    <LinearGradient
-                      colors={['#FFB703', '#FF9500']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={[styles.topItemBar, { width: `${(item.orders / 45) * 100}%` }]}
-                    />
-                  </View>
-                  <Text style={styles.topItemOrders}>{item.orders}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
 
         <View style={{ height: 20 }} />
       </ScrollView>
@@ -630,6 +674,27 @@ const styles = StyleSheet.create({
   },
   navLabelActive: {
     color: '#00A896',
+  },
+  
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+    paddingHorizontal: 24,
+  },
+  emptyStateTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 

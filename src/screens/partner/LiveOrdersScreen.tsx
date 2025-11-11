@@ -4,7 +4,7 @@
  * Talabat Partner quality - Accept/Reject system, filters, professional polish
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -23,81 +23,37 @@ import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography }
 import { getStrings } from '../../constants/partnerStrings';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { supabase } from '../../lib/supabase';
+import {
+  getPartnerOrders,
+  getNewOrders,
+  getActiveOrders,
+  acceptOrder,
+  rejectOrder,
+  updateOrderStatus,
+  PartnerOrder,
+} from '../../services/partner-orders.service';
+import { useFocusEffect } from '@react-navigation/native';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const strings = getStrings('en');
 
-// Mock data
-const NEW_ORDERS = [
-  {
-    id: '#12349',
-    customer: 'Fatima Ahmed',
-    items: 2,
-    total: 'BD 9.800',
-    time: '6:35 PM',
-    expiresIn: '1:25',
-    timeLeft: 85, // seconds
-  },
-  {
-    id: '#12350',
-    customer: 'Mohammed Ali',
-    items: 4,
-    total: 'BD 15.500',
-    time: '6:38 PM',
-    expiresIn: '2:15',
-    timeLeft: 135,
-  },
-];
-
-const ACTIVE_ORDERS = [
-  {
-    id: '#12345',
-    customer: 'Ahmed Isa',
-    items: 3,
-    total: 'BD 12.800',
-    time: '4:10 PM',
-    status: 'preparing',
-    statusLabel: 'Preparing',
-    statusColor: '#FFB703',
-    statusBg: '#FFF5CC',
-  },
-  {
-    id: '#12346',
-    customer: 'Sara Ali',
-    items: 2,
-    total: 'BD 8.500',
-    time: '4:22 PM',
-    status: 'ready',
-    statusLabel: 'Ready for Pickup',
-    statusColor: '#2196F3',
-    statusBg: '#E3F2FD',
-  },
-  {
-    id: '#12347',
-    customer: 'Khalid Hassan',
-    items: 5,
-    total: 'BD 18.200',
-    time: '4:28 PM',
-    status: 'preparing',
-    statusLabel: 'Preparing',
-    statusColor: '#FFB703',
-    statusBg: '#FFF5CC',
-  },
-];
-
-const FILTER_TABS = [
-  { id: 'all', label: 'All', badge: null },
-  { id: 'new', label: 'New', badge: 2 },
-  { id: 'preparing', label: 'Preparing', badge: null },
-  { id: 'ready', label: 'Ready for Pickup', badge: null },
-  { id: 'completed', label: 'Completed', badge: null },
-  { id: 'cancelled', label: 'Cancelled', badge: null },
-];
-
 const LiveOrdersScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [selectedFilter, setSelectedFilter] = useState('all');
+  
+  // Refs for scrolling
+  const scrollViewRef = useRef<ScrollView>(null);
+  const newOrdersRef = useRef<View>(null);
+  const activeOrdersRef = useRef<View>(null);
+  
+  // Data state
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [orders, setOrders] = useState<PartnerOrder[]>([]);
+  const [newOrders, setNewOrders] = useState<PartnerOrder[]>([]);
+  const [activeOrders, setActiveOrders] = useState<PartnerOrder[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   
   // Snackbar state
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -107,6 +63,16 @@ const LiveOrdersScreen: React.FC = () => {
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Processing...');
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  // Filter tabs with dynamic badges
+  const filterTabs = [
+    { id: 'all', label: 'All', badge: orders.length || null },
+    { id: 'pending', label: 'New', badge: newOrders.length || null },
+    { id: 'active', label: 'Active', badge: activeOrders.length || null },
+    { id: 'delivered', label: 'Completed', badge: orders.filter(o => o.status === 'delivered').length || null },
+    { id: 'cancelled', label: 'Cancelled', badge: orders.filter(o => o.status === 'cancelled').length || null },
+  ];
 
   const showSnackbar = (message: string, type: SnackbarType = 'success') => {
     setSnackbarMessage(message);
@@ -114,44 +80,193 @@ const LiveOrdersScreen: React.FC = () => {
     setSnackbarVisible(true);
   };
 
+  // Get partner's restaurant ID
+  useEffect(() => {
+    const fetchRestaurantId = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log('Current user:', user?.email);
+        if (!user) {
+          console.log('No user logged in');
+          return;
+        }
+
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', user.id)
+          .single();
+
+        console.log('User data:', userData);
+
+        if (userData) {
+          const { data: restaurant, error: restaurantError } = await supabase
+            .from('restaurants')
+            .select('id, name')
+            .eq('partner_id', userData.id)
+            .single();
+
+          console.log('Restaurant data:', restaurant);
+          console.log('Restaurant error:', restaurantError);
+
+          if (restaurant) {
+            console.log('Setting restaurant ID:', restaurant.id, 'Name:', restaurant.name);
+            setRestaurantId(restaurant.id);
+          } else {
+            console.log('No restaurant found for this partner');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching restaurant ID:', error);
+      }
+    };
+
+    fetchRestaurantId();
+  }, []);
+
+  // Fetch orders
+  const fetchOrders = useCallback(async () => {
+    if (!restaurantId) {
+      console.log('No restaurant ID yet');
+      return;
+    }
+
+    console.log('Fetching orders for restaurant:', restaurantId);
+    console.log('Selected filter:', selectedFilter);
+
+    try {
+      const [allOrders, newOrdersList, activeOrdersList] = await Promise.all([
+        getPartnerOrders(restaurantId, selectedFilter),
+        getNewOrders(restaurantId),
+        getActiveOrders(restaurantId),
+      ]);
+
+      console.log('All orders:', allOrders.length);
+      console.log('New orders:', newOrdersList.length);
+      console.log('Active orders:', activeOrdersList.length);
+
+      setOrders(allOrders);
+      setNewOrders(newOrdersList);
+      setActiveOrders(activeOrdersList);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      showSnackbar('Failed to load orders', 'error');
+    } finally {
+      setInitialLoading(false);
+      setRefreshing(false);
+    }
+  }, [restaurantId, selectedFilter]);
+
+  // Load orders on mount and when filter changes
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  // Refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (restaurantId) {
+        fetchOrders();
+      }
+    }, [restaurantId, fetchOrders])
+  );
+
   const handleAcceptOrder = async (orderId: string) => {
     setIsLoading(true);
     setLoadingMessage('Accepting order...');
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    showSnackbar(`Order ${orderId} accepted`, 'success');
-    // TODO: API call to accept order
+    try {
+      await acceptOrder(orderId, 30); // 30 minutes estimated time
+      showSnackbar('Order accepted successfully', 'success');
+      await fetchOrders(); // Refresh orders
+    } catch (error: any) {
+      showSnackbar(error.message || 'Failed to accept order', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRejectOrder = async (orderId: string) => {
     setIsLoading(true);
     setLoadingMessage('Rejecting order...');
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    showSnackbar(`Order ${orderId} rejected`, 'warning');
-    // TODO: API call to reject order
+    try {
+      await rejectOrder(orderId, 'Restaurant is busy');
+      showSnackbar('Order rejected', 'warning');
+      await fetchOrders(); // Refresh orders
+    } catch (error: any) {
+      showSnackbar(error.message || 'Failed to reject order', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleMarkReady = async (orderId: string) => {
     setIsLoading(true);
     setLoadingMessage('Updating status...');
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    showSnackbar(`Order ${orderId} marked as ready`, 'success');
-    // TODO: API call to mark ready
+    try {
+      await updateOrderStatus(orderId, 'ready_for_pickup');
+      showSnackbar('Order marked as ready', 'success');
+      await fetchOrders(); // Refresh orders
+    } catch (error: any) {
+      showSnackbar(error.message || 'Failed to update status', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleMarkCompleted = async (orderId: string) => {
     setIsLoading(true);
     setLoadingMessage('Completing order...');
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    showSnackbar(`Order ${orderId} completed`, 'success');
-    // TODO: API call to mark completed
+    try {
+      await updateOrderStatus(orderId, 'delivered');
+      showSnackbar('Order completed', 'success');
+      await fetchOrders(); // Refresh orders
+    } catch (error: any) {
+      showSnackbar(error.message || 'Failed to complete order', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStartPreparing = async (orderId: string) => {
+    setIsLoading(true);
+    setLoadingMessage('Updating status...');
+    try {
+      await updateOrderStatus(orderId, 'preparing');
+      showSnackbar('Order is now being prepared', 'success');
+      await fetchOrders(); // Refresh orders
+    } catch (error: any) {
+      showSnackbar(error.message || 'Failed to update status', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle filter selection and scroll to section
+  const handleFilterSelect = (filterId: string) => {
+    setSelectedFilter(filterId);
+    
+    // Scroll to appropriate section
+    setTimeout(() => {
+      if (filterId === 'pending' && newOrdersRef.current) {
+        newOrdersRef.current.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: y - 20, animated: true });
+          },
+          () => {}
+        );
+      } else if (filterId === 'active' && activeOrdersRef.current) {
+        activeOrdersRef.current.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: y - 20, animated: true });
+          },
+          () => {}
+        );
+      } else if (filterId === 'all') {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      }
+    }, 100);
   };
 
   return (
@@ -175,11 +290,11 @@ const LiveOrdersScreen: React.FC = () => {
           style={styles.filterContainer}
           contentContainerStyle={styles.filterContent}
         >
-        {FILTER_TABS.map((tab) => (
+        {filterTabs.map((tab) => (
           <TouchableOpacity
             key={tab.id}
             style={[styles.filterTab, selectedFilter === tab.id && styles.filterTabActive]}
-            onPress={() => setSelectedFilter(tab.id)}
+            onPress={() => handleFilterSelect(tab.id)}
             activeOpacity={0.7}
           >
             <Text style={[styles.filterTabText, selectedFilter === tab.id && styles.filterTabTextActive]}>
@@ -198,13 +313,14 @@ const LiveOrdersScreen: React.FC = () => {
       <View style={styles.sectionDivider} />
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* New Orders Section */}
-        {NEW_ORDERS.length > 0 && (
-          <View style={styles.section}>
+        {newOrders.length > 0 && (selectedFilter === 'all' || selectedFilter === 'pending') && (
+          <View ref={newOrdersRef} style={styles.section}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionTitleRow}>
                 <Text style={styles.sectionIcon}>🆕</Text>
@@ -212,32 +328,27 @@ const LiveOrdersScreen: React.FC = () => {
               </View>
             </View>
 
-            {NEW_ORDERS.map((order) => (
+            {newOrders.map((order) => (
               <TouchableOpacity
                 key={order.id}
                 style={styles.newOrderCard}
                 onPress={() => navigation.navigate('PartnerOrderDetails', { orderId: order.id })}
                 activeOpacity={0.9}
               >
-                {/* Timer Bar */}
-                <View style={styles.timerBar}>
-                  <View style={[styles.timerProgress, { width: `${(order.timeLeft / 180) * 100}%` }]} />
-                </View>
-
                 <View style={styles.orderHeader}>
-                  <Text style={styles.orderId}>{order.id}</Text>
-                  <Text style={styles.orderTotal}>{order.total}</Text>
+                  <Text style={styles.orderId}>{order.order_number}</Text>
+                  <Text style={styles.orderTotal}>BD {order.total_amount.toFixed(3)}</Text>
                   <View style={styles.orderTimeContainer}>
                     <Icon name="clock" size={12} color="#9CA3AF" />
-                    <Text style={styles.orderTime}>{order.time}</Text>
+                    <Text style={styles.orderTime}>{new Date(order.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</Text>
                   </View>
                 </View>
 
-                <Text style={styles.orderCustomer}>{order.customer} • {order.items} items</Text>
+                <Text style={styles.orderCustomer}>{order.users?.full_name || 'Customer'} • {order.order_items?.length || 0} items</Text>
 
                 <View style={styles.expiresContainer}>
                   <Icon name="alert-circle" size={14} color="#FF9500" />
-                  <Text style={styles.expiresText}>Expires in {order.expiresIn}</Text>
+                  <Text style={styles.expiresText}>New order - Please respond</Text>
                 </View>
 
                 <View style={styles.actionButtons}>
@@ -262,7 +373,8 @@ const LiveOrdersScreen: React.FC = () => {
         )}
 
         {/* Active Orders Section */}
-        <View style={styles.section}>
+        {(selectedFilter === 'all' || selectedFilter === 'active') && (
+        <View ref={activeOrdersRef} style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleRow}>
               <Text style={styles.sectionIcon}>📦</Text>
@@ -270,7 +382,7 @@ const LiveOrdersScreen: React.FC = () => {
             </View>
           </View>
 
-          {ACTIVE_ORDERS.map((order) => (
+          {activeOrders.map((order) => (
             <TouchableOpacity
               key={order.id}
               style={styles.activeOrderCard}
@@ -278,18 +390,18 @@ const LiveOrdersScreen: React.FC = () => {
               activeOpacity={0.9}
             >
               <View style={styles.orderHeader}>
-                <Text style={styles.orderId}>{order.id}</Text>
-                <Text style={styles.orderTime}>{order.time}</Text>
-                <Text style={styles.orderTotal}>{order.total}</Text>
+                <Text style={styles.orderId}>{order.order_number}</Text>
+                <Text style={styles.orderTime}>{new Date(order.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</Text>
+                <Text style={styles.orderTotal}>BD {order.total_amount.toFixed(3)}</Text>
               </View>
 
-              <Text style={styles.orderCustomer}>{order.customer} • {order.items} items</Text>
+              <Text style={styles.orderCustomer}>{order.users?.full_name || 'Customer'} • {order.order_items?.length || 0} items</Text>
 
               <View style={styles.orderFooter}>
-                <View style={[styles.statusPill, { backgroundColor: order.statusBg }]}>
-                  <View style={[styles.statusDot, { backgroundColor: order.statusColor }]} />
-                  <Text style={[styles.statusText, { color: order.statusColor }]}>
-                    {order.statusLabel}
+                <View style={[styles.statusPill, { backgroundColor: order.status === 'preparing' ? '#FFF5CC' : '#E3F2FD' }]}>
+                  <View style={[styles.statusDot, { backgroundColor: order.status === 'preparing' ? '#FFB703' : '#2196F3' }]} />
+                  <Text style={[styles.statusText, { color: order.status === 'preparing' ? '#FFB703' : '#2196F3' }]}>
+                    {order.status === 'preparing' ? 'Preparing' : order.status === 'ready_for_pickup' ? 'Ready for Pickup' : order.status}
                   </Text>
                 </View>
                 <TouchableOpacity
@@ -310,22 +422,45 @@ const LiveOrdersScreen: React.FC = () => {
             </TouchableOpacity>
           ))}
         </View>
+        )}
 
-        {/* History Summary */}
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.historyCard} activeOpacity={0.7}>
-            <View style={styles.historyItem}>
-              <Text style={styles.historyIcon}>✅</Text>
-              <Text style={styles.historyText}>5 Completed</Text>
+        {/* Completed & Cancelled Orders - shown when filtered */}
+        {(selectedFilter === 'delivered' || selectedFilter === 'cancelled') && orders.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleRow}>
+                <Text style={styles.sectionIcon}>{selectedFilter === 'delivered' ? '✅' : '❌'}</Text>
+                <Text style={styles.sectionTitle}>{selectedFilter === 'delivered' ? 'Completed Orders' : 'Cancelled Orders'}</Text>
+              </View>
             </View>
-            <View style={styles.historyDivider} />
-            <View style={styles.historyItem}>
-              <Text style={styles.historyIcon}>❌</Text>
-              <Text style={styles.historyText}>2 Cancelled</Text>
-            </View>
-            <Text style={styles.historySubtext}>(Today)</Text>
-          </TouchableOpacity>
-        </View>
+
+            {orders.map((order) => (
+              <TouchableOpacity
+                key={order.id}
+                style={styles.activeOrderCard}
+                onPress={() => navigation.navigate('PartnerOrderDetails', { orderId: order.id })}
+                activeOpacity={0.9}
+              >
+                <View style={styles.orderHeader}>
+                  <Text style={styles.orderId}>{order.order_number}</Text>
+                  <Text style={styles.orderTime}>{new Date(order.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</Text>
+                  <Text style={styles.orderTotal}>BD {order.total_amount.toFixed(3)}</Text>
+                </View>
+
+                <Text style={styles.orderCustomer}>{order.users?.full_name || 'Customer'} • {order.order_items?.length || 0} items</Text>
+
+                <View style={styles.orderFooter}>
+                  <View style={[styles.statusPill, { backgroundColor: selectedFilter === 'delivered' ? '#E8F5E9' : '#FFEBEE' }]}>
+                    <View style={[styles.statusDot, { backgroundColor: selectedFilter === 'delivered' ? '#4CAF50' : '#F44336' }]} />
+                    <Text style={[styles.statusText, { color: selectedFilter === 'delivered' ? '#4CAF50' : '#F44336' }]}>
+                      {selectedFilter === 'delivered' ? 'Completed' : 'Cancelled'}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         <View style={{ height: 20 }} />
       </ScrollView>

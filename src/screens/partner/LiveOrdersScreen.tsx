@@ -171,6 +171,44 @@ const LiveOrdersScreen: React.FC = () => {
     }, [restaurantId, fetchOrders])
   );
 
+  // Real-time subscription for new orders
+  useEffect(() => {
+    if (!restaurantId) return;
+
+    console.log('Setting up real-time subscription for restaurant:', restaurantId);
+
+    // Subscribe to orders table changes
+    const ordersSubscription = supabase
+      .channel('partner-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'orders',
+          filter: `restaurant_id=eq.${restaurantId}`,
+        },
+        (payload) => {
+          console.log('Real-time order update:', payload);
+          
+          // Refresh orders when any change happens
+          fetchOrders();
+          
+          // Show notification for new orders
+          if (payload.eventType === 'INSERT') {
+            showSnackbar('🔔 New order received!', 'success');
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(ordersSubscription);
+    };
+  }, [restaurantId, fetchOrders]);
+
   const handleAcceptOrder = async (orderId: string) => {
     setIsLoading(true);
     setLoadingMessage('Accepting order...');

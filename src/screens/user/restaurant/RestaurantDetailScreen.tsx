@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Animated,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -91,6 +92,10 @@ const RestaurantDetailScreen: React.FC = () => {
   
   // Review Modal State
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  
+  // Refs for category sections
+  const categoryRefs = useRef<{ [key: string]: View | null }>({});
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Fetch restaurant and menu data
   useEffect(() => {
@@ -183,7 +188,7 @@ const RestaurantDetailScreen: React.FC = () => {
 
       // Set first category as active if available
       if (menu.length > 0) {
-        const categories = [...new Set(menu.map((item: any) => item.menu_categories?.name || 'Other'))];
+        const categories = [...new Set(menu.map((item: any) => item.category || 'Other'))];
         if (categories.length > 0) {
           setActiveCategory(categories[0] as string);
         }
@@ -233,7 +238,7 @@ const RestaurantDetailScreen: React.FC = () => {
   };
 
   const groupedMenu = menuItems.reduce((acc: Record<string, any[]>, item: any) => {
-    const category = item.menu_categories?.name || 'Other';
+    const category = item.category || 'Other';
     if (!acc[category]) {
       acc[category] = [];
     }
@@ -278,8 +283,18 @@ const RestaurantDetailScreen: React.FC = () => {
 
   const handleCategoryPress = (category: string) => {
     setActiveCategory(category);
-    // Smooth scroll to category section would be implemented here
-    // For now, just update active state
+    
+    // Scroll to the category section
+    const categoryView = categoryRefs.current[category];
+    if (categoryView && scrollViewRef.current) {
+      categoryView.measureLayout(
+        scrollViewRef.current as any,
+        (x, y) => {
+          scrollViewRef.current?.scrollTo({ y: y - 60, animated: true });
+        },
+        () => console.log('Failed to measure layout')
+      );
+    }
   };
 
   const renderCategoryBar = () => {
@@ -317,17 +332,24 @@ const RestaurantDetailScreen: React.FC = () => {
     );
   };
 
-  const renderMenuSection = () => (
-    <View style={styles.menuSection}>
-      {renderCategoryBar()}
-      {Object.entries(groupedMenu).map(([category, items]) => (
-        <View key={category} style={styles.menuCategory}>
-          <Text style={styles.categoryHeader}>{category}</Text>
-          {items.map(renderMenuItem)}
-        </View>
-      ))}
-    </View>
-  );
+  const renderMenuSection = () => {
+    // Show all categories, not filtered
+    return (
+      <View style={styles.menuSection}>
+        {renderCategoryBar()}
+        {Object.entries(groupedMenu).map(([category, items]) => (
+          <View 
+            key={category} 
+            style={styles.menuCategory}
+            ref={(ref) => (categoryRefs.current[category] = ref)}
+          >
+            <Text style={styles.categoryHeader}>{category}</Text>
+            {items.map(renderMenuItem)}
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   const renderAboutSection = () => {
     if (!restaurant) return null;
@@ -510,6 +532,7 @@ const RestaurantDetailScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Animated.ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],

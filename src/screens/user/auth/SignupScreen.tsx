@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { TextInput, Checkbox } from 'react-native-paper';
+import { Feather as Icon } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '../../../theme/colors';
 import { typography } from '../../../theme/typography';
@@ -47,6 +48,18 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [agreeToTerms, setAgreeToTerms] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+
+  // Password validation checks
+  const [hasMinLength, setHasMinLength] = useState(false);
+  const [hasNumber, setHasNumber] = useState(false);
+  const [hasSpecialChar, setHasSpecialChar] = useState(false);
+
+  useEffect(() => {
+    // Validate password
+    setHasMinLength(password.length >= 8);
+    setHasNumber(/\d/.test(password));
+    setHasSpecialChar(/[!@#$%^&*(),.?":{}|<>]/.test(password));
+  }, [password]);
 
   // Check if form is valid
   const isFormValid: boolean = Boolean(
@@ -198,6 +211,42 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               />
             }
           />
+
+          {/* Password Requirements */}
+          {password !== '' && (
+            <View style={styles.validationContainer}>
+              <View style={styles.validationItem}>
+                <Icon
+                  name={hasMinLength ? 'check-circle' : 'circle'}
+                  size={16}
+                  color={hasMinLength ? colors.success : '#CBD5E1'}
+                />
+                <Text style={[styles.validationText, hasMinLength && styles.validationTextValid]}>
+                  8+ characters
+                </Text>
+              </View>
+              <View style={styles.validationItem}>
+                <Icon
+                  name={hasNumber ? 'check-circle' : 'circle'}
+                  size={16}
+                  color={hasNumber ? colors.success : '#CBD5E1'}
+                />
+                <Text style={[styles.validationText, hasNumber && styles.validationTextValid]}>
+                  1 number
+                </Text>
+              </View>
+              <View style={styles.validationItem}>
+                <Icon
+                  name={hasSpecialChar ? 'check-circle' : 'circle'}
+                  size={16}
+                  color={hasSpecialChar ? colors.success : '#CBD5E1'}
+                />
+                <Text style={[styles.validationText, hasSpecialChar && styles.validationTextValid]}>
+                  1 special character
+                </Text>
+              </View>
+            </View>
+          )}
 
           {/* Confirm Password Input */}
           <Input
@@ -374,6 +423,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400', // Inter 400
     color: colors.textSecondary,
+  },
+  validationContainer: {
+    marginTop: -SPACING.md,
+    marginBottom: SPACING.md,
+    paddingLeft: SPACING.xs,
+  },
+  validationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+    gap: SPACING.sm,
+  },
+  validationText: {
+    fontSize: FONT_SIZE.sm,
+    color: '#94A3B8',
+  },
+  validationTextValid: {
+    color: colors.success,
+    fontWeight: '500',
   },
 });
 

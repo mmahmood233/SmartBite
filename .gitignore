@@ -27,6 +27,9 @@ web-build/
 .env.local
 .env.*.local
 
+# Scripts with sensitive keys
+scripts/create-partners.ts
+
 # iOS
 ios/
 *.xcworkspace

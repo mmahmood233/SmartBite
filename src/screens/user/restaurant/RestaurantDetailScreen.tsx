@@ -300,6 +300,13 @@ const RestaurantDetailScreen: React.FC = () => {
   const renderCategoryBar = () => {
     const categories = Object.keys(groupedMenu);
     
+    // Sort categories to ensure "Main Course" is always first
+    const sortedCategories = categories.sort((a, b) => {
+      if (a === 'Main Course') return -1;
+      if (b === 'Main Course') return 1;
+      return 0;
+    });
+    
     return (
       <View style={styles.categoryBarContainer}>
         <Animated.ScrollView
@@ -307,7 +314,7 @@ const RestaurantDetailScreen: React.FC = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryBar}
         >
-          {categories.map((category) => (
+          {sortedCategories.map((category) => (
             <TouchableOpacity
               key={category}
               style={styles.categoryButton}
@@ -334,10 +341,17 @@ const RestaurantDetailScreen: React.FC = () => {
 
   const renderMenuSection = () => {
     // Show all categories, not filtered
+    // Sort categories to ensure "Main Course" is always first
+    const sortedEntries = Object.entries(groupedMenu).sort(([catA], [catB]) => {
+      if (catA === 'Main Course') return -1;
+      if (catB === 'Main Course') return 1;
+      return 0;
+    });
+    
     return (
       <View style={styles.menuSection}>
         {renderCategoryBar()}
-        {Object.entries(groupedMenu).map(([category, items]) => (
+        {sortedEntries.map(([category, items]) => (
           <View 
             key={category} 
             style={styles.menuCategory}

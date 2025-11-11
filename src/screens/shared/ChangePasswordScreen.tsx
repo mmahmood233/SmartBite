@@ -19,6 +19,7 @@ import { colors } from '../../theme/colors';
 import { SPACING, FONT_SIZE } from '../../constants';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Snackbar from '../../components/Snackbar';
+import { supabase } from '../../lib/supabase';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -79,14 +80,28 @@ const ChangePasswordScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // TODO: Validate current password with backend
-      // TODO: Update password on backend
-      // await updatePassword(currentPassword, newPassword);
-      
+      // Supabase doesn't require current password verification for updateUser
+      // It uses the current session token for authentication
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        throw error;
+      }
+
       showSnackbar('Password updated successfully', 'success');
+      
+      // Clear form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      
+      // Navigate back after a short delay
       setTimeout(() => navigation.goBack(), 1500);
-    } catch (error) {
-      showSnackbar('Current password is incorrect', 'error');
+    } catch (error: any) {
+      console.error('Password update error:', error);
+      showSnackbar(error.message || 'Failed to update password', 'error');
     } finally {
       setIsLoading(false);
     }

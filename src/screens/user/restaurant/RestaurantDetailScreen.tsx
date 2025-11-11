@@ -204,9 +204,6 @@ const RestaurantDetailScreen: React.FC = () => {
   const handleDishPress = (item: MenuItem) => {
     setSelectedDish({
       ...item,
-      rating: 4.8,
-      reviewCount: 127,
-      tags: item.isPopular ? ['🔥 Popular', '🌶️ Spicy'] : ['🥗 Healthy'],
       restaurant_id: restaurantId,
       restaurants: { id: restaurantId, name: restaurant?.name || 'Restaurant' },
     });

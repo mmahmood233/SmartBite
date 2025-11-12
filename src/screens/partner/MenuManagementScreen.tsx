@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,74 +10,58 @@ import {
   Modal,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather as Icon } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import { getStrings } from '../../constants/partnerStrings';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { supabase } from '../../lib/supabase';
+import {
+  getDishes,
+  getMenuCategories,
+  createDish,
+  updateDish,
+  deleteDish,
+  toggleDishAvailability,
+  createCategory,
+  deleteCategory,
+  Dish,
+  MenuCategory,
+} from '../../services/partner-menu.service';
 
 const strings = getStrings('en');
 
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  image?: string;
-  isActive: boolean;
-  isPopular?: boolean;
-}
+// Using Dish interface from service
 
 const MenuManagementScreen: React.FC = () => {
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
-  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [editingItem, setEditingItem] = useState<Dish | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
-    category: 'Starters',
+    category_id: '',
     isActive: true,
   });
 
-  const [categories, setCategories] = useState(['All', 'Starters', 'Mains', 'Desserts', 'Beverages', 'Sides']);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([
-    {
-      id: '1',
-      name: 'Chicken Burger',
-      description: 'Grilled chicken with lettuce and mayo',
-      price: 3.2,
-      category: 'Mains',
-      isActive: true,
-      isPopular: true,
-    },
-    {
-      id: '2',
-      name: 'Pepsi Can',
-      description: '330ml cold drink',
-      price: 0.8,
-      category: 'Beverages',
-      isActive: true,
-    },
-    {
-      id: '3',
-      name: 'Margherita Pizza',
-      description: 'Classic Italian pizza',
-      price: 2.8,
-      category: 'Mains',
-      isActive: false,
-    },
-  ]);
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [dishes, setDishes] = useState<Dish[]>([]);
 
   // Snackbar state
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -94,88 +78,299 @@ const MenuManagementScreen: React.FC = () => {
     setSnackbarVisible(true);
   };
 
-  const filteredItems = menuItems.filter((item) => {
-    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+  // Get partner's restaurant ID
+  useEffect(() => {
+    const fetchRestaurantId = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log('Current user:', user?.email);
+        if (!user) return;
+
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', user.id)
+          .eq('role', 'partner')
+          .single();
+
+        console.log('User data:', userData);
+        console.log('User error:', userError);
+
+        if (userData) {
+          const { data: restaurantData, error: restaurantError } = await supabase
+            .from('restaurants')
+            .select('id, name')
+            .eq('partner_id', userData.id)
+            .single();
+
+          console.log('Restaurant data:', restaurantData);
+          console.log('Restaurant error:', restaurantError);
+
+          if (restaurantData) {
+            console.log('Setting restaurant ID:', restaurantData.id, 'Name:', restaurantData.name);
+            setRestaurantId(restaurantData.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching restaurant ID:', error);
+      }
+    };
+
+    fetchRestaurantId();
+  }, []);
+
+  // Fetch categories and dishes
+  const fetchData = useCallback(async () => {
+    if (!restaurantId) {
+      console.log('No restaurant ID yet');
+      return;
+    }
+
+    console.log('Fetching menu data for restaurant:', restaurantId);
+    console.log('Selected category:', selectedCategory);
+
+    try {
+      const [categoriesData, dishesData] = await Promise.all([
+        getMenuCategories(restaurantId),
+        getDishes(restaurantId, selectedCategory !== 'All' ? selectedCategory : undefined),
+      ]);
+
+      console.log('Categories loaded:', categoriesData.length);
+      console.log('Dishes loaded:', dishesData.length);
+      console.log('Dishes:', dishesData);
+
+      setCategories(categoriesData);
+      setDishes(dishesData);
+    } catch (error) {
+      console.error('Error fetching menu data:', error);
+      showSnackbar('Failed to load menu data', 'error');
+    } finally {
+      setInitialLoading(false);
+    }
+  }, [restaurantId, selectedCategory]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Real-time subscriptions for dishes and categories
+  useEffect(() => {
+    if (!restaurantId) return;
+
+    console.log('MenuManagement: Setting up real-time subscriptions');
+
+    // Subscribe to dishes changes
+    const dishesSubscription = supabase
+      .channel('menu-dishes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'dishes',
+          filter: `restaurant_id=eq.${restaurantId}`,
+        },
+        (payload) => {
+          console.log('MenuManagement: Dish update:', payload.eventType);
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to categories changes
+    const categoriesSubscription = supabase
+      .channel('menu-categories')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'menu_categories',
+          filter: `restaurant_id=eq.${restaurantId}`,
+        },
+        (payload) => {
+          console.log('MenuManagement: Category update:', payload.eventType);
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscriptions
+    return () => {
+      console.log('MenuManagement: Cleaning up real-time subscriptions');
+      supabase.removeChannel(dishesSubscription);
+      supabase.removeChannel(categoriesSubscription);
+    };
+  }, [restaurantId, fetchData]);
+
+  const filteredItems = dishes.filter((item) => {
+    const matchesCategory = selectedCategory === 'All' || item.category_id === selectedCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const toggleItemStatus = (id: string) => {
-    setMenuItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isActive: !item.isActive } : item
-      )
-    );
-    const item = menuItems.find(i => i.id === id);
-    if (item) {
+  const toggleItemStatus = async (id: string) => {
+    const item = dishes.find(d => d.id === id);
+    if (!item) return;
+
+    setIsLoading(true);
+    setLoadingMessage('Updating availability...');
+    try {
+      await toggleDishAvailability(id, !item.is_available);
       showSnackbar(
-        item.isActive ? `${item.name} marked as unavailable` : `${item.name} is now available`,
+        item.is_available ? `${item.name} marked as unavailable` : `${item.name} is now available`,
         'info'
       );
+      await fetchData();
+    } catch (error: any) {
+      showSnackbar(error.message || 'Failed to update availability', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleEdit = (item: MenuItem) => {
+  // Image picker function
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        showSnackbar('Permission to access gallery is required!', 'error');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setSelectedImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      showSnackbar('Failed to pick image', 'error');
+    }
+  };
+
+  // Upload image to Supabase Storage
+  const uploadImage = async (uri: string): Promise<string | null> => {
+    try {
+      setUploadingImage(true);
+
+      // Create a unique filename
+      const fileExt = uri.split('.').pop();
+      const fileName = `${restaurantId}/${Date.now()}.${fileExt}`;
+
+      // Fetch the image as a blob
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      // Convert blob to ArrayBuffer
+      const arrayBuffer = await new Response(blob).arrayBuffer();
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('dish-images')
+        .upload(fileName, arrayBuffer, {
+          contentType: `image/${fileExt}`,
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Upload error:', error);
+        throw error;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('dish-images')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      showSnackbar('Failed to upload image', 'error');
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleEdit = (item: Dish) => {
     setEditingItem(item);
+    setSelectedImage(item.image_url);
     setFormData({
       name: item.name,
-      description: item.description,
+      description: item.description || '',
       price: item.price.toString(),
-      category: item.category,
-      isActive: item.isActive,
+      category_id: item.category_id || '',
+      isActive: item.is_available,
     });
     setShowAddModal(true);
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.price) {
+    if (!formData.name || !formData.price || !restaurantId) {
       showSnackbar('Please fill in all required fields', 'error');
       return;
     }
 
     setIsLoading(true);
     setLoadingMessage(editingItem ? 'Updating item...' : 'Adding item...');
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (editingItem) {
-      setMenuItems((prev) =>
-        prev.map((item) =>
-          item.id === editingItem.id
-            ? {
-                ...item,
-                name: formData.name,
-                description: formData.description,
-                price: parseFloat(formData.price),
-                category: formData.category,
-                isActive: formData.isActive,
-              }
-            : item
-        )
-      );
-    } else {
-      const newItem: MenuItem = {
-        id: Date.now().toString(),
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        category: formData.category,
-        isActive: formData.isActive,
-      };
-      setMenuItems((prev) => [...prev, newItem]);
+    try {
+      // Upload image if a new one was selected
+      let imageUrl = editingItem?.image_url || null;
+      if (selectedImage && selectedImage !== editingItem?.image_url) {
+        setLoadingMessage('Uploading image...');
+        const uploadedUrl = await uploadImage(selectedImage);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
+
+      if (editingItem) {
+        await updateDish(editingItem.id, {
+          name: formData.name,
+          description: formData.description || null,
+          price: parseFloat(formData.price),
+          category_id: formData.category_id || null,
+          is_available: formData.isActive,
+          image_url: imageUrl,
+        });
+        showSnackbar('Item updated successfully!', 'success');
+      } else {
+        await createDish({
+          restaurant_id: restaurantId,
+          name: formData.name,
+          description: formData.description || null,
+          price: parseFloat(formData.price),
+          category_id: formData.category_id || null,
+          is_available: formData.isActive,
+          image_url: imageUrl,
+        });
+        showSnackbar('Item added successfully!', 'success');
+      }
+
+      setShowAddModal(false);
+      setEditingItem(null);
+      setSelectedImage(null);
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        category_id: '',
+        isActive: true,
+      });
+      await fetchData();
+    } catch (error: any) {
+      showSnackbar(error.message || 'Failed to save item', 'error');
+    } finally {
+      setIsLoading(false);
     }
-
-    setShowAddModal(false);
-    setEditingItem(null);
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      category: 'Starters',
-      isActive: true,
-    });
-    setIsLoading(false);
-    showSnackbar('Item added successfully!', 'success');
   };
 
   const handleDelete = (id: string) => {
@@ -187,40 +382,70 @@ const MenuManagementScreen: React.FC = () => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            setMenuItems((prev) => prev.filter((item) => item.id !== id));
-            showSnackbar('Item deleted', 'warning');
+          onPress: async () => {
+            setIsLoading(true);
+            setLoadingMessage('Deleting item...');
+            try {
+              await deleteDish(id);
+              showSnackbar('Item deleted', 'warning');
+              await fetchData();
+            } catch (error: any) {
+              showSnackbar(error.message || 'Failed to delete item', 'error');
+            } finally {
+              setIsLoading(false);
+            }
           },
         },
       ]
     );
   };
 
-  const handleAddCategory = () => {
-    if (!newCategoryName.trim()) {
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim() || !restaurantId) {
       showSnackbar('Please enter a category name', 'error');
       return;
     }
-    setCategories((prev) => [...prev, newCategoryName.trim()]);
-    showSnackbar(`Category "${newCategoryName.trim()}" created!`, 'success');
-    setNewCategoryName('');
-    setShowCategoryModal(false);
+
+    setIsLoading(true);
+    setLoadingMessage('Creating category...');
+    try {
+      await createCategory({
+        restaurant_id: restaurantId,
+        name: newCategoryName.trim(),
+      });
+      showSnackbar(`Category "${newCategoryName.trim()}" created!`, 'success');
+      setNewCategoryName('');
+      setShowCategoryModal(false);
+      await fetchData();
+    } catch (error: any) {
+      showSnackbar(error.message || 'Failed to create category', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteCategory = (category: string) => {
-    if (category === 'All') return;
+  const handleDeleteCategory = (categoryId: string, categoryName: string) => {
     Alert.alert(
       'Delete Category',
-      `Delete "${category}"? Items in this category will remain.`,
+      `Delete "${categoryName}"? Items in this category will remain.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            setCategories((prev) => prev.filter((cat) => cat !== category));
-            if (selectedCategory === category) setSelectedCategory('All');
-            showSnackbar(`Category "${category}" deleted`, 'warning');
+          onPress: async () => {
+            setIsLoading(true);
+            setLoadingMessage('Deleting category...');
+            try {
+              await deleteCategory(categoryId);
+              if (selectedCategory === categoryId) setSelectedCategory('All');
+              showSnackbar(`Category "${categoryName}" deleted`, 'warning');
+              await fetchData();
+            } catch (error: any) {
+              showSnackbar(error.message || 'Failed to delete category', 'error');
+            } finally {
+              setIsLoading(false);
+            }
           },
         },
       ]
@@ -246,23 +471,42 @@ const MenuManagementScreen: React.FC = () => {
         style={styles.categoryScroll}
         contentContainerStyle={styles.categoryScrollContent}
       >
+        {/* All Category */}
+        <TouchableOpacity
+          style={[
+            styles.categoryChip,
+            selectedCategory === 'All' && styles.categoryChipActive,
+          ]}
+          onPress={() => setSelectedCategory('All')}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.categoryChipText,
+              selectedCategory === 'All' && styles.categoryChipTextActive,
+            ]}
+          >
+            All
+          </Text>
+        </TouchableOpacity>
+
         {categories.map((category) => (
           <TouchableOpacity
-            key={category}
+            key={category.id}
             style={[
               styles.categoryChip,
-              selectedCategory === category && styles.categoryChipActive,
+              selectedCategory === category.id && styles.categoryChipActive,
             ]}
-            onPress={() => setSelectedCategory(category)}
+            onPress={() => setSelectedCategory(category.id)}
             activeOpacity={0.7}
           >
             <Text
               style={[
                 styles.categoryChipText,
-                selectedCategory === category && styles.categoryChipTextActive,
+                selectedCategory === category.id && styles.categoryChipTextActive,
               ]}
             >
-              {category}
+              {category.name}
             </Text>
           </TouchableOpacity>
         ))}
@@ -328,8 +572,8 @@ const MenuManagementScreen: React.FC = () => {
             <View key={item.id}>
               <View style={styles.menuItemCard}>
                 <View style={styles.menuItemImage}>
-                  {item.image ? (
-                    <Image source={{ uri: item.image }} style={styles.itemImage} />
+                  {item.image_url ? (
+                    <Image source={{ uri: item.image_url }} style={styles.itemImage} />
                   ) : (
                     <View style={styles.itemImagePlaceholder}>
                       <Icon name="image" size={24} color="#CCC" />
@@ -344,7 +588,7 @@ const MenuManagementScreen: React.FC = () => {
                       <View
                         style={[
                           styles.statusDotInner,
-                          { backgroundColor: item.isActive ? '#3EB489' : '#E53935' },
+                          { backgroundColor: item.is_available ? '#3EB489' : '#E53935' },
                         ]}
                       />
                     </View>
@@ -353,8 +597,8 @@ const MenuManagementScreen: React.FC = () => {
                   <View style={styles.menuItemMeta}>
                     <Text style={styles.menuItemPrice}>BD {item.price.toFixed(3)}</Text>
                     <Text style={styles.menuItemMetaDot}>•</Text>
-                    <Text style={styles.menuItemCategory}>{item.category}</Text>
-                    {item.isPopular && (
+                    <Text style={styles.menuItemCategory}>{item.menu_categories?.name || 'Uncategorized'}</Text>
+                    {item.is_popular && (
                       <>
                         <Text style={styles.menuItemMetaDot}>•</Text>
                         <View style={styles.popularBadge}>
@@ -364,7 +608,7 @@ const MenuManagementScreen: React.FC = () => {
                     )}
                     <Text style={styles.menuItemMetaDot}>•</Text>
                     <Text style={styles.statusText}>
-                      {item.isActive ? 'Active 🟢' : 'Inactive ⚪'}
+                      {item.is_available ? 'Active 🟢' : 'Inactive ⚪'}
                     </Text>
                   </View>
 
@@ -381,7 +625,7 @@ const MenuManagementScreen: React.FC = () => {
                     <TouchableOpacity
                       style={[
                         styles.toggleButton,
-                        !item.isActive && styles.toggleButtonActive,
+                        !item.is_available && styles.toggleButtonActive,
                       ]}
                       onPress={() => toggleItemStatus(item.id)}
                       activeOpacity={0.7}
@@ -389,10 +633,10 @@ const MenuManagementScreen: React.FC = () => {
                       <Text
                         style={[
                           styles.toggleButtonText,
-                          !item.isActive && styles.toggleButtonTextActive,
+                          !item.is_available && styles.toggleButtonTextActive,
                         ]}
                       >
-                        {item.isActive ? 'Mark Unavailable' : 'Activate'}
+                        {item.is_available ? 'Mark Unavailable' : 'Activate'}
                       </Text>
                     </TouchableOpacity>
 
@@ -425,7 +669,7 @@ const MenuManagementScreen: React.FC = () => {
               name: '',
               description: '',
               price: '',
-              category: 'Starters',
+              category_id: categories.length > 0 ? categories[0].id : '',
               isActive: true,
             });
             setShowAddModal(true);
@@ -523,12 +767,12 @@ const MenuManagementScreen: React.FC = () => {
             </View>
 
             <ScrollView style={styles.categoryList} showsVerticalScrollIndicator={false}>
-              {categories.filter(cat => cat !== 'All').map((category) => (
-                <View key={category} style={styles.categoryListItem}>
-                  <Text style={styles.categoryListItemText}>{category}</Text>
+              {categories.map((category) => (
+                <View key={category.id} style={styles.categoryListItem}>
+                  <Text style={styles.categoryListItemText}>{category.name}</Text>
                   <TouchableOpacity
                     style={styles.deleteCategoryButton}
-                    onPress={() => handleDeleteCategory(category)}
+                    onPress={() => handleDeleteCategory(category.id, category.name)}
                     activeOpacity={0.7}
                   >
                     <Icon name="trash-2" size={18} color="#E53935" />
@@ -559,9 +803,25 @@ const MenuManagementScreen: React.FC = () => {
             </View>
 
             <ScrollView style={styles.modalForm} showsVerticalScrollIndicator={false}>
-              <TouchableOpacity style={styles.photoUpload} activeOpacity={0.7}>
-                <Icon name="camera" size={32} color="#999" />
-                <Text style={styles.photoUploadText}>Upload Photo</Text>
+              <TouchableOpacity 
+                style={styles.photoUpload} 
+                activeOpacity={0.7}
+                onPress={pickImage}
+                disabled={uploadingImage}
+              >
+                {selectedImage ? (
+                  <Image source={{ uri: selectedImage }} style={styles.uploadedImage} />
+                ) : (
+                  <>
+                    <Icon name="camera" size={32} color="#999" />
+                    <Text style={styles.photoUploadText}>Upload Photo</Text>
+                  </>
+                )}
+                {uploadingImage && (
+                  <View style={styles.uploadingOverlay}>
+                    <ActivityIndicator size="large" color="#00A896" />
+                  </View>
+                )}
               </TouchableOpacity>
 
               <View style={styles.formGroup}>
@@ -589,23 +849,23 @@ const MenuManagementScreen: React.FC = () => {
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Category *</Text>
                 <View style={styles.categoryPicker}>
-                  {categories.slice(1).map((cat) => (
+                  {categories.map((cat) => (
                     <TouchableOpacity
-                      key={cat}
+                      key={cat.id}
                       style={[
                         styles.categoryOption,
-                        formData.category === cat && styles.categoryOptionActive,
+                        formData.category_id === cat.id && styles.categoryOptionActive,
                       ]}
-                      onPress={() => setFormData({ ...formData, category: cat })}
+                      onPress={() => setFormData({ ...formData, category_id: cat.id })}
                       activeOpacity={0.7}
                     >
                       <Text
                         style={[
                           styles.categoryOptionText,
-                          formData.category === cat && styles.categoryOptionTextActive,
+                          formData.category_id === cat.id && styles.categoryOptionTextActive,
                         ]}
                       >
-                        {cat}
+                        {cat.name}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -1129,22 +1389,40 @@ const styles = StyleSheet.create({
   modalForm: {
     paddingHorizontal: 20,
     paddingTop: 20,
+    marginBottom: 8,
   },
   photoUpload: {
     height: 120,
     borderRadius: 12,
     borderWidth: 2,
+    borderColor: '#E0E0E0',
     borderStyle: 'dashed',
-    borderColor: '#DDD',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
     backgroundColor: '#FAFAFA',
+    overflow: 'hidden',
   },
   photoUploadText: {
     fontSize: 14,
     color: '#999',
     marginTop: 8,
+    fontWeight: '500',
+  },
+  uploadedImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  uploadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   formGroup: {
     marginBottom: 20,

@@ -16,16 +16,20 @@ import {
   Image,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { supabase } from '../../lib/supabase';
 
 interface EditBusinessInfoModalProps {
   visible: boolean;
   onClose: () => void;
+  restaurantId: string | null;
   businessData: {
     name: string;
     category: string;
@@ -61,6 +65,7 @@ const STATUS_OPTIONS = [
 const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
   visible,
   onClose,
+  restaurantId,
   businessData,
   onSave,
 }) => {
@@ -77,6 +82,8 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
   const [closingTime, setClosingTime] = useState('22:00');
   const [autoStatusUpdate, setAutoStatusUpdate] = useState(true);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [logoUri, setLogoUri] = useState<string | null>(businessData.logo);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   
   // Snackbar state
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -97,6 +104,56 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
       setSelectedCategories(selectedCategories.filter(c => c !== category));
     } else {
       setSelectedCategories([...selectedCategories, category]);
+    }
+  };
+
+  const pickLogo = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setUploadingLogo(true);
+        const asset = result.assets[0];
+        
+        // Upload to Supabase Storage
+        const fileExt = asset.uri.split('.').pop();
+        const fileName = `${restaurantId}-${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const formData = new FormData();
+        formData.append('file', {
+          uri: asset.uri,
+          type: `image/${fileExt}`,
+          name: fileName,
+        } as any);
+
+        const { data, error } = await supabase.storage
+          .from('restaurant-logos')
+          .upload(filePath, formData, {
+            contentType: `image/${fileExt}`,
+            upsert: true,
+          });
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('restaurant-logos')
+          .getPublicUrl(filePath);
+
+        setLogoUri(publicUrl);
+        showSnackbar('Logo uploaded successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      showSnackbar('Failed to upload logo', 'error');
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -137,29 +194,56 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
 
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      if (!restaurantId) {
+        throw new Error('Restaurant ID is missing');
+      }
 
-    const updatedData = {
-      name,
-      category: selectedCategories.join(' • '),
-      description,
-      isOpen: status === 'open',
-      status,
-      avgPrepTime,
-      contactNumber,
-      address,
-      openingTime,
-      closingTime,
-      autoStatusUpdate,
-    };
+      // Update restaurant in database
+      const { error } = await supabase
+        .from('restaurants')
+        .update({
+          category: selectedCategories.join(' • '),
+          description,
+          status: status as 'open' | 'closed' | 'busy',
+          phone: contactNumber,
+          address,
+          opening_time: openingTime,
+          closing_time: closingTime,
+          auto_status_update: autoStatusUpdate,
+          logo: logoUri,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', restaurantId);
 
-    onSave(updatedData);
-    setIsLoading(false);
-    showSnackbar('Business information updated successfully!', 'success');
-    setTimeout(() => {
-      onClose();
-    }, 1500);
+      if (error) throw error;
+
+      const updatedData = {
+        name,
+        category: selectedCategories.join(' • '),
+        description,
+        isOpen: status === 'open',
+        status,
+        avgPrepTime,
+        contactNumber,
+        address,
+        openingTime,
+        closingTime,
+        autoStatusUpdate,
+        logo: logoUri,
+      };
+
+      onSave(updatedData);
+      showSnackbar('Business information updated successfully!', 'success');
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error saving business info:', error);
+      showSnackbar(error.message || 'Failed to save changes', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -233,11 +317,28 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
               {/* Logo Upload */}
               <View style={styles.fieldGroup}>
                 <Text style={styles.label}>Logo / Banner</Text>
-                <TouchableOpacity style={styles.uploadContainer}>
-                  <Image source={businessData.logo} style={styles.logoPreview} />
+                <TouchableOpacity 
+                  style={styles.uploadContainer} 
+                  onPress={pickLogo}
+                  disabled={uploadingLogo}
+                >
+                  {logoUri ? (
+                    <Image source={{ uri: logoUri }} style={styles.logoPreview} />
+                  ) : (
+                    <View style={styles.logoPlaceholder}>
+                      <Icon name="image" size={40} color={PartnerColors.light.text.tertiary} />
+                      <Text style={styles.placeholderText}>No logo uploaded</Text>
+                    </View>
+                  )}
                   <View style={styles.uploadOverlay}>
-                    <Icon name="camera" size={24} color="#FFFFFF" />
-                    <Text style={styles.uploadText}>Change Image</Text>
+                    {uploadingLogo ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <>
+                        <Icon name="camera" size={24} color="#FFFFFF" />
+                        <Text style={styles.uploadText}>{logoUri ? 'Change Image' : 'Upload Logo'}</Text>
+                      </>
+                    )}
                   </View>
                 </TouchableOpacity>
               </View>
@@ -605,6 +706,20 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: PartnerTypography.fontSize.sm,
     fontWeight: PartnerTypography.fontWeight.medium,
+  },
+  logoPlaceholder: {
+    width: '100%',
+    height: 150,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  placeholderText: {
+    fontSize: PartnerTypography.fontSize.sm,
+    color: PartnerColors.light.text.tertiary,
+    marginTop: 8,
   },
   toggleRow: {
     flexDirection: 'row',

@@ -286,6 +286,7 @@ const PartnerMoreScreen: React.FC = () => {
       <EditBusinessInfoModal
         visible={editBusinessModalVisible}
         onClose={() => setEditBusinessModalVisible(false)}
+        restaurantId={restaurantId}
         businessData={businessData}
         onSave={handleSaveBusinessInfo}
       />

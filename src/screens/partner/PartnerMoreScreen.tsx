@@ -96,10 +96,38 @@ const PartnerMoreScreen: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    Alert.alert('Confirm Logout', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Logout', style: 'destructive', onPress: () => console.log('Logged out') },
-    ]);
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            setLoading(true);
+            try {
+              // Sign out from Supabase
+              await supabase.auth.signOut();
+              showSnackbar('Logged out successfully', 'success');
+              // Navigate to Auth screen
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Auth' as never }],
+              });
+            } catch (error) {
+              console.error('Logout error:', error);
+              showSnackbar('Failed to logout', 'error');
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleDarkModeToggle = (value: boolean) => {

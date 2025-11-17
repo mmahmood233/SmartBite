@@ -3,7 +3,7 @@
  * Platform overview with key metrics and quick actions
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,32 +13,94 @@ import {
   StatusBar,
   Platform,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-chart-kit';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
+import { getDashboardStats, getRevenueData, getRecentActivity, DashboardStats } from '../../services/admin-analytics.service';
 
 const screenWidth = Dimensions.get('window').width;
 
 const AdminDashboardScreen: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [revenueData, setRevenueData] = useState<{ labels: string[]; datasets: { data: number[] }[] } | null>(null);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock chart data
-  const chartData = {
-    week: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: [{ data: [4200, 5100, 4800, 6200, 5800, 7200, 6500] }],
-    },
-    month: {
-      labels: ['W1', 'W2', 'W3', 'W4'],
-      datasets: [{ data: [28000, 32000, 35000, 38000] }],
-    },
-    year: {
-      labels: ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'],
-      datasets: [{ data: [120000, 145000, 160000, 185000, 195000, 210000] }],
-    },
+  // Fetch dashboard data
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  // Fetch revenue data when period changes
+  useEffect(() => {
+    fetchRevenueData();
+  }, [selectedPeriod]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [statsData, activityData] = await Promise.all([
+        getDashboardStats(),
+        getRecentActivity(3),
+      ]);
+      setStats(statsData);
+      setRecentActivity(activityData);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const fetchRevenueData = async () => {
+    try {
+      const data = await getRevenueData(selectedPeriod);
+      setRevenueData({
+        labels: data.labels,
+        datasets: [{ data: data.data }],
+      });
+    } catch (error) {
+      console.error('Error fetching revenue data:', error);
+    }
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
+    return num.toString();
+  };
+
+  const formatRevenue = (amount: number) => {
+    if (amount >= 1000) {
+      return `BD ${(amount / 1000).toFixed(1)}K`;
+    }
+    return `BD ${amount.toFixed(0)}`;
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} days ago`;
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={PartnerColors.primary} />
+        <Text style={{ marginTop: 16, color: PartnerColors.light.text.secondary }}>Loading dashboard...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -93,8 +155,9 @@ const AdminDashboardScreen: React.FC = () => {
         {/* Revenue Chart */}
         <View style={styles.chartSection}>
           <Text style={styles.chartTitle}>Revenue Trends</Text>
-          <LineChart
-            data={chartData[selectedPeriod]}
+          {revenueData && (
+            <LineChart
+              data={revenueData}
             width={screenWidth - 48}
             height={220}
             chartConfig={{
@@ -111,9 +174,10 @@ const AdminDashboardScreen: React.FC = () => {
                 stroke: PartnerColors.primary,
               },
             }}
-            bezier
-            style={styles.chart}
-          />
+              bezier
+              style={styles.chart}
+            />
+          )}
         </View>
         {/* Stats Cards */}
         <View style={styles.statsGrid}>
@@ -125,7 +189,7 @@ const AdminDashboardScreen: React.FC = () => {
               style={styles.statGradient}
             >
               <Icon name="shopping-bag" size={24} color="#FFFFFF" />
-              <Text style={styles.statValue}>124</Text>
+              <Text style={styles.statValue}>{stats?.totalRestaurants || 0}</Text>
               <Text style={styles.statLabel}>Restaurants</Text>
             </LinearGradient>
           </View>
@@ -138,7 +202,7 @@ const AdminDashboardScreen: React.FC = () => {
               style={styles.statGradient}
             >
               <Icon name="users" size={24} color="#FFFFFF" />
-              <Text style={styles.statValue}>8.5K</Text>
+              <Text style={styles.statValue}>{formatNumber(stats?.totalUsers || 0)}</Text>
               <Text style={styles.statLabel}>Users</Text>
             </LinearGradient>
           </View>
@@ -151,7 +215,7 @@ const AdminDashboardScreen: React.FC = () => {
               style={styles.statGradient}
             >
               <Icon name="file-text" size={24} color="#FFFFFF" />
-              <Text style={styles.statValue}>1.2K</Text>
+              <Text style={styles.statValue}>{formatNumber(stats?.todayOrders || 0)}</Text>
               <Text style={styles.statLabel}>Orders Today</Text>
             </LinearGradient>
           </View>
@@ -164,8 +228,8 @@ const AdminDashboardScreen: React.FC = () => {
               style={styles.statGradient}
             >
               <Icon name="dollar-sign" size={24} color="#FFFFFF" />
-              <Text style={styles.statValue}>BD 45K</Text>
-              <Text style={styles.statLabel}>Revenue</Text>
+              <Text style={styles.statValue}>{formatRevenue(stats?.totalRevenue || 0)}</Text>
+              <Text style={styles.statLabel}>Total Revenue</Text>
             </LinearGradient>
           </View>
         </View>
@@ -208,39 +272,43 @@ const AdminDashboardScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Activity</Text>
           <View style={styles.activityCard}>
-            <View style={styles.activityItem}>
-              <View style={[styles.activityIcon, { backgroundColor: '#E6F7F4' }]}>
-                <Icon name="shopping-bag" size={16} color={PartnerColors.primary} />
-              </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>New Restaurant Registered</Text>
-                <Text style={styles.activityTime}>Burger Palace • 2 hours ago</Text>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.activityItem}>
-              <View style={[styles.activityIcon, { backgroundColor: '#F0F4FF' }]}>
-                <Icon name="user-plus" size={16} color="#007AFF" />
-              </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>New User Signup</Text>
-                <Text style={styles.activityTime}>Ahmed Ali • 3 hours ago</Text>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.activityItem}>
-              <View style={[styles.activityIcon, { backgroundColor: '#ECFDF5' }]}>
-                <Icon name="check-circle" size={16} color="#10B981" />
-              </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>Order Completed</Text>
-                <Text style={styles.activityTime}>Order #12345 • 5 hours ago</Text>
-              </View>
-            </View>
+            {recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => (
+                <React.Fragment key={index}>
+                  <View style={styles.activityItem}>
+                    <View style={[
+                      styles.activityIcon,
+                      {
+                        backgroundColor:
+                          activity.type === 'restaurant' ? '#E6F7F4' :
+                          activity.type === 'user' ? '#F0F4FF' : '#ECFDF5'
+                      }
+                    ]}>
+                      <Icon
+                        name={
+                          activity.type === 'restaurant' ? 'shopping-bag' :
+                          activity.type === 'user' ? 'user-plus' : 'check-circle'
+                        }
+                        size={16}
+                        color={
+                          activity.type === 'restaurant' ? PartnerColors.primary :
+                          activity.type === 'user' ? '#007AFF' : '#10B981'
+                        }
+                      />
+                    </View>
+                    <View style={styles.activityContent}>
+                      <Text style={styles.activityTitle}>{activity.title}</Text>
+                      <Text style={styles.activityTime}>{activity.subtitle} • {getTimeAgo(activity.time)}</Text>
+                    </View>
+                  </View>
+                  {index < recentActivity.length - 1 && <View style={styles.divider} />}
+                </React.Fragment>
+              ))
+            ) : (
+              <Text style={{ textAlign: 'center', color: PartnerColors.light.text.tertiary, padding: 20 }}>
+                No recent activity
+              </Text>
+            )}
           </View>
         </View>
 

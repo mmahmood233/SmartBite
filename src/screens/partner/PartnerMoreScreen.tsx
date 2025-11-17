@@ -3,7 +3,7 @@
  * Settings, profile, and management hub for restaurant partners
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, StatusBar, Switch, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather as Icon } from '@expo/vector-icons';
@@ -13,6 +13,8 @@ import EditBusinessInfoModal from './EditBusinessInfoScreen';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import { getStrings } from '../../constants/partnerStrings';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { supabase } from '../../lib/supabase';
 
 const strings = getStrings('en');
 
@@ -34,20 +36,64 @@ const PartnerMoreScreen: React.FC = () => {
     setSnackbarVisible(true);
   };
 
-  // Mock business data
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [businessData, setBusinessData] = useState({
-    name: 'Burger Town',
-    category: 'Burgers & Sandwiches',
-    description: 'Serving freshly grilled burgers since 2019.',
-    logo: require('../../../assets/food.png'),
+    name: '',
+    category: '',
+    description: '',
+    logo: null as string | null,
     isOpen: true,
     status: 'open' as 'open' | 'closed' | 'busy',
     avgPrepTime: '20-25 min',
-    contactNumber: '+973 3999 8888',
-    address: 'Seef Mall, Manama',
-    rating: 4.7,
-    earnings: 'BD 1,230.400',
+    contactNumber: '',
+    address: '',
+    rating: 0,
+    earnings: 'BD 0.00',
   });
+
+  // Fetch restaurant data
+  useEffect(() => {
+    const fetchRestaurantData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: restaurantData, error } = await supabase
+          .from('restaurants')
+          .select('*')
+          .eq('partner_id', user.id)
+          .single();
+
+        if (error) throw error;
+
+        if (restaurantData) {
+          setRestaurantId(restaurantData.id);
+          const status = restaurantData.status || 'closed';
+          setBusinessData({
+            name: restaurantData.name || '',
+            category: restaurantData.category || '',
+            description: restaurantData.description || '',
+            logo: restaurantData.logo,
+            isOpen: status === 'open',
+            status: status as 'open' | 'closed' | 'busy',
+            avgPrepTime: restaurantData.avg_prep_time || '20-25 min',
+            contactNumber: restaurantData.phone || '',
+            address: restaurantData.address || '',
+            rating: restaurantData.rating || 0,
+            earnings: 'BD 0.00', // TODO: Calculate from orders
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching restaurant data:', error);
+        showSnackbar('Failed to load restaurant data', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurantData();
+  }, []);
 
   const handleLogout = () => {
     Alert.alert('Confirm Logout', 'Are you sure you want to log out?', [
@@ -95,6 +141,10 @@ const PartnerMoreScreen: React.FC = () => {
     setBusinessData({ ...businessData, ...updatedData });
     // Success message is shown by the modal's snackbar
   };
+
+  if (loading) {
+    return <LoadingSpinner visible={true} message="Loading profile..." />;
+  }
 
   return (
     <View style={styles.container}>

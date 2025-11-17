@@ -66,6 +66,43 @@ const HomeScreen: React.FC = () => {
     loadUserProfile();
     loadRestaurants();
     updateGreeting();
+
+    // Subscribe to real-time restaurant status updates
+    const restaurantSubscription = supabase
+      .channel('restaurant-status-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'restaurants',
+        },
+        (payload) => {
+          // Update restaurant status in real-time
+          const updatedRestaurant = payload.new;
+          
+          setAllRestaurants(prev => 
+            prev.map(r => 
+              r.id === updatedRestaurant.id 
+                ? { ...r, status: updatedRestaurant.status }
+                : r
+            )
+          );
+          
+          setFeaturedRestaurants(prev => 
+            prev.map(r => 
+              r.id === updatedRestaurant.id 
+                ? { ...r, status: updatedRestaurant.status }
+                : r
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(restaurantSubscription);
+    };
   }, []);
 
   const loadUserProfile = async () => {
@@ -489,6 +526,7 @@ const HomeScreen: React.FC = () => {
                 tags={`${restaurant.category} • ${restaurant.avg_prep_time || '20-30 mins'}`}
                 rating={restaurant.rating}
                 eta={restaurant.avg_prep_time || '20-30 mins'}
+                status={restaurant.status}
                 style={styles.gridItem}
               />
             ))

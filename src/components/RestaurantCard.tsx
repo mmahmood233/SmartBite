@@ -20,9 +20,10 @@ interface RestaurantCardProps {
   match?: number; // AI Match percentage
   style?: ViewStyle;
   restaurantId?: string;
+  status?: 'open' | 'closed' | 'busy'; // Restaurant operational status
 }
 
-const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rating = 4.8, eta = '15 min', price = '$$', match, style, restaurantId = '1' }) => {
+const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rating = 4.8, eta = '15 min', price = '$$', match, style, restaurantId = '1', status }) => {
   const navigation = useNavigation<NavigationProp>();
   const isFoodImage = image === require('../../assets/food.png');
   const isLogoImage = !isFoodImage;
@@ -40,6 +41,24 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rati
         {isLogoImage && <View style={styles.logoBackground} />}
         <Image source={image} style={[styles.image, isLogoImage && styles.logoImage]} />
         {isFoodImage && <View style={styles.tealOverlay} />}
+        {status && (
+          <View style={[
+            styles.statusBadge,
+            status === 'open' && styles.statusOpen,
+            status === 'closed' && styles.statusClosed,
+            status === 'busy' && styles.statusBusy,
+          ]}>
+            <View style={[
+              styles.statusDot,
+              status === 'open' && styles.dotOpen,
+              status === 'closed' && styles.dotClosed,
+              status === 'busy' && styles.dotBusy,
+            ]} />
+            <Text style={styles.statusText}>
+              {status === 'open' ? 'Open' : status === 'busy' ? 'Busy' : 'Closed'}
+            </Text>
+          </View>
+        )}
       </View>
       <View style={styles.contentBlock}>
         <Text style={styles.name}>{name}</Text>
@@ -153,6 +172,50 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500', // Medium
     color: '#008C7A', // Brand teal
+  },
+  statusBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  statusOpen: {
+    backgroundColor: '#10B981',
+  },
+  statusClosed: {
+    backgroundColor: '#EF4444',
+  },
+  statusBusy: {
+    backgroundColor: '#F59E0B',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 4,
+  },
+  dotOpen: {
+    backgroundColor: '#FFFFFF',
+  },
+  dotClosed: {
+    backgroundColor: '#FFFFFF',
+  },
+  dotBusy: {
+    backgroundColor: '#FFFFFF',
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
 

@@ -69,10 +69,13 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
     businessData.category.split(' • ')
   );
   const [description, setDescription] = useState(businessData.description);
-  const [status, setStatus] = useState(businessData.isOpen ? 'open' : 'closed');
+  const [status, setStatus] = useState(businessData.status || 'closed');
   const [avgPrepTime, setAvgPrepTime] = useState(businessData.avgPrepTime);
   const [contactNumber, setContactNumber] = useState(businessData.contactNumber);
   const [address, setAddress] = useState(businessData.address);
+  const [openingTime, setOpeningTime] = useState('09:00');
+  const [closingTime, setClosingTime] = useState('22:00');
+  const [autoStatusUpdate, setAutoStatusUpdate] = useState(true);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   
   // Snackbar state
@@ -115,6 +118,23 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
       return;
     }
 
+    // Validate operating hours
+    if (openingTime === closingTime) {
+      showSnackbar('Opening and closing times must be different', 'error');
+      return;
+    }
+
+    // Validate time format (HH:MM)
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(openingTime)) {
+      showSnackbar('Invalid opening time format. Use HH:MM (e.g., 09:00)', 'error');
+      return;
+    }
+    if (!timeRegex.test(closingTime)) {
+      showSnackbar('Invalid closing time format. Use HH:MM (e.g., 22:00)', 'error');
+      return;
+    }
+
     setIsLoading(true);
     
     // Simulate API call
@@ -129,6 +149,9 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
       avgPrepTime,
       contactNumber,
       address,
+      openingTime,
+      closingTime,
+      autoStatusUpdate,
     };
 
     onSave(updatedData);
@@ -163,19 +186,14 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
                 <Text style={styles.sectionTitle}>BASIC INFORMATION</Text>
               </View>
 
-              {/* Restaurant Name */}
+              {/* Restaurant Name - Read Only */}
               <View style={styles.fieldGroup}>
                 <Text style={styles.label}>Restaurant Name</Text>
-                <View style={styles.inputContainer}>
+                <View style={[styles.inputContainer, styles.readOnlyContainer]}>
                   <Icon name="home" size={18} color={PartnerColors.light.text.secondary} style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="Enter restaurant name"
-                    placeholderTextColor="#94A3B8"
-                  />
+                  <Text style={styles.readOnlyText}>{name}</Text>
                 </View>
+                <Text style={styles.helperText}>Restaurant name cannot be changed</Text>
               </View>
 
               {/* Category - Multi-select */}
@@ -268,21 +286,6 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
                 </View>
               </View>
 
-              {/* Average Prep Time */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Average Prep Time</Text>
-                <View style={styles.inputContainer}>
-                  <Icon name="clock" size={18} color={PartnerColors.light.text.secondary} style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    value={avgPrepTime}
-                    onChangeText={setAvgPrepTime}
-                    placeholder="e.g., 20-25 min"
-                    placeholderTextColor="#94A3B8"
-                  />
-                </View>
-              </View>
-
               {/* Contact Number */}
               <View style={styles.fieldGroup}>
                 <Text style={styles.label}>Contact Number</Text>
@@ -313,31 +316,55 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
                   />
                 </View>
               </View>
-            </View>
 
-            {/* Section 3: Financial / Insights (Read-only) */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Icon name="trending-up" size={18} color={PartnerColors.light.text.secondary} />
-                <Text style={styles.sectionTitle}>FINANCIAL & INSIGHTS</Text>
+              {/* Operating Hours */}
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Operating Hours</Text>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.label, { fontSize: 12, marginBottom: 6 }]}>Opening Time</Text>
+                    <View style={styles.inputContainer}>
+                      <Icon name="clock" size={18} color={PartnerColors.light.text.secondary} style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.input}
+                        value={openingTime}
+                        onChangeText={setOpeningTime}
+                        placeholder="09:00"
+                        placeholderTextColor="#94A3B8"
+                      />
+                    </View>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.label, { fontSize: 12, marginBottom: 6 }]}>Closing Time</Text>
+                    <View style={styles.inputContainer}>
+                      <Icon name="clock" size={18} color={PartnerColors.light.text.secondary} style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.input}
+                        value={closingTime}
+                        onChangeText={setClosingTime}
+                        placeholder="22:00"
+                        placeholderTextColor="#94A3B8"
+                      />
+                    </View>
+                  </View>
+                </View>
               </View>
 
-              {/* Rating */}
-              <View style={styles.infoRow}>
-                <View style={styles.infoLeft}>
-                  <Icon name="star" size={18} color="#FFA500" />
-                  <Text style={styles.infoLabel}>Rating</Text>
+              {/* Auto Status Update Toggle */}
+              <View style={styles.fieldGroup}>
+                <View style={styles.toggleRow}>
+                  <View>
+                    <Text style={styles.label}>Auto Status Updates</Text>
+                    <Text style={styles.helperText}>Automatically open/close based on hours</Text>
+                  </View>
+                  <Switch
+                    value={autoStatusUpdate}
+                    onValueChange={setAutoStatusUpdate}
+                    trackColor={{ false: '#E0E0E0', true: PartnerColors.primary }}
+                    thumbColor={autoStatusUpdate ? '#FFFFFF' : '#F5F5F5'}
+                    ios_backgroundColor="#E0E0E0"
+                  />
                 </View>
-                <Text style={styles.infoValue}>⭐ {businessData.rating.toFixed(1)}</Text>
-              </View>
-
-              {/* Earnings */}
-              <View style={styles.infoRow}>
-                <View style={styles.infoLeft}>
-                  <Icon name="trending-up" size={18} color={PartnerColors.success} />
-                  <Text style={styles.infoLabel}>Earnings (Last 7 days)</Text>
-                </View>
-                <Text style={[styles.infoValue, styles.earningsValue]}>{businessData.earnings}</Text>
               </View>
             </View>
 
@@ -504,6 +531,27 @@ const styles = StyleSheet.create({
     fontSize: PartnerTypography.fontSize.base,
     color: PartnerColors.light.text.primary,
     paddingVertical: Platform.OS === 'android' ? PartnerSpacing.sm : 0,
+  },
+  readOnlyContainer: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#E5E7EB',
+  },
+  readOnlyText: {
+    flex: 1,
+    fontSize: PartnerTypography.fontSize.base,
+    color: PartnerColors.light.text.secondary,
+    paddingVertical: PartnerSpacing.sm,
+  },
+  helperText: {
+    fontSize: PartnerTypography.fontSize.xs,
+    color: PartnerColors.light.text.tertiary,
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   textAreaContainer: {
     alignItems: 'flex-start',

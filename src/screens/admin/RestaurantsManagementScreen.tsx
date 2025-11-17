@@ -3,7 +3,7 @@
  * Add, view, edit, and manage all restaurants on the platform
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
   StatusBar,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,6 +24,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { supabase } from '../../lib/supabase';
+import { getAllRestaurants, toggleRestaurantStatus, searchRestaurants, AdminRestaurant } from '../../services/admin-restaurants.service';
 
 // Types
 interface Restaurant {
@@ -96,11 +99,13 @@ const MOCK_RESTAURANTS: Restaurant[] = [
 
 const RestaurantsManagementScreen: React.FC = () => {
   // State
-  const [restaurants, setRestaurants] = useState<Restaurant[]>(MOCK_RESTAURANTS);
+  const [restaurants, setRestaurants] = useState<AdminRestaurant[]>([]);
+  const [filteredRestaurants, setFilteredRestaurants] = useState<AdminRestaurant[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
+  const [editingRestaurant, setEditingRestaurant] = useState<AdminRestaurant | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -133,9 +138,93 @@ const RestaurantsManagementScreen: React.FC = () => {
     setSnackbarVisible(true);
   };
 
+  // Fetch restaurants
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
+
+  // Real-time subscription
+  useEffect(() => {
+    const restaurantSubscription = supabase
+      .channel('admin-restaurants-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'restaurants',
+        },
+        (payload) => {
+          console.log('Restaurant change detected:', payload);
+          fetchRestaurants();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(restaurantSubscription);
+    };
+  }, []);
+
+  // Filter restaurants
+  useEffect(() => {
+    filterRestaurantsList();
+  }, [restaurants, searchQuery, filterStatus]);
+
+  const fetchRestaurants = async () => {
+    try {
+      const data = await getAllRestaurants();
+      setRestaurants(data);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+      showSnackbar('Failed to load restaurants', 'error');
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  const filterRestaurantsList = () => {
+    let filtered = restaurants;
+
+    // Apply status filter
+    if (filterStatus === 'active') {
+      filtered = filtered.filter(r => r.is_active);
+    } else if (filterStatus === 'inactive') {
+      filtered = filtered.filter(r => !r.is_active);
+    }
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(r =>
+        r.name.toLowerCase().includes(query) ||
+        r.category.toLowerCase().includes(query) ||
+        r.address.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredRestaurants(filtered);
+  };
+
+  const handleToggleStatus = async (restaurant: AdminRestaurant) => {
+    try {
+      setIsLoading(true);
+      setLoadingMessage('Updating status...');
+      await toggleRestaurantStatus(restaurant.id, !restaurant.is_active);
+      showSnackbar(
+        `Restaurant ${!restaurant.is_active ? 'activated' : 'deactivated'} successfully`,
+        'success'
+      );
+      await fetchRestaurants();
+    } catch (error) {
+      showSnackbar('Failed to update status', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Image Picker Handler
   const handlePickImage = async () => {
-    // Request permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
     if (status !== 'granted') {
@@ -143,9 +232,8 @@ const RestaurantsManagementScreen: React.FC = () => {
       return;
     }
 
-    // Launch image picker
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -156,6 +244,15 @@ const RestaurantsManagementScreen: React.FC = () => {
       showSnackbar('Logo selected successfully!', 'success');
     }
   };
+
+  if (initialLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={PartnerColors.primary} />
+        <Text style={{ marginTop: 16, color: PartnerColors.light.text.secondary }}>Loading restaurants...</Text>
+      </View>
+    );
+  }
 
   // Map Picker Handler (Mock for now)
   const handleSelectLocation = () => {
@@ -171,40 +268,20 @@ const RestaurantsManagementScreen: React.FC = () => {
     showSnackbar('Location selected: Manama, Bahrain', 'success');
   };
 
-  // Action Handlers
-  const handleToggleStatus = async (id: string) => {
-    const restaurant = restaurants.find(r => r.id === id);
-    if (!restaurant) return;
+  // Action Handlers (old mock code removed)
 
-    setIsLoading(true);
-    setLoadingMessage(restaurant.isActive ? 'Deactivating...' : 'Activating...');
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setRestaurants(prev =>
-      prev.map(r => r.id === id ? { ...r, isActive: !r.isActive } : r)
-    );
-    
-    setIsLoading(false);
-    showSnackbar(
-      `${restaurant.name} ${restaurant.isActive ? 'deactivated' : 'activated'}`,
-      'info'
-    );
-  };
-
-  const handleEdit = (restaurant: Restaurant) => {
+  const handleEdit = (restaurant: AdminRestaurant) => {
     setEditingRestaurant(restaurant);
     setFormData({
-      name: restaurant.name,
-      category: restaurant.category,
-      description: restaurant.description,
-      address: restaurant.address,
-      phone: restaurant.phone,
-      email: restaurant.email,
-      deliveryFee: restaurant.deliveryFee.toString(),
-      minOrder: restaurant.minOrder.toString(),
-      avgPrepTime: restaurant.avgPrepTime,
+      name: restaurant.name || '',
+      category: restaurant.category || '',
+      description: restaurant.description || '',
+      address: restaurant.address || '',
+      phone: restaurant.phone || '',
+      email: restaurant.email || '',
+      deliveryFee: restaurant.delivery_fee ? restaurant.delivery_fee.toString() : '',
+      minOrder: restaurant.minimum_order ? restaurant.minimum_order.toString() : '',
+      avgPrepTime: restaurant.avg_prep_time || '',
       imageUri: '',
       latitude: '',
       longitude: '',
@@ -346,16 +423,6 @@ const RestaurantsManagementScreen: React.FC = () => {
     );
   };
 
-  // Filter restaurants
-  const filteredRestaurants = restaurants.filter(restaurant => {
-    const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         restaurant.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filterStatus === 'all' ||
-                         (filterStatus === 'active' && restaurant.isActive) ||
-                         (filterStatus === 'inactive' && !restaurant.isActive);
-    return matchesSearch && matchesFilter;
-  });
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -443,22 +510,22 @@ const RestaurantsManagementScreen: React.FC = () => {
                 <View
                   style={[
                     styles.statusBadge,
-                    restaurant.isActive ? styles.statusBadgeActive : styles.statusBadgeInactive,
+                    restaurant.is_active ? styles.statusBadgeActive : styles.statusBadgeInactive,
                   ]}
                 >
                   <View
                     style={[
                       styles.statusDot,
-                      { backgroundColor: restaurant.isActive ? '#10B981' : '#EF4444' },
+                      { backgroundColor: restaurant.is_active ? '#10B981' : '#EF4444' },
                     ]}
                   />
                   <Text
                     style={[
                       styles.statusText,
-                      { color: restaurant.isActive ? '#10B981' : '#EF4444' },
+                      { color: restaurant.is_active ? '#10B981' : '#EF4444' },
                     ]}
                   >
-                    {restaurant.isActive ? 'Active' : 'Inactive'}
+                    {restaurant.is_active ? 'Active' : 'Inactive'}
                   </Text>
                 </View>
               </View>
@@ -471,11 +538,11 @@ const RestaurantsManagementScreen: React.FC = () => {
                 </View>
                 <View style={styles.statItem}>
                   <Icon name="shopping-bag" size={14} color={PartnerColors.light.text.tertiary} />
-                  <Text style={styles.statText}>{restaurant.totalOrders} orders</Text>
+                  <Text style={styles.statText}>{restaurant._count?.orders || 0} orders</Text>
                 </View>
                 <View style={styles.statItem}>
                   <Icon name="clock" size={14} color={PartnerColors.light.text.tertiary} />
-                  <Text style={styles.statText}>{restaurant.avgPrepTime}</Text>
+                  <Text style={styles.statText}>{restaurant.avg_prep_time || 'N/A'}</Text>
                 </View>
               </View>
 
@@ -502,16 +569,16 @@ const RestaurantsManagementScreen: React.FC = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => handleToggleStatus(restaurant.id)}
+                  onPress={() => handleToggleStatus(restaurant)}
                   activeOpacity={0.7}
                 >
                   <Icon
-                    name={restaurant.isActive ? 'eye-off' : 'eye'}
+                    name={restaurant.is_active ? 'eye-off' : 'eye'}
                     size={16}
                     color={PartnerColors.light.text.secondary}
                   />
                   <Text style={styles.actionButtonText}>
-                    {restaurant.isActive ? 'Deactivate' : 'Activate'}
+                    {restaurant.is_active ? 'Deactivate' : 'Activate'}
                   </Text>
                 </TouchableOpacity>
               </View>

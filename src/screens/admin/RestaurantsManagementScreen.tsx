@@ -345,54 +345,45 @@ const RestaurantsManagementScreen: React.FC = () => {
     setIsLoading(true);
     setLoadingMessage(editingRestaurant ? 'Updating restaurant...' : 'Adding restaurant...');
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      if (editingRestaurant) {
+        // Update existing restaurant
+        const { error } = await supabase
+          .from('restaurants')
+          .update({
+            name: formData.name,
+            category: formData.category,
+            description: formData.description || null,
+            address: formData.address,
+            phone: formData.phone,
+            email: formData.email || null,
+            delivery_fee: parseFloat(formData.deliveryFee) || 0,
+            minimum_order: parseFloat(formData.minOrder) || 0,
+            avg_prep_time: formData.avgPrepTime || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingRestaurant.id);
 
-    if (editingRestaurant) {
-      // Update existing
-      setRestaurants(prev =>
-        prev.map(r =>
-          r.id === editingRestaurant.id
-            ? {
-                ...r,
-                name: formData.name,
-                category: formData.category,
-                description: formData.description,
-                address: formData.address,
-                phone: formData.phone,
-                email: formData.email,
-                deliveryFee: parseFloat(formData.deliveryFee) || 0,
-                minOrder: parseFloat(formData.minOrder) || 0,
-                avgPrepTime: formData.avgPrepTime,
-              }
-            : r
-        )
-      );
-      showSnackbar('Restaurant updated successfully!', 'success');
-    } else {
-      // Add new
-      const newRestaurant: Restaurant = {
-        id: Date.now().toString(),
-        name: formData.name,
-        category: formData.category,
-        description: formData.description,
-        address: formData.address,
-        phone: formData.phone,
-        email: formData.email,
-        logo: require('../../../assets/food.png'),
-        isActive: true,
-        deliveryFee: parseFloat(formData.deliveryFee) || 0,
-        minOrder: parseFloat(formData.minOrder) || 0,
-        avgPrepTime: formData.avgPrepTime,
-        rating: 0,
-        totalOrders: 0,
-      };
-      setRestaurants(prev => [newRestaurant, ...prev]);
-      showSnackbar('Restaurant added successfully!', 'success');
+        if (error) throw error;
+        showSnackbar('Restaurant updated successfully!', 'success');
+      } else {
+        // Add new restaurant - Need to create partner user first
+        showSnackbar('Please create a partner account first, then add restaurant from partner portal', 'info');
+        setIsLoading(false);
+        return;
+        
+        // Note: Adding restaurants requires a partner_id (user account)
+        // This should be done through partner registration flow
+      }
+
+      await fetchRestaurants(); // Refresh list
+      handleCloseModal();
+    } catch (error) {
+      console.error('Error saving restaurant:', error);
+      showSnackbar('Failed to save restaurant', 'error');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-    handleCloseModal();
   };
 
   const handleDelete = (id: string) => {

@@ -38,6 +38,7 @@ const PartnerMoreScreen: React.FC = () => {
 
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isActive, setIsActive] = useState(true);
   const [businessData, setBusinessData] = useState({
     name: '',
     category: '',
@@ -69,6 +70,7 @@ const PartnerMoreScreen: React.FC = () => {
 
         if (restaurantData) {
           setRestaurantId(restaurantData.id);
+          setIsActive(restaurantData.is_active ?? true);
           const status = restaurantData.status || 'closed';
           setBusinessData({
             name: restaurantData.name || '',
@@ -94,6 +96,56 @@ const PartnerMoreScreen: React.FC = () => {
 
     fetchRestaurantData();
   }, []);
+
+  // Real-time subscription for restaurant changes
+  useEffect(() => {
+    if (!restaurantId) return;
+
+    const restaurantSubscription = supabase
+      .channel('partner-restaurant-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'restaurants',
+          filter: `id=eq.${restaurantId}`,
+        },
+        (payload) => {
+          console.log('Restaurant updated:', payload);
+          const newData = payload.new as any;
+          setIsActive(newData.is_active ?? true);
+          
+          // Show notification if deactivated
+          if (newData.is_active === false) {
+            showSnackbar('Your restaurant has been deactivated by admin', 'error');
+          } else if (newData.is_active === true) {
+            showSnackbar('Your restaurant has been activated', 'success');
+          }
+          
+          // Update business data
+          const status = newData.status || 'closed';
+          setBusinessData({
+            name: newData.name || '',
+            category: newData.category || '',
+            description: newData.description || '',
+            logo: newData.logo,
+            isOpen: status === 'open',
+            status: status as 'open' | 'closed' | 'busy',
+            avgPrepTime: newData.avg_prep_time || '20-25 min',
+            contactNumber: newData.phone || '',
+            address: newData.address || '',
+            rating: newData.rating || 0,
+            earnings: 'BD 0.00',
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(restaurantSubscription);
+    };
+  }, [restaurantId]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -190,6 +242,19 @@ const PartnerMoreScreen: React.FC = () => {
         contentContainerStyle={styles.content} 
         showsVerticalScrollIndicator={false}
       >
+        {/* Deactivation Warning Banner */}
+        {!isActive && (
+          <View style={styles.deactivationBanner}>
+            <Icon name="alert-circle" size={20} color="#FFFFFF" />
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.deactivationTitle}>Restaurant Deactivated</Text>
+              <Text style={styles.deactivationText}>
+                Your restaurant has been deactivated by admin. Please contact support for more information.
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Restaurant Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.profileLeft}>
@@ -337,6 +402,31 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: PartnerSpacing.xl,
+  },
+  deactivationBanner: {
+    backgroundColor: '#EF4444',
+    borderRadius: PartnerBorderRadius.lg,
+    padding: PartnerSpacing.lg,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: PartnerSpacing.lg,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  deactivationTitle: {
+    fontSize: PartnerTypography.fontSize.md,
+    fontWeight: PartnerTypography.fontWeight.bold,
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  deactivationText: {
+    fontSize: PartnerTypography.fontSize.sm,
+    color: '#FFFFFF',
+    opacity: 0.9,
+    lineHeight: 20,
   },
   profileCard: {
     backgroundColor: PartnerColors.light.surface,

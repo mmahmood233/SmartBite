@@ -67,9 +67,31 @@ const HomeScreen: React.FC = () => {
     loadRestaurants();
     updateGreeting();
 
-    // Subscribe to real-time restaurant status updates
+    // Subscribe to real-time restaurant changes (INSERT, UPDATE, DELETE)
     const restaurantSubscription = supabase
       .channel('restaurant-status-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'restaurants',
+        },
+        (payload) => {
+          // Add new restaurant to lists in real-time
+          const newRestaurant = payload.new;
+          
+          // Only add if active
+          if (newRestaurant.is_active) {
+            setAllRestaurants(prev => [newRestaurant, ...prev]);
+            
+            // Add to featured if it has high rating (optional)
+            if (newRestaurant.rating >= 4.0) {
+              setFeaturedRestaurants(prev => [newRestaurant, ...prev]);
+            }
+          }
+        }
+      )
       .on(
         'postgres_changes',
         {
@@ -78,13 +100,13 @@ const HomeScreen: React.FC = () => {
           table: 'restaurants',
         },
         (payload) => {
-          // Update restaurant status in real-time
+          // Update restaurant data in real-time
           const updatedRestaurant = payload.new;
           
           setAllRestaurants(prev => 
             prev.map(r => 
               r.id === updatedRestaurant.id 
-                ? { ...r, status: updatedRestaurant.status }
+                ? { ...r, ...updatedRestaurant }
                 : r
             )
           );
@@ -92,10 +114,25 @@ const HomeScreen: React.FC = () => {
           setFeaturedRestaurants(prev => 
             prev.map(r => 
               r.id === updatedRestaurant.id 
-                ? { ...r, status: updatedRestaurant.status }
+                ? { ...r, ...updatedRestaurant }
                 : r
             )
           );
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'restaurants',
+        },
+        (payload) => {
+          // Remove deleted restaurant from lists
+          const deletedId = payload.old.id;
+          
+          setAllRestaurants(prev => prev.filter(r => r.id !== deletedId));
+          setFeaturedRestaurants(prev => prev.filter(r => r.id !== deletedId));
         }
       )
       .subscribe();

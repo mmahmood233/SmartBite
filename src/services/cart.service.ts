@@ -5,6 +5,7 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchRestaurantById } from './restaurants.service';
 
 const CART_STORAGE_KEY = '@smartbite_cart';
 
@@ -138,6 +139,17 @@ export const addToCart = async (
   // Update cart metadata
   cart.restaurantId = restaurantId;
   cart.restaurantName = restaurantName;
+  
+  // Fetch restaurant delivery fee if not already set or if restaurant changed
+  if (cart.deliveryFee === 0 || cart.items.length === 1) {
+    try {
+      const restaurant = await fetchRestaurantById(restaurantId);
+      cart.deliveryFee = restaurant?.delivery_fee || 0;
+    } catch (error) {
+      console.error('Error fetching restaurant delivery fee:', error);
+      cart.deliveryFee = 0;
+    }
+  }
   
   // Recalculate totals
   const { subtotal, total } = calculateCartTotals(cart.items, cart.deliveryFee);

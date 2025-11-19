@@ -564,6 +564,8 @@ const HomeScreen: React.FC = () => {
                 rating={restaurant.rating}
                 eta={restaurant.avg_prep_time || '20-30 mins'}
                 status={restaurant.status}
+                delivery_fee={restaurant.delivery_fee}
+                min_order={restaurant.min_order}
                 style={styles.gridItem}
               />
             ))

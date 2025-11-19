@@ -3,7 +3,7 @@
  * Admin profile and platform settings
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,13 +19,68 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { PartnerColors, PartnerSpacing, PartnerTypography } from '../../constants/partnerTheme';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
+import { supabase } from '../../lib/supabase';
+import {
+  getDefaultDeliveryFee,
+  updateDefaultDeliveryFee,
+  getMinOrderAmount,
+  updateMinOrderAmount,
+} from '../../services/platform-settings.service';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const AdminSettingsScreen: React.FC = () => {
   const navigation = useNavigation();
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarType, setSnackbarType] = useState<SnackbarType>('success');
-  const [defaultDeliveryFee, setDefaultDeliveryFee] = useState('1.5');
+  const [defaultDeliveryFee, setDefaultDeliveryFee] = useState('0.5');
+  const [minOrderAmount, setMinOrderAmount] = useState('2');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Fetch platform settings
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  // Real-time subscription for settings changes
+  useEffect(() => {
+    const settingsSubscription = supabase
+      .channel('platform-settings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'platform_settings',
+        },
+        (payload) => {
+          console.log('Platform setting changed:', payload);
+          fetchSettings();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(settingsSubscription);
+    };
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const [fee, minOrder] = await Promise.all([
+        getDefaultDeliveryFee(),
+        getMinOrderAmount(),
+      ]);
+      setDefaultDeliveryFee(fee.toString());
+      setMinOrderAmount(minOrder.toString());
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      showSnackbar('Failed to load settings', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const showSnackbar = (message: string, type: SnackbarType = 'success') => {
     setSnackbarMessage(message);
@@ -33,8 +88,33 @@ const AdminSettingsScreen: React.FC = () => {
     setSnackbarVisible(true);
   };
 
-  const handleSaveSettings = () => {
-    showSnackbar('Settings saved successfully!', 'success');
+  const handleSaveSettings = async () => {
+    const fee = parseFloat(defaultDeliveryFee);
+    const minOrder = parseFloat(minOrderAmount);
+    
+    if (isNaN(fee) || fee < 0) {
+      showSnackbar('Please enter a valid delivery fee', 'error');
+      return;
+    }
+
+    if (isNaN(minOrder) || minOrder < 0) {
+      showSnackbar('Please enter a valid minimum order amount', 'error');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await Promise.all([
+        updateDefaultDeliveryFee(fee),
+        updateMinOrderAmount(minOrder),
+      ]);
+      showSnackbar('Settings saved successfully!', 'success');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      showSnackbar('Failed to save settings', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLogout = () => {
@@ -132,7 +212,31 @@ const AdminSettingsScreen: React.FC = () => {
                 value={defaultDeliveryFee}
                 onChangeText={setDefaultDeliveryFee}
                 keyboardType="decimal-pad"
-                placeholder="1.5"
+                placeholder="0.5"
+                placeholderTextColor="#9CA3AF"
+              />
+              <Text style={styles.settingUnit}>BD</Text>
+            </View>
+          </View>
+
+          {/* Minimum Order Amount */}
+          <View style={styles.settingCard}>
+            <View style={styles.settingHeader}>
+              <View style={styles.settingIconContainer}>
+                <Icon name="shopping-bag" size={20} color={PartnerColors.primary} />
+              </View>
+              <View style={styles.settingInfo}>
+                <Text style={styles.settingTitle}>Minimum Order Amount</Text>
+                <Text style={styles.settingSubtitle}>Required for all orders</Text>
+              </View>
+            </View>
+            <View style={styles.settingInputRow}>
+              <TextInput
+                style={styles.settingInput}
+                value={minOrderAmount}
+                onChangeText={setMinOrderAmount}
+                keyboardType="decimal-pad"
+                placeholder="2"
                 placeholderTextColor="#9CA3AF"
               />
               <Text style={styles.settingUnit}>BD</Text>
@@ -255,6 +359,12 @@ const AdminSettingsScreen: React.FC = () => {
         message={snackbarMessage}
         type={snackbarType}
         onDismiss={() => setSnackbarVisible(false)}
+      />
+
+      <LoadingSpinner
+        visible={loading || saving}
+        message={saving ? 'Saving settings...' : 'Loading settings...'}
+        overlay
       />
     </View>
   );

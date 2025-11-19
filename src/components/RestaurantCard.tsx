@@ -21,9 +21,11 @@ interface RestaurantCardProps {
   style?: ViewStyle;
   restaurantId?: string;
   status?: 'open' | 'closed' | 'busy'; // Restaurant operational status
+  delivery_fee?: number;
+  min_order?: number;
 }
 
-const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rating = 4.8, eta = '15 min', price = '$$', match, style, restaurantId = '1', status }) => {
+const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rating = 4.8, eta = '15 min', price = '$$', match, style, restaurantId = '1', status, delivery_fee, min_order }) => {
   const navigation = useNavigation<NavigationProp>();
   const isFoodImage = image === require('../../assets/food.png');
   const isLogoImage = !isFoodImage;
@@ -67,9 +69,16 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ image, name, tags, rati
           <Text style={styles.meta}>⭐ {rating.toFixed(1)}</Text>
           <Text style={styles.dot}>•</Text>
           <Text style={styles.meta}>{eta}</Text>
-          <Text style={styles.dot}>•</Text>
-          <Text style={styles.meta}>{price}</Text>
+          {delivery_fee !== undefined && (
+            <>
+              <Text style={styles.dot}>•</Text>
+              <Text style={styles.meta}>BD {delivery_fee.toFixed(2)}</Text>
+            </>
+          )}
         </View>
+        {min_order !== undefined && min_order > 0 && (
+          <Text style={styles.minOrder}>Min order: BD {min_order.toFixed(2)}</Text>
+        )}
         {match && (
           <View style={styles.matchBadge}>
             <Text style={styles.matchText}>Match: {match}%</Text>
@@ -148,7 +157,12 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 12,
     color: '#6B7280', // Consistent with hierarchy
-    fontWeight: '500', // Medium
+  },
+  minOrder: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 4,
+    fontWeight: '500',
   },
   dot: {
     marginHorizontal: 6,

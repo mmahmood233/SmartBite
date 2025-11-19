@@ -35,6 +35,7 @@ import OffersScreen from '../screens/user/profile/OffersScreen';
 import HelpSupportScreen from '../screens/user/profile/HelpSupportScreen';
 import AddAddressScreen from '../screens/user/profile/AddAddressScreen';
 import EditAddressScreen from '../screens/user/profile/EditAddressScreen';
+import PickLocationScreen from '../screens/user/profile/PickLocationScreen';
 import AddPaymentMethodScreen from '../screens/user/profile/AddPaymentMethodScreen';
 import ChangePasswordScreen from '../screens/shared/ChangePasswordScreen';
 import AIChatScreen from '../screens/user/profile/AIChatScreen';
@@ -76,6 +77,7 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
       <Stack.Screen name="AddAddress" component={AddAddressScreen} />
       <Stack.Screen name="EditAddress" component={EditAddressScreen} />
+      <Stack.Screen name="PickLocation" component={PickLocationScreen} />
       <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
       <Stack.Screen name="AddPaymentMethod" component={AddPaymentMethodScreen} />
       <Stack.Screen name="Offers" component={OffersScreen} />

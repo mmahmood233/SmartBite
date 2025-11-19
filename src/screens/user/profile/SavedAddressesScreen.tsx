@@ -23,26 +23,17 @@ import EmptyState from '../../../components/EmptyState';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import Snackbar from '../../../components/Snackbar';
 import { supabase } from '../../../lib/supabase';
+import { getUserAddresses, deleteAddress, setDefaultAddress, formatAddress, UserAddress } from '../../../services/user-addresses.service';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-interface Address {
-  id: string;
-  title: string;
-  address: string;
-  building?: string;
-  road?: string;
-  block?: string;
-  area?: string;
-  notes?: string;
-  isDefault: boolean;
-  icon: string;
-}
+// Using UserAddress from service
 
 const SavedAddressesScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
-  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

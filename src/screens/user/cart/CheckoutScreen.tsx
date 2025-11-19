@@ -22,6 +22,8 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency } from '../../../utils';
 import { useCart } from '../../../contexts/CartContext';
 import { supabase } from '../../../lib/supabase';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import { getCurrentLocation, geocodeAddress, Coordinates } from '../../../services/location.service';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -47,6 +49,7 @@ const CheckoutScreen: React.FC = () => {
   const [newAddress, setNewAddress] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [deliveryCoords, setDeliveryCoords] = useState<Coordinates | null>(null);
 
   // Fetch user profile
   useEffect(() => {
@@ -66,6 +69,18 @@ const CheckoutScreen: React.FC = () => {
           .single();
         
         setUserProfile(profile);
+        
+        // Geocode the address to get coordinates for map
+        if (profile?.address) {
+          const coords = await geocodeAddress(profile.address);
+          if (coords) {
+            setDeliveryCoords(coords);
+          } else {
+            // Fallback to current location if geocoding fails
+            const currentLoc = await getCurrentLocation();
+            setDeliveryCoords(currentLoc);
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
@@ -252,6 +267,36 @@ const CheckoutScreen: React.FC = () => {
               <Icon name="truck" size={18} color={colors.primary} />
               <Text style={styles.addressDetail}>Hand delivery • Contactless available</Text>
             </View>
+            
+            {/* Delivery Location Map */}
+            {deliveryCoords && (
+              <View style={styles.mapContainer}>
+                <MapView
+                  style={styles.map}
+                  provider={PROVIDER_DEFAULT}
+                  initialRegion={{
+                    latitude: deliveryCoords.latitude,
+                    longitude: deliveryCoords.longitude,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                  }}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  pitchEnabled={false}
+                  rotateEnabled={false}
+                >
+                  <Marker
+                    coordinate={{
+                      latitude: deliveryCoords.latitude,
+                      longitude: deliveryCoords.longitude,
+                    }}
+                    title="Delivery Location"
+                    description={deliveryAddress.address}
+                  />
+                </MapView>
+              </View>
+            )}
+            
             <TouchableOpacity style={styles.changeButtonFilled} activeOpacity={0.8}>
               <Text style={styles.changeButtonFilledText}>Change Address</Text>
             </TouchableOpacity>
@@ -1014,6 +1059,17 @@ const styles = StyleSheet.create({
   addressInput: {
     height: 80,
     textAlignVertical: 'top',
+  },
+  mapContainer: {
+    marginTop: 16,
+    height: 180,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  map: {
+    flex: 1,
   },
   inputHint: {
     fontSize: 12,

@@ -36,6 +36,13 @@ export type RootStackParamList = {
   EditAddress: {
     addressId: string;
   };
+  PickLocation: {
+    initialLocation?: {
+      latitude: number;
+      longitude: number;
+    };
+    onLocationSelected?: (coords: { latitude: number; longitude: number }, address: string) => void;
+  };
   PaymentMethods: undefined;
   AddPaymentMethod: undefined;
   Offers: undefined;

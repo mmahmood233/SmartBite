@@ -12,6 +12,7 @@ import RestaurantCard from '../../../components/RestaurantCard';
 import { useRestaurantSearch } from '../../../hooks/useRestaurantSearch';
 import { fetchRestaurants, fetchFeaturedRestaurants } from '../../../services/restaurants.service';
 import { supabase } from '../../../lib/supabase';
+import { getCurrentLocation, calculateDistance, formatDeliveryTime, estimateDeliveryTime, Coordinates } from '../../../services/location.service';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -41,6 +42,7 @@ const HomeScreen: React.FC = () => {
   const [error, setError] = useState('');
   const [userName, setUserName] = useState('Guest');
   const [greeting, setGreeting] = useState('Good evening');
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
   
   // Use shared search hook
   const {
@@ -61,9 +63,10 @@ const HomeScreen: React.FC = () => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  // Fetch user profile and restaurants from Supabase
+  // Fetch user profile, location, and restaurants from Supabase
   useEffect(() => {
     loadUserProfile();
+    loadUserLocation();
     loadRestaurants();
     updateGreeting();
 
@@ -165,6 +168,17 @@ const HomeScreen: React.FC = () => {
     }
   };
 
+  const loadUserLocation = async () => {
+    try {
+      const location = await getCurrentLocation();
+      if (location) {
+        setUserLocation(location);
+      }
+    } catch (err) {
+      console.log('Location permission denied or unavailable');
+    }
+  };
+
   const updateGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) {
@@ -174,6 +188,21 @@ const HomeScreen: React.FC = () => {
     } else {
       setGreeting('Good evening');
     }
+  };
+
+  const calculateRestaurantETA = (restaurant: any): string => {
+    if (!userLocation || !restaurant.latitude || !restaurant.longitude) {
+      return restaurant.avg_prep_time || '20-30 min';
+    }
+
+    const distance = calculateDistance(userLocation, {
+      latitude: restaurant.latitude,
+      longitude: restaurant.longitude,
+    });
+
+    const prepTime = parseInt(restaurant.avg_prep_time) || 20;
+    const estimatedTime = estimateDeliveryTime(distance, prepTime);
+    return formatDeliveryTime(estimatedTime);
   };
 
   const loadRestaurants = async () => {
@@ -560,9 +589,9 @@ const HomeScreen: React.FC = () => {
                 restaurantId={restaurant.id}
                 image={restaurant.logo ? { uri: restaurant.logo } : require('../../../../assets/wajba_logo.png')} 
                 name={restaurant.name} 
-                tags={`${restaurant.category} • ${restaurant.avg_prep_time || '20-30 mins'}`}
+                tags={`${restaurant.category} • ${calculateRestaurantETA(restaurant)}`}
                 rating={restaurant.rating}
-                eta={restaurant.avg_prep_time || '20-30 mins'}
+                eta={calculateRestaurantETA(restaurant)}
                 status={restaurant.status}
                 delivery_fee={restaurant.delivery_fee}
                 min_order={restaurant.min_order}

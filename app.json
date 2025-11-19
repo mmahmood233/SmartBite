@@ -16,14 +16,38 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.wajba.app"
+      "bundleIdentifier": "com.wajba.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SmartBite needs your location to show nearby restaurants and calculate accurate delivery times.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "SmartBite needs your location to show nearby restaurants and calculate accurate delivery times."
+      },
+      "config": {
+        "googleMapsApiKey": ""
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/wajba_logo.png",
         "backgroundColor": "#14776F"
       },
-      "package": "com.wajba.app"
-    }
+      "package": "com.wajba.app",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow SmartBite to use your location to show nearby restaurants and calculate delivery times."
+        }
+      ]
+    ]
   }
 }

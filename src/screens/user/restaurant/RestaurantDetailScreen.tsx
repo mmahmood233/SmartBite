@@ -27,6 +27,7 @@ import ReviewModal from '../../../components/ReviewModal';
 import { createReview, fetchRestaurantReviews } from '../../../services/reviews.service';
 import { supabase } from '../../../lib/supabase';
 import { useCart } from '../../../contexts/CartContext';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -410,6 +411,35 @@ const RestaurantDetailScreen: React.FC = () => {
             <Text style={styles.aboutValue}>{restaurant.address}</Text>
           </View>
         </View>
+
+        {/* Map View */}
+        {restaurant.latitude && restaurant.longitude && (
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              provider={PROVIDER_DEFAULT}
+              initialRegion={{
+                latitude: restaurant.latitude,
+                longitude: restaurant.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              pitchEnabled={false}
+              rotateEnabled={false}
+            >
+              <Marker
+                coordinate={{
+                  latitude: restaurant.latitude,
+                  longitude: restaurant.longitude,
+                }}
+                title={restaurant.name}
+                description={restaurant.address}
+              />
+            </MapView>
+          </View>
+        )}
 
         <View style={styles.aboutItem}>
           <Icon name="star" size={22} color={colors.primary} style={{ opacity: 1 }} />
@@ -1200,6 +1230,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     fontWeight: '400',
+  },
+  mapContainer: {
+    marginTop: 16,
+    height: 200,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  map: {
+    flex: 1,
   },
   stickyBar: {
     position: 'absolute',

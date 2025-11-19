@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,11 +24,13 @@ import Snackbar from '../../../components/Snackbar';
 import { supabase } from '../../../lib/supabase';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type RouteParams = RouteProp<RootStackParamList, 'AddAddress'>;
 
 const ADDRESS_TYPES = ['Home', 'Work', 'Other'];
 
 const AddAddressScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<RouteParams>();
 
   const [addressTitle, setAddressTitle] = useState('Home');
   const [customTitle, setCustomTitle] = useState('');
@@ -40,11 +42,40 @@ const AddAddressScreen: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [isDefault, setIsDefault] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState('');
   const [snackbar, setSnackbar] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({ visible: false, message: '', type: 'success' });
 
   const showSnackbar = (message: string, type: 'success' | 'error' = 'success') => {
     setSnackbar({ visible: true, message, type });
   };
+
+  // Listen for location data from PickLocation screen
+  useEffect(() => {
+    const params = route.params as any;
+    if (params?.selectedLocation && params?.selectedAddress) {
+      console.log('Received location:', params.selectedLocation);
+      console.log('Received address:', params.selectedAddress);
+      
+      setCoordinates(params.selectedLocation);
+      setSelectedAddress(params.selectedAddress);
+      
+      // Auto-fill address fields from the selected address
+      if (params.selectedAddress) {
+        const parts = params.selectedAddress.split(',').map((p: string) => p.trim());
+        console.log('Address parts:', parts);
+        
+        // Try to extract area/city from address
+        if (parts.length > 0) setArea(parts[0]);
+        if (parts.length > 1 && parts[1]) setCity(parts[1]);
+      }
+      
+      // Clear the params to prevent re-triggering
+      navigation.setParams({ selectedLocation: undefined, selectedAddress: undefined } as any);
+      
+      showSnackbar('Location selected successfully!', 'success');
+    }
+  }, [route.params]);
 
   const handleBack = () => {
     navigation.goBack();
@@ -247,15 +278,24 @@ const AddAddressScreen: React.FC = () => {
             <Text style={styles.fieldLabel}>Location Pin</Text>
             <TouchableOpacity
               style={styles.mapButton}
-              onPress={handlePickLocation}
               activeOpacity={0.7}
+              onPress={() => {
+                navigation.navigate('PickLocation', {
+                  initialLocation: coordinates || undefined,
+                });
+              }}
             >
               <Icon name="map-pin" size={20} color={colors.primary} />
               <Text style={styles.mapButtonText}>
-                Pick Location on Map (Coming Soon)
+                {coordinates ? 'Change Location on Map' : 'Pick Location on Map'}
               </Text>
               <Icon name="chevron-right" size={20} color="#94A3B8" />
             </TouchableOpacity>
+            {selectedAddress && (
+              <Text style={styles.selectedLocationText}>
+                📍 {selectedAddress}
+              </Text>
+            )}
           </View>
         </View>
 
@@ -458,6 +498,12 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.base,
     fontWeight: '500',
     color: colors.primary,
+  },
+  selectedLocationText: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 8,
+    paddingLeft: 4,
   },
   locationHint: {
     fontSize: 13,

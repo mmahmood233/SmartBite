@@ -36,7 +36,6 @@ interface Offer {
 const OffersScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
-  const [promoCode, setPromoCode] = useState('');
   const [activeOffers, setActiveOffers] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -86,16 +85,6 @@ const OffersScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  const handleApplyPromo = () => {
-    if (promoCode.trim()) {
-      Alert.alert('Promo Code', `Code "${promoCode}" will be applied at checkout`);
-      setPromoCode('');
-    }
-  };
-
-  const handleApplyOffer = (offer: Offer) => {
-    Alert.alert('Offer Applied', `${offer.title} will be applied to your next order`);
-  };
 
   const renderOfferCard = (offer: Offer, isPast: boolean = false) => (
     <View key={offer.id} style={[styles.offerCard, isPast && styles.offerCardPast]}>
@@ -142,28 +131,17 @@ const OffersScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Apply Button */}
+        {/* Discount Badge */}
         {!isPast && (
-          <TouchableOpacity
-            style={styles.applyButton}
-            onPress={() => handleApplyOffer(offer)}
-            activeOpacity={0.7}
-          >
-            <LinearGradient
-              colors={[colors.gradientStart, colors.gradientMid, colors.gradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.applyButtonGradient}
-            >
-              <Text style={styles.offerDiscount}>
-                {offer.type === 'percentage'
-                  ? `${offer.discount_value}%`
-                  : offer.type === 'fixed'
-                  ? `BD ${offer.discount_value}`
-                  : 'Free Delivery'}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
+          <View style={styles.discountBadge}>
+            <Text style={styles.discountText}>
+              {offer.type === 'percentage'
+                ? `${offer.discount_value}%`
+                : offer.type === 'fixed'
+                ? `BD ${offer.discount_value}`
+                : 'Free Delivery'}
+            </Text>
+          </View>
         )}
       </View>
     </View>
@@ -186,35 +164,6 @@ const OffersScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Promo Code Input */}
-        <View style={styles.promoSection}>
-          <Text style={styles.sectionTitle}>Enter Promo Code</Text>
-          <View style={styles.promoInputContainer}>
-            <TextInput
-              style={styles.promoInput}
-              placeholder="Enter code here"
-              placeholderTextColor="#94A3B8"
-              value={promoCode}
-              onChangeText={setPromoCode}
-              autoCapitalize="characters"
-            />
-            <TouchableOpacity
-              style={styles.promoApplyButton}
-              onPress={handleApplyPromo}
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={[colors.gradientStart, colors.gradientMid, colors.gradientEnd]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.promoApplyGradient}
-              >
-                <Text style={styles.promoApplyText}>Apply</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
-
         {/* Active Offers */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Active Offers</Text>
@@ -422,6 +371,19 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xl,
   },
   offerDiscount: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  discountBadge: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginTop: 12,
+  },
+  discountText: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
     color: '#FFFFFF',

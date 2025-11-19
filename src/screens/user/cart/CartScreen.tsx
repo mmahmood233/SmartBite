@@ -50,7 +50,6 @@ const CartScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { cart, loading, updateQuantity, removeFromCart, clearCart: clearCartContext } = useCart();
   
-  const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [appliedPromotion, setAppliedPromotion] = useState<Promotion | null>(null);
@@ -104,21 +103,7 @@ const CartScreen: React.FC = () => {
     );
   };
 
-  const applyPromoCode = () => {
-    if (!promoCode.trim()) {
-      Alert.alert('Error', 'Please enter a promo code');
-      return;
-    }
-
-    // Find matching promotion by title (case-insensitive)
-    const promotion = promotions.find(
-      p => p.title.toLowerCase() === promoCode.toLowerCase().trim()
-    );
-
-    if (!promotion) {
-      Alert.alert('Invalid Code', 'This promo code is not valid or has expired');
-      return;
-    }
+  const applyPromotion = (promotion: Promotion) => {
 
     // Check if promotion meets minimum order requirement
     if (cart.total < promotion.min_order_amount) {
@@ -149,7 +134,6 @@ const CartScreen: React.FC = () => {
   };
 
   const removePromoCode = () => {
-    setPromoCode('');
     setPromoApplied(false);
     setDiscount(0);
     setAppliedPromotion(null);
@@ -271,29 +255,9 @@ const CartScreen: React.FC = () => {
           ))}
         </View>
 
-        {/* Promo Code */}
+        {/* Promotions Section */}
         <View style={styles.promoSection}>
-          <Text style={styles.sectionTitle}>Promo Code</Text>
-          <View style={styles.promoInputContainer}>
-            <TextInput
-              style={styles.promoInput}
-              placeholder="Have a discount? Enter your code here"
-              placeholderTextColor="#9E9E9E"
-              value={promoCode}
-              onChangeText={setPromoCode}
-              editable={!promoApplied}
-            />
-            <TouchableOpacity
-              style={[styles.applyButton, promoApplied && styles.applyButtonDisabled]}
-              onPress={applyPromoCode}
-              disabled={promoApplied}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.applyButtonText}>
-                {promoApplied ? '✓ Applied' : 'Apply'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.sectionTitle}>Promotions</Text>
           {promoApplied && appliedPromotion && (
             <View style={styles.promoSuccessContainer}>
               <Text style={styles.promoSuccess}>
@@ -302,6 +266,35 @@ const CartScreen: React.FC = () => {
               <TouchableOpacity onPress={removePromoCode} activeOpacity={0.7}>
                 <Text style={styles.removePromoText}>Remove</Text>
               </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Available Promotions */}
+          {!promoApplied && promotions.length > 0 && (
+            <View style={styles.availablePromosContainer}>
+              <Text style={styles.availablePromosTitle}>Available Promotions</Text>
+              {promotions.slice(0, 3).map((promo) => (
+                <View key={promo.id} style={styles.promoCard}>
+                  <View style={styles.promoCardLeft}>
+                    <Text style={styles.promoCardTitle}>{promo.title}</Text>
+                    <Text style={styles.promoCardDescription}>
+                      {promo.type === 'percentage'
+                        ? `${promo.discount_value}% off`
+                        : promo.type === 'fixed'
+                        ? `BD ${promo.discount_value} off`
+                        : 'Free Delivery'}
+                      {promo.min_order_amount > 0 && ` • Min BD ${promo.min_order_amount}`}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.promoCardApplyButton}
+                    onPress={() => applyPromotion(promo)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.promoCardApplyText}>Apply</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
             </View>
           )}
         </View>
@@ -588,6 +581,51 @@ const styles = StyleSheet.create({
   removePromoText: {
     fontSize: 13,
     color: '#E74C3C',
+    fontWeight: '600',
+  },
+  availablePromosContainer: {
+    marginTop: 16,
+  },
+  availablePromosTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#212121',
+    marginBottom: 12,
+  },
+  promoCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  promoCardLeft: {
+    flex: 1,
+    marginRight: 12,
+  },
+  promoCardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#212121',
+    marginBottom: 4,
+  },
+  promoCardDescription: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  promoCardApplyButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  promoCardApplyText: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '600',
   },
   summarySection: {

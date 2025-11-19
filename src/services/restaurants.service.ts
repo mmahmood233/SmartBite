@@ -26,7 +26,6 @@ export const fetchRestaurants = async (
     .from('restaurants')
     .select('*')
     .eq('is_active', true)
-    .eq('is_open', true)
     .order('rating', { ascending: false });
 
   if (category) {
@@ -119,7 +118,6 @@ export const fetchFeaturedRestaurants = async (
     .from('restaurants')
     .select('*')
     .eq('is_active', true)
-    .eq('is_open', true)
     .gte('rating', 4.0)
     .order('rating', { ascending: false })
     .limit(limit);

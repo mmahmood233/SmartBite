@@ -37,10 +37,13 @@ const AdminSettingsScreen: React.FC = () => {
   const [minOrderAmount, setMinOrderAmount] = useState('2');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [adminName, setAdminName] = useState('Admin User');
+  const [adminEmail, setAdminEmail] = useState('admin@smartbite.com');
 
-  // Fetch platform settings
+  // Fetch platform settings and user data
   useEffect(() => {
     fetchSettings();
+    fetchUserData();
   }, []);
 
   // Real-time subscription for settings changes
@@ -79,6 +82,34 @@ const AdminSettingsScreen: React.FC = () => {
       showSnackbar('Failed to load settings', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setAdminEmail(user.email || 'admin@smartbite.com');
+        
+        // Try to get name from user metadata or profile
+        const name = user.user_metadata?.name || user.user_metadata?.full_name;
+        if (name) {
+          setAdminName(name);
+        } else {
+          // Fallback: try to fetch from profiles table
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile?.full_name) {
+            setAdminName(profile.full_name);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
     }
   };
 
@@ -126,14 +157,28 @@ const AdminSettingsScreen: React.FC = () => {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => {
-            showSnackbar('Logged out successfully', 'success');
-            setTimeout(() => {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Auth' as never }],
-              });
-            }, 1500);
+          onPress: async () => {
+            try {
+              // Sign out from Supabase
+              const { error } = await supabase.auth.signOut();
+              
+              if (error) {
+                throw error;
+              }
+              
+              showSnackbar('Logged out successfully', 'success');
+              
+              // Navigate to auth screen after a short delay
+              setTimeout(() => {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'Auth' as never }],
+                });
+              }, 1000);
+            } catch (error: any) {
+              console.error('Logout error:', error);
+              showSnackbar('Failed to logout', 'error');
+            }
           },
         },
       ]
@@ -164,8 +209,8 @@ const AdminSettingsScreen: React.FC = () => {
               <Icon name="user" size={32} color="#FFFFFF" />
             </View>
           </View>
-          <Text style={styles.adminName}>Admin User</Text>
-          <Text style={styles.adminEmail}>admin@smartbite.com</Text>
+          <Text style={styles.adminName}>{adminName}</Text>
+          <Text style={styles.adminEmail}>{adminEmail}</Text>
           <View style={styles.roleBadge}>
             <Icon name="shield" size={14} color={PartnerColors.primary} />
             <Text style={styles.roleText}>Platform Administrator</Text>

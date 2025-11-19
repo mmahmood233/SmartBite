@@ -3,7 +3,7 @@
  * Create and manage platform-wide promotions and banners
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,50 +19,20 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { supabase } from '../../lib/supabase';
+import {
+  getAllPromotions,
+  deletePromotion,
+  togglePromotionStatus,
+  Promotion,
+} from '../../services/promotions.service';
 
-interface Promotion {
-  id: string;
-  title: string;
-  description: string;
-  discount: string;
-  validUntil: string;
-  isActive: boolean;
-  type: 'percentage' | 'fixed' | 'free_delivery';
-}
-
-const MOCK_PROMOTIONS: Promotion[] = [
-  {
-    id: '1',
-    title: 'Weekend Special',
-    description: 'Get 20% off on all orders',
-    discount: '20%',
-    validUntil: 'Dec 31, 2024',
-    isActive: true,
-    type: 'percentage',
-  },
-  {
-    id: '2',
-    title: 'Free Delivery',
-    description: 'Free delivery on orders above BD 10',
-    discount: 'Free',
-    validUntil: 'Jan 15, 2025',
-    isActive: true,
-    type: 'free_delivery',
-  },
-  {
-    id: '3',
-    title: 'New User Offer',
-    description: 'BD 5 off on first order',
-    discount: 'BD 5',
-    validUntil: 'Dec 25, 2024',
-    isActive: false,
-    type: 'fixed',
-  },
-];
+// Promotion interface now imported from service
 
 const PromotionsManagementScreen: React.FC = () => {
   const navigation = useNavigation();
-  const [promotions, setPromotions] = useState<Promotion[]>(MOCK_PROMOTIONS);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarType, setSnackbarType] = useState<SnackbarType>('success');
@@ -75,21 +45,50 @@ const PromotionsManagementScreen: React.FC = () => {
     setSnackbarVisible(true);
   };
 
+  // Fetch promotions
+  useEffect(() => {
+    fetchPromotions();
+  }, []);
+
+  // Real-time subscription
+  useEffect(() => {
+    const promotionSubscription = supabase
+      .channel('admin-promotions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'promotions',
+        },
+        (payload) => {
+          console.log('Promotion change detected:', payload);
+          fetchPromotions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(promotionSubscription);
+    };
+  }, []);
+
+  const fetchPromotions = async () => {
+    try {
+      const data = await getAllPromotions();
+      setPromotions(data);
+    } catch (error) {
+      console.error('Error fetching promotions:', error);
+      showSnackbar('Failed to load promotions', 'error');
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
   const handleEdit = (promotion: Promotion) => {
     // Navigate to edit screen with promotion data
     navigation.navigate('AddPromotion' as never, {
-      promotion: {
-        id: promotion.id,
-        title: promotion.title,
-        description: promotion.description,
-        type: promotion.type,
-        discountValue: promotion.discount.replace(/[^\d.]/g, ''), // Extract number
-        minOrderAmount: '',
-        validFrom: '',
-        validUntil: promotion.validUntil,
-        maxUsage: '',
-        isActive: promotion.isActive,
-      },
+      promotion,
     } as never);
   };
 
@@ -109,30 +108,36 @@ const PromotionsManagementScreen: React.FC = () => {
             setIsLoading(true);
             setLoadingMessage('Deleting promotion...');
             
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            setPromotions(prev => prev.filter(p => p.id !== id));
-            setIsLoading(false);
-            showSnackbar('Promotion deleted', 'warning');
+            try {
+              await deletePromotion(id);
+              await fetchPromotions();
+              showSnackbar('Promotion deleted successfully', 'warning');
+            } catch (error) {
+              console.error('Error deleting promotion:', error);
+              showSnackbar('Failed to delete promotion', 'error');
+            } finally {
+              setIsLoading(false);
+            }
           },
         },
       ]
     );
   };
 
-  const handleToggleActive = (id: string) => {
-    setPromotions(prev =>
-      prev.map(promo =>
-        promo.id === id ? { ...promo, isActive: !promo.isActive } : promo
-      )
-    );
+  const handleToggleActive = async (id: string) => {
     const promotion = promotions.find(p => p.id === id);
-    if (promotion) {
+    if (!promotion) return;
+
+    try {
+      await togglePromotionStatus(id, !promotion.is_active);
+      await fetchPromotions();
       showSnackbar(
-        `${promotion.title} ${promotion.isActive ? 'deactivated' : 'activated'}`,
+        `${promotion.title} ${promotion.is_active ? 'deactivated' : 'activated'}`,
         'info'
       );
+    } catch (error) {
+      console.error('Error toggling promotion status:', error);
+      showSnackbar('Failed to update promotion status', 'error');
     }
   };
 
@@ -170,7 +175,9 @@ const PromotionsManagementScreen: React.FC = () => {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Promotions</Text>
-          <Text style={styles.headerSubtitle}>{promotions.length} active promotions</Text>
+          <Text style={styles.headerSubtitle}>
+            {promotions.filter(p => p.is_active).length} active promotions
+          </Text>
         </View>
         <TouchableOpacity
           style={styles.addButton}
@@ -217,39 +224,57 @@ const PromotionsManagementScreen: React.FC = () => {
               </View>
 
               <Text style={styles.promotionTitle}>{promotion.title}</Text>
-              <Text style={styles.promotionDescription}>{promotion.description}</Text>
+              <Text style={styles.promotionDescription}>
+                {promotion.description || 'No description'}
+              </Text>
 
               <View style={styles.promotionDetails}>
                 <View style={styles.detailItem}>
                   <Icon name="gift" size={14} color={PartnerColors.light.text.tertiary} />
-                  <Text style={styles.detailText}>{promotion.discount}</Text>
+                  <Text style={styles.detailText}>
+                    {promotion.type === 'percentage'
+                      ? `${promotion.discount_value}%`
+                      : promotion.type === 'fixed'
+                      ? `BD ${promotion.discount_value}`
+                      : 'Free Delivery'}
+                  </Text>
                 </View>
                 <View style={styles.detailItem}>
                   <Icon name="calendar" size={14} color={PartnerColors.light.text.tertiary} />
-                  <Text style={styles.detailText}>{promotion.validUntil}</Text>
+                  <Text style={styles.detailText}>
+                    {new Date(promotion.valid_until).toLocaleDateString()}
+                  </Text>
                 </View>
               </View>
+
+              {/* Expired Badge */}
+              {new Date(promotion.valid_until) < new Date() && (
+                <View style={styles.expiredBadge}>
+                  <Icon name="alert-circle" size={14} color="#EF4444" />
+                  <Text style={styles.expiredText}>Expired</Text>
+                </View>
+              )}
 
               <TouchableOpacity
                 style={[
                   styles.statusButton,
-                  promotion.isActive ? styles.activeButton : styles.inactiveButton,
+                  promotion.is_active ? styles.activeButton : styles.inactiveButton,
                 ]}
                 onPress={() => handleToggleActive(promotion.id)}
                 activeOpacity={0.7}
               >
                 <Icon
-                  name={promotion.isActive ? 'check-circle' : 'x-circle'}
+                  name={promotion.is_active ? 'check-circle' : 'x-circle'}
                   size={16}
-                  color={promotion.isActive ? '#10B981' : '#EF4444'}
+                  color={promotion.is_active ? '#10B981' : '#EF4444'}
                 />
                 <Text
                   style={[
                     styles.statusButtonText,
-                    promotion.isActive ? styles.activeButtonText : styles.inactiveButtonText,
+                    promotion.is_active ? styles.activeButtonText : styles.inactiveButtonText,
                   ]}
                 >
-                  {promotion.isActive ? 'Active' : 'Inactive'}
+                  {promotion.is_active ? 'Active' : 'Inactive'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -404,6 +429,22 @@ const styles = StyleSheet.create({
     color: '#10B981',
   },
   inactiveButtonText: {
+    color: '#EF4444',
+  },
+  expiredBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 12,
+    alignSelf: 'flex-start',
+  },
+  expiredText: {
+    fontSize: 13,
+    fontWeight: PartnerTypography.fontWeight.semibold,
     color: '#EF4444',
   },
 });

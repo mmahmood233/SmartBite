@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency } from '../../../utils';
 import { useCart } from '../../../contexts/CartContext';
+import { getActivePromotions, Promotion } from '../../../services/promotions.service';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -52,6 +53,22 @@ const CartScreen: React.FC = () => {
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [appliedPromotion, setAppliedPromotion] = useState<Promotion | null>(null);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+
+  // Fetch active promotions
+  useEffect(() => {
+    fetchPromotions();
+  }, []);
+
+  const fetchPromotions = async () => {
+    try {
+      const data = await getActivePromotions();
+      setPromotions(data);
+    } catch (error) {
+      console.error('Error fetching promotions:', error);
+    }
+  };
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     await updateQuantity(itemId, newQuantity);
@@ -88,11 +105,54 @@ const CartScreen: React.FC = () => {
   };
 
   const applyPromoCode = () => {
-    // Mock promo code logic
-    if (promoCode.toUpperCase() === 'WAJBA10') {
-      setDiscount(1.0);
-      setPromoApplied(true);
+    if (!promoCode.trim()) {
+      Alert.alert('Error', 'Please enter a promo code');
+      return;
     }
+
+    // Find matching promotion by title (case-insensitive)
+    const promotion = promotions.find(
+      p => p.title.toLowerCase() === promoCode.toLowerCase().trim()
+    );
+
+    if (!promotion) {
+      Alert.alert('Invalid Code', 'This promo code is not valid or has expired');
+      return;
+    }
+
+    // Check if promotion meets minimum order requirement
+    if (cart.total < promotion.min_order_amount) {
+      Alert.alert(
+        'Minimum Order Not Met',
+        `This promotion requires a minimum order of BD ${promotion.min_order_amount.toFixed(2)}`
+      );
+      return;
+    }
+
+    // Calculate discount based on promotion type
+    let calculatedDiscount = 0;
+    if (promotion.type === 'percentage') {
+      calculatedDiscount = (cart.total * (promotion.discount_value || 0)) / 100;
+    } else if (promotion.type === 'fixed') {
+      calculatedDiscount = promotion.discount_value || 0;
+    } else if (promotion.type === 'free_delivery') {
+      calculatedDiscount = cart.deliveryFee;
+    }
+
+    setDiscount(calculatedDiscount);
+    setAppliedPromotion(promotion);
+    setPromoApplied(true);
+    Alert.alert(
+      'Promotion Applied!',
+      `${promotion.title} - You saved BD ${calculatedDiscount.toFixed(2)}`
+    );
+  };
+
+  const removePromoCode = () => {
+    setPromoCode('');
+    setPromoApplied(false);
+    setDiscount(0);
+    setAppliedPromotion(null);
   };
 
   const handleCheckout = () => {
@@ -234,10 +294,15 @@ const CartScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </View>
-          {promoApplied && (
-            <Text style={styles.promoSuccess}>
-              ✓ Code applied – BD {discount.toFixed(2)} off
-            </Text>
+          {promoApplied && appliedPromotion && (
+            <View style={styles.promoSuccessContainer}>
+              <Text style={styles.promoSuccess}>
+                ✓ {appliedPromotion.title} applied – BD {discount.toFixed(2)} off
+              </Text>
+              <TouchableOpacity onPress={removePromoCode} activeOpacity={0.7}>
+                <Text style={styles.removePromoText}>Remove</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
 
@@ -509,11 +574,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  promoSuccessContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
   promoSuccess: {
     fontSize: 13,
     color: colors.primary,
-    marginTop: 8,
-    fontWeight: '500',
+    flex: 1,
+  },
+  removePromoText: {
+    fontSize: 13,
+    color: '#E74C3C',
+    fontWeight: '600',
   },
   summarySection: {
     marginHorizontal: 16,

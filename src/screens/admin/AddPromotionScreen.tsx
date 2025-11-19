@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { PartnerColors, PartnerSpacing, PartnerTypography } from '../../constants/partnerTheme';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { createPromotion, updatePromotion, Promotion } from '../../services/promotions.service';
 
 type PromotionType = 'percentage' | 'fixed' | 'free_delivery';
 
@@ -52,12 +53,12 @@ const AddPromotionScreen: React.FC = () => {
     title: editingPromotion?.title || '',
     description: editingPromotion?.description || '',
     type: editingPromotion?.type || 'percentage',
-    discountValue: editingPromotion?.discountValue || '',
-    minOrderAmount: editingPromotion?.minOrderAmount || '',
-    validFrom: editingPromotion?.validFrom || '',
-    validUntil: editingPromotion?.validUntil || '',
-    maxUsage: editingPromotion?.maxUsage || '',
-    isActive: editingPromotion?.isActive ?? true,
+    discountValue: editingPromotion?.discount_value?.toString() || '',
+    minOrderAmount: editingPromotion?.min_order_amount?.toString() || '',
+    validFrom: editingPromotion?.valid_from ? new Date(editingPromotion.valid_from).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    validUntil: editingPromotion?.valid_until ? new Date(editingPromotion.valid_until).toISOString().split('T')[0] : '',
+    maxUsage: editingPromotion?.max_usage?.toString() || '',
+    isActive: editingPromotion?.is_active ?? true,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -81,7 +82,7 @@ const AddPromotionScreen: React.FC = () => {
       showSnackbar('Description is required', 'error');
       return;
     }
-    if (!formData.discountValue.trim()) {
+    if (formData.type !== 'free_delivery' && !formData.discountValue.trim()) {
       showSnackbar('Discount value is required', 'error');
       return;
     }
@@ -92,20 +93,36 @@ const AddPromotionScreen: React.FC = () => {
 
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsLoading(false);
-    
-    if (isEditMode) {
-      showSnackbar('Promotion updated successfully!', 'success');
-    } else {
-      showSnackbar('Promotion created successfully!', 'success');
+    try {
+      const promotionData = {
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        discount_value: formData.type === 'free_delivery' ? 0 : parseFloat(formData.discountValue) || 0,
+        min_order_amount: parseFloat(formData.minOrderAmount) || 0,
+        valid_from: formData.validFrom ? new Date(formData.validFrom).toISOString() : new Date().toISOString(),
+        valid_until: new Date(formData.validUntil).toISOString(),
+        max_usage: formData.maxUsage ? parseInt(formData.maxUsage) : null,
+        is_active: formData.isActive,
+      };
+
+      if (isEditMode) {
+        await updatePromotion(editingPromotion.id, promotionData);
+        showSnackbar('Promotion updated successfully!', 'success');
+      } else {
+        await createPromotion(promotionData as any);
+        showSnackbar('Promotion created successfully!', 'success');
+      }
+      
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1000);
+    } catch (error) {
+      console.error('Error saving promotion:', error);
+      showSnackbar('Failed to save promotion', 'error');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setTimeout(() => {
-      navigation.goBack();
-    }, 1500);
   };
 
   const getTypeConfig = (type: PromotionType) => {
@@ -255,9 +272,10 @@ const AddPromotionScreen: React.FC = () => {
                 style={styles.input}
                 value={formData.validFrom}
                 onChangeText={(text) => setFormData({ ...formData, validFrom: text })}
-                placeholder="Dec 1, 2024"
+                placeholder="YYYY-MM-DD"
                 placeholderTextColor="#9CA3AF"
               />
+              <Text style={styles.helperText}>Format: YYYY-MM-DD (e.g., 2024-12-01)</Text>
             </View>
             <View style={[styles.inputGroup, { flex: 1 }]}>
               <Text style={styles.inputLabel}>Valid Until *</Text>
@@ -265,9 +283,10 @@ const AddPromotionScreen: React.FC = () => {
                 style={styles.input}
                 value={formData.validUntil}
                 onChangeText={(text) => setFormData({ ...formData, validUntil: text })}
-                placeholder="Dec 31, 2024"
+                placeholder="YYYY-MM-DD"
                 placeholderTextColor="#9CA3AF"
               />
+              <Text style={styles.helperText}>Format: YYYY-MM-DD (e.g., 2024-12-31)</Text>
             </View>
           </View>
         </View>
@@ -640,6 +659,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: PartnerTypography.fontWeight.bold,
     color: '#FFFFFF',
+  },
+  helperText: {
+    fontSize: 12,
+    color: PartnerColors.light.text.tertiary,
+    marginTop: 4,
   },
 });
 

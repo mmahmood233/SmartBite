@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,8 @@ import { Feather as Icon } from '@expo/vector-icons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import { supabase } from '../../../lib/supabase';
+import { getActivePromotions, Promotion } from '../../../services/promotions.service';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -35,49 +37,50 @@ const OffersScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
   const [promoCode, setPromoCode] = useState('');
-  
-  const [activeOffers] = useState<Offer[]>([
-    {
-      id: '1',
-      title: '20% Off Al Qariah',
-      description: 'Get 20% off on all orders from Al Qariah',
-      discount: '20%',
-      validUntil: 'Oct 15, 2025',
-      restaurant: 'Al Qariah',
-      isActive: true,
-    },
-    {
-      id: '2',
-      title: 'Free Delivery',
-      description: 'Free delivery on orders above BD 10',
-      discount: 'Free',
-      validUntil: 'Oct 31, 2025',
-      isActive: true,
-    },
-  ]);
+  const [activeOffers, setActiveOffers] = useState<Promotion[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [savedCodes] = useState<Offer[]>([
-    {
-      id: '3',
-      title: 'WAJBA20',
-      description: '20% off on your next order',
-      discount: '20%',
-      validUntil: 'Dec 31, 2025',
-      isActive: true,
-      code: 'WAJBA20',
-    },
-  ]);
+  // Fetch active promotions
+  useEffect(() => {
+    fetchPromotions();
+  }, []);
 
-  const [pastOffers] = useState<Offer[]>([
-    {
-      id: '4',
-      title: '30% Off First Order',
-      description: 'Welcome offer for new users',
-      discount: '30%',
-      validUntil: 'Sep 30, 2025',
-      isActive: false,
-    },
-  ]);
+  // Real-time subscription for promotions
+  useEffect(() => {
+    const promotionSubscription = supabase
+      .channel('user-promotions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'promotions',
+        },
+        (payload) => {
+          console.log('Promotion change detected:', payload);
+          fetchPromotions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(promotionSubscription);
+    };
+  }, []);
+
+  const fetchPromotions = async () => {
+    try {
+      const data = await getActivePromotions();
+      setActiveOffers(data);
+    } catch (error) {
+      console.error('Error fetching promotions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [savedCodes] = useState<Offer[]>([]);
+  const [pastOffers] = useState<Offer[]>([]);
 
   const handleBack = () => {
     navigation.goBack();
@@ -113,22 +116,29 @@ const OffersScreen: React.FC = () => {
             <Text style={styles.offerEmoji}>{isPast ? '⏰' : '🎉'}</Text>
           </View>
           <View style={styles.offerInfo}>
-            <Text style={[styles.offerTitle, isPast && styles.offerTitlePast]}>
-              {offer.title}
+            <Text style={styles.offerTitle}>{offer.title}</Text>
+            <Text style={styles.offerDescription}>
+              {offer.description || 'Special offer'}
             </Text>
-            <Text style={[styles.offerDescription, isPast && styles.offerDescriptionPast]}>
-              {offer.description}
+          </View>
+        </View>
+
+        <View style={styles.offerInfo}>
+          <Text style={[styles.offerTitle, isPast && styles.offerTitlePast]}>
+            {offer.title}
+          </Text>
+          <Text style={[styles.offerDescription, isPast && styles.offerDescriptionPast]}>
+            {offer.description}
+          </Text>
+          <View style={styles.offerMeta}>
+            <MaterialCommunityIcons
+              name="clock-outline"
+              size={14}
+              color={isPast ? '#94A3B8' : '#64748B'}
+            />
+            <Text style={styles.offerValidText}>
+              Valid until {new Date(offer.valid_until).toLocaleDateString()}
             </Text>
-            <View style={styles.offerMeta}>
-              <MaterialCommunityIcons 
-                name="clock-outline" 
-                size={14} 
-                color={isPast ? '#94A3B8' : '#64748B'} 
-              />
-              <Text style={[styles.offerValidText, isPast && styles.offerValidTextPast]}>
-                {isPast ? 'Expired' : 'Valid until'} {offer.validUntil}
-              </Text>
-            </View>
           </View>
         </View>
 
@@ -145,7 +155,13 @@ const OffersScreen: React.FC = () => {
               end={{ x: 1, y: 0 }}
               style={styles.applyButtonGradient}
             >
-              <Text style={styles.applyButtonText}>Apply</Text>
+              <Text style={styles.offerDiscount}>
+                {offer.type === 'percentage'
+                  ? `${offer.discount_value}%`
+                  : offer.type === 'fixed'
+                  ? `BD ${offer.discount_value}`
+                  : 'Free Delivery'}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         )}
@@ -202,13 +218,20 @@ const OffersScreen: React.FC = () => {
         {/* Active Offers */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Active Offers</Text>
-          {activeOffers.map(offer => renderOfferCard(offer, false))}
+          {loading ? (
+            <Text style={styles.emptyText}>Loading promotions...</Text>
+          ) : activeOffers.length === 0 ? (
+            <Text style={styles.emptyText}>No active promotions available</Text>
+          ) : (
+            activeOffers.map((offer) => renderOfferCard(offer, false))
+          )}
         </View>
 
         {/* Saved Promo Codes */}
         {savedCodes.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Saved Promo Codes</Text>
+            {savedCodes.map((offer) => renderOfferCard(offer, false))}
             {savedCodes.map(offer => renderOfferCard(offer, false))}
           </View>
         )}
@@ -388,7 +411,18 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.md,
   },
   applyButtonText: {
-    fontSize: FONT_SIZE.base,
+    fontSize: FONT_SIZE.sm,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  emptyText: {
+    fontSize: FONT_SIZE.md,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: SPACING.xl,
+  },
+  offerDiscount: {
+    fontSize: FONT_SIZE.md,
     fontWeight: '600',
     color: '#FFFFFF',
   },

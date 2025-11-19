@@ -26,6 +26,7 @@ import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
 import { getAllRestaurants, toggleRestaurantStatus, searchRestaurants, AdminRestaurant } from '../../services/admin-restaurants.service';
+import { getActiveCategories, Category } from '../../services/categories.service';
 
 // Types
 interface Restaurant {
@@ -106,11 +107,13 @@ const RestaurantsManagementScreen: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingRestaurant, setEditingRestaurant] = useState<AdminRestaurant | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState({
     name: '',
-    category: '',
+    category: [] as string[],
     description: '',
     address: '',
     phone: '',
@@ -138,10 +141,26 @@ const RestaurantsManagementScreen: React.FC = () => {
     setSnackbarVisible(true);
   };
 
-  // Fetch restaurants
+  // Fetch restaurants and categories
   useEffect(() => {
     fetchRestaurants();
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const data = await getActiveCategories();
+      console.log('Loaded categories:', data);
+      setCategories(data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
+  // Debug category picker state
+  useEffect(() => {
+    console.log('showCategoryPicker changed:', showCategoryPicker);
+  }, [showCategoryPicker]);
 
   // Real-time subscription
   useEffect(() => {
@@ -270,11 +289,11 @@ const RestaurantsManagementScreen: React.FC = () => {
 
   // Action Handlers (old mock code removed)
 
-  const handleEdit = (restaurant: AdminRestaurant) => {
+  const handleEditRestaurant = (restaurant: AdminRestaurant) => {
     setEditingRestaurant(restaurant);
     setFormData({
-      name: restaurant.name || '',
-      category: restaurant.category || '',
+      name: restaurant.name,
+      category: restaurant.category ? restaurant.category.split(', ') : [],
       description: restaurant.description || '',
       address: restaurant.address || '',
       phone: restaurant.phone || '',
@@ -310,10 +329,11 @@ const RestaurantsManagementScreen: React.FC = () => {
 
   const handleCloseModal = () => {
     setShowAddModal(false);
+    setShowCategoryPicker(false); // Reset category picker
     setEditingRestaurant(null);
     setFormData({
       name: '',
-      category: '',
+      category: [],
       description: '',
       address: '',
       phone: '',
@@ -333,8 +353,8 @@ const RestaurantsManagementScreen: React.FC = () => {
       showSnackbar('Restaurant name is required', 'error');
       return;
     }
-    if (!formData.category.trim()) {
-      showSnackbar('Category is required', 'error');
+    if (formData.category.length === 0) {
+      showSnackbar('At least one category is required', 'error');
       return;
     }
     if (!formData.phone.trim()) {
@@ -352,7 +372,7 @@ const RestaurantsManagementScreen: React.FC = () => {
           .from('restaurants')
           .update({
             name: formData.name,
-            category: formData.category,
+            category: formData.category.join(', '),
             description: formData.description || null,
             address: formData.address,
             phone: formData.phone,
@@ -367,14 +387,11 @@ const RestaurantsManagementScreen: React.FC = () => {
         if (error) throw error;
         showSnackbar('Restaurant updated successfully!', 'success');
       } else {
-        // Add new restaurant - Need to create partner user first
-        showSnackbar('Please create a partner account first, then add restaurant from partner portal', 'info');
-        setIsLoading(false);
+        // Add new restaurant - requires partner_id  
+        showSnackbar('Adding restaurants requires partner account setup', 'error');
+        handleCloseModal();
         return;
-        
-        // Note: Adding restaurants requires a partner_id (user account)
-        // This should be done through partner registration flow
-      }
+      }  
 
       await fetchRestaurants(); // Refresh list
       handleCloseModal();
@@ -654,13 +671,20 @@ const RestaurantsManagementScreen: React.FC = () => {
               {/* Category */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Category *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.category}
-                  onChangeText={(text) => setFormData({ ...formData, category: text })}
-                  placeholder="e.g., Burgers, Pizza"
-                  placeholderTextColor="#9CA3AF"
-                />
+                <TouchableOpacity
+                  style={[styles.input, styles.dropdownInput]}
+                  onPress={() => {
+                    console.log('Opening category picker, categories:', categories.length);
+                    console.log('showAddModal:', showAddModal);
+                    setShowCategoryPicker(true);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={formData.category.length > 0 ? styles.dropdownText : styles.dropdownPlaceholder}>
+                    {formData.category.length > 0 ? `${formData.category.length} selected` : 'Select categories'}
+                  </Text>
+                  <Icon name="chevron-down" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
               </View>
 
               {/* Description */}
@@ -806,6 +830,60 @@ const RestaurantsManagementScreen: React.FC = () => {
                 </LinearGradient>
               </TouchableOpacity>
             </View>
+
+            {/* Category Picker - Absolute positioned overlay inside Add Restaurant modal */}
+            {showCategoryPicker && (
+              <View style={styles.pickerOverlay}>
+                <TouchableOpacity
+                  style={{ flex: 1 }}
+                  activeOpacity={1}
+                  onPress={() => setShowCategoryPicker(false)}
+                />
+                <View style={styles.pickerContainer}>
+                  <View style={styles.pickerHeader}>
+                    <Text style={styles.pickerTitle}>Select Categories ({formData.category.length})</Text>
+                    <TouchableOpacity onPress={() => setShowCategoryPicker(false)}>
+                      <Icon name="x" size={24} color={PartnerColors.light.text.secondary} />
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView style={styles.pickerScroll}>
+                    {categories.map((category) => {
+                      const isSelected = formData.category.includes(category.name);
+                      return (
+                        <TouchableOpacity
+                          key={category.id}
+                          style={[
+                            styles.pickerOption,
+                            isSelected && styles.pickerOptionSelected,
+                          ]}
+                          onPress={() => {
+                            const newCategories = isSelected
+                              ? formData.category.filter(c => c !== category.name)
+                              : [...formData.category, category.name];
+                            setFormData({ ...formData, category: newCategories });
+                          }}
+                        >
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            {category.icon && <Text style={{ fontSize: 20, marginRight: 12 }}>{category.icon}</Text>}
+                            <Text
+                              style={[
+                                styles.pickerOptionText,
+                                isSelected && styles.pickerOptionTextSelected,
+                              ]}
+                            >
+                              {category.name}
+                            </Text>
+                          </View>
+                          {isSelected && (
+                            <Icon name="check" size={20} color={PartnerColors.primary} />
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
@@ -1152,6 +1230,72 @@ const styles = StyleSheet.create({
   imageUploadSubtext: {
     fontSize: 13,
     color: PartnerColors.light.text.tertiary,
+  },
+  dropdownInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: PartnerColors.light.text.primary,
+  },
+  dropdownPlaceholder: {
+    fontSize: 16,
+    color: '#9CA3AF',
+  },
+  pickerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+    zIndex: 9999,
+  },
+  pickerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: PartnerSpacing.xl,
+    paddingVertical: PartnerSpacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: PartnerColors.light.borderLight,
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: PartnerTypography.fontWeight.bold,
+    color: PartnerColors.light.text.primary,
+  },
+  pickerScroll: {
+    maxHeight: 400,
+  },
+  pickerOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: PartnerSpacing.xl,
+    paddingVertical: PartnerSpacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: PartnerColors.light.borderLight,
+  },
+  pickerOptionSelected: {
+    backgroundColor: `${PartnerColors.primary}10`,
+  },
+  pickerOptionText: {
+    fontSize: 16,
+    color: PartnerColors.light.text.primary,
+  },
+  pickerOptionTextSelected: {
+    fontWeight: PartnerTypography.fontWeight.semibold,
+    color: PartnerColors.primary,
   },
   mapButton: {
     flexDirection: 'row',

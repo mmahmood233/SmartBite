@@ -561,9 +561,9 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
                         <Icon name="check" size={18} color={PartnerColors.primary} />
                       )}
                     </TouchableOpacity>
-                    );
-                  })
-                )}
+                  );
+                })
+              )}
               </ScrollView>
             </View>
           </TouchableOpacity>

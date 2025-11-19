@@ -3,7 +3,7 @@
  * Manage food categories for the platform
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,30 +20,27 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { supabase } from '../../lib/supabase';
+import {
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  toggleCategoryStatus,
+  deleteCategory,
+  AdminCategory,
+} from '../../services/admin-categories.service';
 
-interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  restaurantCount: number;
-  isActive: boolean;
-}
-
-const MOCK_CATEGORIES: Category[] = [
-  { id: '1', name: 'Burgers', icon: '🍔', restaurantCount: 45, isActive: true },
-  { id: '2', name: 'Pizza', icon: '🍕', restaurantCount: 32, isActive: true },
-  { id: '3', name: 'Sushi', icon: '🍣', restaurantCount: 18, isActive: true },
-  { id: '4', name: 'Desserts', icon: '🍰', restaurantCount: 28, isActive: true },
-  { id: '5', name: 'Coffee', icon: '☕', restaurantCount: 22, isActive: true },
-  { id: '6', name: 'Healthy', icon: '🥗', restaurantCount: 15, isActive: false },
-];
+// Using AdminCategory interface from service
 
 const CategoriesManagementScreen: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
   const [categoryName, setCategoryName] = useState('');
   const [categoryIcon, setCategoryIcon] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -55,6 +52,47 @@ const CategoriesManagementScreen: React.FC = () => {
     setSnackbarVisible(true);
   };
 
+  // Fetch categories from database
+  const fetchCategories = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getAllCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      showSnackbar('Failed to load categories', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load categories and setup real-time subscription
+  useEffect(() => {
+    fetchCategories();
+
+    // Subscribe to real-time category changes
+    const categorySubscription = supabase
+      .channel('admin-category-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'restaurant_categories',
+        },
+        (payload) => {
+          console.log('Category changed:', payload);
+          // Refresh categories list
+          fetchCategories();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(categorySubscription);
+    };
+  }, []);
+
   const handleAddCategory = () => {
     setEditingCategory(null);
     setCategoryName('');
@@ -62,64 +100,57 @@ const CategoriesManagementScreen: React.FC = () => {
     setShowAddModal(true);
   };
 
-  const handleEditCategory = (category: Category) => {
+  const handleEditCategory = (category: AdminCategory) => {
     setEditingCategory(category);
     setCategoryName(category.name);
-    setCategoryIcon(category.icon);
+    setCategoryIcon(category.icon || '');
     setShowAddModal(true);
   };
 
-  const handleSaveCategory = () => {
-    if (!categoryName.trim() || !categoryIcon.trim()) {
-      showSnackbar('Please fill in all fields', 'error');
+  const handleSaveCategory = async () => {
+    if (!categoryName.trim()) {
+      showSnackbar('Category name is required', 'error');
       return;
     }
 
-    if (editingCategory) {
-      setCategories(prev =>
-        prev.map(cat =>
-          cat.id === editingCategory.id
-            ? { ...cat, name: categoryName, icon: categoryIcon }
-            : cat
-        )
-      );
-      showSnackbar('Category updated successfully!', 'success');
-    } else {
-      const newCategory: Category = {
-        id: Date.now().toString(),
-        name: categoryName,
-        icon: categoryIcon,
-        restaurantCount: 0,
-        isActive: true,
-      };
-      setCategories(prev => [...prev, newCategory]);
-      showSnackbar('Category added successfully!', 'success');
-    }
+    try {
+      setIsSaving(true);
+      
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, categoryName, categoryIcon || null);
+        showSnackbar('Category updated successfully!', 'success');
+      } else {
+        await createCategory(categoryName, categoryIcon || null);
+        showSnackbar('Category added successfully!', 'success');
+      }
 
-    setShowAddModal(false);
-    setCategoryName('');
-    setCategoryIcon('');
+      setShowAddModal(false);
+      setCategoryName('');
+      setCategoryIcon('');
+      await fetchCategories();
+    } catch (error) {
+      console.error('Error saving category:', error);
+      showSnackbar('Failed to save category', 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleToggleActive = (id: string) => {
-    setCategories(prev =>
-      prev.map(cat =>
-        cat.id === id ? { ...cat, isActive: !cat.isActive } : cat
-      )
-    );
-    const category = categories.find(c => c.id === id);
-    if (category) {
+  const handleToggleActive = async (category: AdminCategory) => {
+    try {
+      await toggleCategoryStatus(category.id, !category.is_active);
       showSnackbar(
-        `${category.name} ${category.isActive ? 'deactivated' : 'activated'}`,
+        `${category.name} ${category.is_active ? 'deactivated' : 'activated'}`,
         'info'
       );
+      await fetchCategories();
+    } catch (error) {
+      console.error('Error toggling category status:', error);
+      showSnackbar('Failed to update status', 'error');
     }
   };
 
-  const handleDeleteCategory = (id: string) => {
-    const category = categories.find(c => c.id === id);
-    if (!category) return;
-
+  const handleDeleteCategory = (category: AdminCategory) => {
     Alert.alert(
       'Delete Category',
       `Are you sure you want to delete "${category.name}"? This action cannot be undone.`,
@@ -128,14 +159,24 @@ const CategoriesManagementScreen: React.FC = () => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            setCategories(prev => prev.filter(cat => cat.id !== id));
-            showSnackbar('Category deleted', 'warning');
+          onPress: async () => {
+            try {
+              await deleteCategory(category.id);
+              showSnackbar('Category deleted', 'warning');
+              await fetchCategories();
+            } catch (error) {
+              console.error('Error deleting category:', error);
+              showSnackbar('Failed to delete category', 'error');
+            }
           },
         },
       ]
     );
   };
+
+  if (isLoading) {
+    return <LoadingSpinner visible={true} message="Loading categories..." />;
+  }
 
   return (
     <View style={styles.container}>
@@ -170,7 +211,7 @@ const CategoriesManagementScreen: React.FC = () => {
                     <Icon name="edit-2" size={16} color={PartnerColors.light.text.secondary} />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => handleDeleteCategory(category.id)}
+                    onPress={() => handleDeleteCategory(category)}
                     style={styles.iconButton}
                   >
                     <Icon name="trash-2" size={16} color="#EF4444" />
@@ -180,24 +221,24 @@ const CategoriesManagementScreen: React.FC = () => {
 
               <Text style={styles.categoryName}>{category.name}</Text>
               <Text style={styles.restaurantCount}>
-                {category.restaurantCount} restaurants
+                {category.restaurant_count || 0} restaurants
               </Text>
 
               <TouchableOpacity
                 style={[
                   styles.statusButton,
-                  category.isActive ? styles.activeButton : styles.inactiveButton,
+                  category.is_active ? styles.activeButton : styles.inactiveButton,
                 ]}
-                onPress={() => handleToggleActive(category.id)}
+                onPress={() => handleToggleActive(category)}
                 activeOpacity={0.7}
               >
                 <Text
                   style={[
                     styles.statusButtonText,
-                    category.isActive ? styles.activeButtonText : styles.inactiveButtonText,
+                    category.is_active ? styles.activeButtonText : styles.inactiveButtonText,
                   ]}
                 >
-                  {category.isActive ? 'Active' : 'Inactive'}
+                  {category.is_active ? 'Active' : 'Inactive'}
                 </Text>
               </TouchableOpacity>
             </View>

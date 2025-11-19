@@ -3,7 +3,7 @@
  * Allows restaurant owners to update business information and operational settings
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography }
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
+import { getActiveCategories, Category } from '../../services/categories.service';
 
 interface EditBusinessInfoModalProps {
   visible: boolean;
@@ -46,15 +47,7 @@ interface EditBusinessInfoModalProps {
   onSave: (data: any) => void;
 }
 
-const CATEGORIES = [
-  'Burgers & Sandwiches',
-  'Pizza & Italian',
-  'Arabic & Middle Eastern',
-  'Asian Cuisine',
-  'Healthy & Salads',
-  'Desserts & Sweets',
-  'Coffee & Beverages',
-];
+// Categories now loaded from database
 
 const STATUS_OPTIONS = [
   { id: 'open', label: 'Open', icon: 'check-circle' as const, color: '#10B981' },
@@ -84,6 +77,8 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [logoUri, setLogoUri] = useState<string | null>(businessData.logo);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   
   // Snackbar state
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -97,6 +92,44 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
     setSnackbarMessage(message);
     setSnackbarType(type);
     setSnackbarVisible(true);
+  };
+
+  // Load categories from database with real-time updates
+  useEffect(() => {
+    loadCategories();
+
+    // Subscribe to real-time category changes
+    const categorySubscription = supabase
+      .channel('partner-category-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'restaurant_categories',
+        },
+        () => {
+          // Reload categories when they change
+          loadCategories();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(categorySubscription);
+    };
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const data = await getActiveCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    } finally {
+      setLoadingCategories(false);
+    }
   };
 
   const toggleCategory = (category: string) => {
@@ -507,23 +540,30 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
                 </TouchableOpacity>
               </View>
               <ScrollView>
-                {CATEGORIES.map((cat) => {
-                  const isSelected = selectedCategories.includes(cat);
-                  return (
-                    <TouchableOpacity
-                      key={cat}
-                      style={[styles.pickerOption, isSelected && styles.pickerOptionSelected]}
-                      onPress={() => toggleCategory(cat)}
+                {loadingCategories ? (
+                  <ActivityIndicator size="large" color={PartnerColors.primary} style={{ marginTop: 20 }} />
+                ) : (
+                  categories.map((cat) => {
+                    const isSelected = selectedCategories.includes(cat.name);
+                    return (
+                      <TouchableOpacity
+                        key={cat.id}
+                        style={[styles.pickerOption, isSelected && styles.pickerOptionSelected]}
+                        onPress={() => toggleCategory(cat.name)}
                     >
-                      <Text style={[styles.pickerOptionText, isSelected && styles.pickerOptionTextSelected]}>
-                        {cat}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {cat.icon && <Text style={{ fontSize: 20, marginRight: 8 }}>{cat.icon}</Text>}
+                        <Text style={[styles.pickerOptionText, isSelected && styles.pickerOptionTextSelected]}>
+                          {cat.name}
+                        </Text>
+                      </View>
                       {isSelected && (
                         <Icon name="check" size={18} color={PartnerColors.primary} />
                       )}
                     </TouchableOpacity>
-                  );
-                })}
+                    );
+                  })
+                )}
               </ScrollView>
             </View>
           </TouchableOpacity>

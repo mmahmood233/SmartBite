@@ -27,6 +27,8 @@ import RestaurantCard from '../../../components/RestaurantCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRestaurantSearch } from '../../../hooks/useRestaurantSearch';
 import { fetchRestaurants } from '../../../services/restaurants.service';
+import { getActiveCategories, Category } from '../../../services/categories.service';
+import { supabase } from '../../../lib/supabase';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type FeatherIconName = keyof typeof Icon.glyphMap;
@@ -46,15 +48,18 @@ const SORT_OPTIONS: Array<{ id: SortOption; label: string; icon: FeatherIconName
   { id: 'ai_match', label: 'AI Match', icon: 'zap', description: 'Personalized ranking based on your chat and order history' },
 ];
 
-const CUISINES: Array<{ id: string; label: string; icon: FeatherIconName }> = [
-  { id: 'all', label: 'All', icon: 'grid' },
-  { id: 'arabic', label: 'Arabic', icon: 'coffee' },
-  { id: 'italian', label: 'Italian', icon: 'award' },
-  { id: 'asian', label: 'Asian', icon: 'sun' },
-  { id: 'indian', label: 'Indian', icon: 'star' },
-  { id: 'healthy', label: 'Healthy', icon: 'heart' },
-  { id: 'desserts', label: 'Desserts', icon: 'gift' },
-];
+// Default icon mapping for categories
+const getCategoryIcon = (name: string): FeatherIconName => {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes('burger')) return 'coffee';
+  if (lowerName.includes('pizza') || lowerName.includes('italian')) return 'award';
+  if (lowerName.includes('sushi') || lowerName.includes('asian')) return 'sun';
+  if (lowerName.includes('indian')) return 'star';
+  if (lowerName.includes('healthy') || lowerName.includes('salad')) return 'heart';
+  if (lowerName.includes('dessert') || lowerName.includes('sweet')) return 'gift';
+  if (lowerName.includes('coffee')) return 'coffee';
+  return 'grid';
+};
 
 // Mock data removed - now using real Supabase data
 
@@ -64,6 +69,7 @@ const AllRestaurantsScreen: React.FC = () => {
   const [restaurants, setRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [categories, setCategories] = useState<Array<{ id: string; label: string; icon: FeatherIconName }>>([{ id: 'all', label: 'All', icon: 'grid' }]);
   
   // Use shared search hook
   const {
@@ -86,10 +92,49 @@ const AllRestaurantsScreen: React.FC = () => {
   const [showSortModal, setShowSortModal] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<string>('all');
 
-  // Fetch restaurants from Supabase
+  // Fetch restaurants and categories from Supabase
   useEffect(() => {
     loadRestaurants();
+    loadCategories();
+
+    // Subscribe to real-time category changes
+    const categorySubscription = supabase
+      .channel('user-category-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'restaurant_categories',
+        },
+        () => {
+          // Reload categories when they change
+          loadCategories();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(categorySubscription);
+    };
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const data = await getActiveCategories();
+      const formattedCategories = [
+        { id: 'all', label: 'All', icon: 'grid' as FeatherIconName },
+        ...data.map(cat => ({
+          id: cat.name.toLowerCase(),
+          label: cat.name,
+          icon: getCategoryIcon(cat.name),
+        })),
+      ];
+      setCategories(formattedCategories);
+    } catch (err) {
+      console.error('Error loading categories:', err);
+    }
+  };
 
   const loadRestaurants = async () => {
     try {
@@ -333,7 +378,7 @@ const AllRestaurantsScreen: React.FC = () => {
         style={styles.cuisineChipsContainer}
         contentContainerStyle={styles.cuisineChipsContent}
       >
-        {CUISINES.map((cuisine) => {
+        {categories.map((cuisine) => {
           const isSelected = selectedCuisine === cuisine.id;
           return (
             <TouchableOpacity

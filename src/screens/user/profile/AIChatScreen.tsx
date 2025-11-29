@@ -23,6 +23,9 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
+import { sendAIMessage, extractDishRecommendations } from '../../../services/ai.service';
+import { supabase } from '../../../lib/supabase';
+import DishDetailModal from '../restaurant/DishDetailModal';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -66,6 +69,8 @@ const AIChatScreen: React.FC = () => {
     },
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [dishModalVisible, setDishModalVisible] = useState(false);
+  const [selectedDish, setSelectedDish] = useState<any | null>(null);
 
   // Typing indicator animation
   const dot1 = useRef(new Animated.Value(0)).current;
@@ -109,6 +114,7 @@ const AIChatScreen: React.FC = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const userMessageText = message.trim();
     setMessage('');
     setIsTyping(true);
 
@@ -117,63 +123,229 @@ const AIChatScreen: React.FC = () => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
 
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
+    try {
+      // Get user info for context
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user?.id)
+        .single();
+
+      // Call n8n AI service
+      const aiResult = await sendAIMessage(userMessageText, {
+        userId: user?.id,
+        userName: profile?.full_name || 'Guest',
+        location: 'Bahrain',
+      });
+
+      // Extract dish recommendations from AI text
+      const aiDishes = extractDishRecommendations(aiResult.text);
+      console.log('🔍 Extracted dishes:', aiDishes.map(d => `${d.dishName} @ ${d.restaurantName}`).join(', '));
+
+      // Query Supabase for exact dishes mentioned by AI
+      let dishRecommendations: DishRecommendation[] = [];
+      if (aiDishes.length > 0) {
+        // Query each dish individually for exact matching
+        const dishPromises = aiDishes.map(async ({ dishName, restaurantName }) => {
+          // Try exact dish name match first
+          let { data, error } = await supabase
+            .from('dishes')
+            .select(`
+              id,
+              name,
+              price,
+              image,
+              is_available,
+              restaurant_id,
+              restaurants!inner(
+                id,
+                name
+              )
+            `)
+            .eq('is_available', true)
+            .ilike('name', dishName)
+            .ilike('restaurants.name', `%${restaurantName.replace(' Bahrain', '')}%`)
+            .limit(1)
+            .single();
+
+          // If exact match fails, try fuzzy match (contains)
+          if (error || !data) {
+            const fuzzyResult = await supabase
+              .from('dishes')
+              .select(`
+                id,
+                name,
+                price,
+                image,
+                is_available,
+                restaurant_id,
+                restaurants!inner(
+                  id,
+                  name
+                )
+              `)
+              .eq('is_available', true)
+              .ilike('name', `%${dishName}%`)
+              .ilike('restaurants.name', `%${restaurantName.replace(' Bahrain', '')}%`)
+              .limit(1)
+              .single();
+            
+            data = fuzzyResult.data;
+            error = fuzzyResult.error;
+          }
+
+          return data;
+        });
+
+        const results = await Promise.all(dishPromises);
+        const validDishes = results.filter(d => d !== null);
+
+        if (validDishes.length > 0) {
+          dishRecommendations = validDishes.map((d: any) => ({
+            id: d.id,
+            name: d.name,
+            restaurant: d.restaurants.name,
+            restaurantId: d.restaurant_id,
+            price: d.price,
+            image: d.image || '',
+            rating: 4.5,
+            eta: '20-30 mins',
+            spicyLevel: 0,
+          }));
+          console.log('✅ Found exact dishes:', dishRecommendations.length);
+          console.log('📋 Matched:', dishRecommendations.map(d => `${d.name} (${d.restaurant})`).join(', '));
+        } else {
+          console.log('⚠️ No exact matches found in database');
+        }
+      }
+
+      // Create AI response message
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
-        text: "Here are some great options for you! 🍽️",
+        text: aiResult.text,
         timestamp: new Date(),
-        recommendations: [
-          {
-            id: '1',
-            name: 'Shawarma Plate',
-            restaurant: 'Shawarma House',
-            price: 2.8,
-            image: 'https://via.placeholder.com/150',
-            rating: 4.5,
-            eta: '20-30 min',
-            spicyLevel: 2,
-          },
-          {
-            id: '2',
-            name: 'Spicy Mandi Rice',
-            restaurant: 'Al Qariah',
-            price: 2.9,
-            image: 'https://via.placeholder.com/150',
-            rating: 4.7,
-            eta: '25-35 min',
-            spicyLevel: 3,
-          },
-          {
-            id: '3',
-            name: 'Hot Fries Combo',
-            restaurant: 'Snack Spot',
-            price: 2.5,
-            image: 'https://via.placeholder.com/150',
-            rating: 4.3,
-            eta: '15-25 min',
-            spicyLevel: 1,
-          },
-        ],
+        recommendations: dishRecommendations,
       };
 
       setMessages((prev) => [...prev, aiResponse]);
-      setIsTyping(false);
+    } catch (error) {
+      console.error('AI Error:', error);
+      
+      // Fallback error message
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'ai',
+        text: "Sorry, I'm having trouble connecting right now. Please try again! 🔄",
+        timestamp: new Date(),
+      };
 
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
+      setIsTyping(false);
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
-    }, 2000);
+    }
   };
 
   const handleQuickPrompt = (promptText: string) => {
     setMessage(promptText);
   };
 
+  const handleOptionPress = async (title: string) => {
+    try {
+      // Try to find a matching restaurant by name
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('id, name')
+        .ilike('name', `%${title}%`)
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data?.id) {
+        navigation.navigate('RestaurantDetail', {
+          restaurantId: data.id as string,
+          restaurantName: data.name as string,
+        });
+        return;
+      }
+    } catch (err) {
+      console.error('AI option navigation error:', err);
+    }
+
+    // Fallback: reuse as a quick prompt in the chat
+    handleQuickPrompt(title);
+  };
+
   const handleAddToCart = (dish: DishRecommendation) => {
     // TODO: Add to cart logic
     console.log('Adding to cart:', dish);
+  };
+
+  const handleDishFromChatPress = async (dishName: string, restaurantName?: string) => {
+    try {
+      let query = supabase
+        .from('dishes')
+        .select('id, name, description, price, image, category, restaurant_id, restaurants(id, name)')
+        .ilike('name', `%${dishName}%`)
+        .limit(1);
+
+      if (restaurantName) {
+        // @ts-ignore – join alias typing
+        query = query.ilike('restaurants.name', `%${restaurantName}%`);
+      }
+
+      const { data, error } = await query.maybeSingle();
+
+      if (error || !data) {
+        console.warn('Dish not found for AI chat:', error || dishName);
+        return;
+      }
+
+      const menuItem = {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        image: data.image,
+        category: data.category || 'Main',
+        restaurant_id: data.restaurant_id,
+        restaurants: {
+          id: data.restaurants?.id || data.restaurant_id,
+          name: data.restaurants?.name || restaurantName || 'Restaurant',
+        },
+      };
+
+      setSelectedDish(menuItem);
+      setDishModalVisible(true);
+    } catch (err) {
+      console.error('Error opening dish from AI chat:', err);
+    }
+  };
+
+  const extractOptions = (text: string) => {
+    const lines = text.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+    return lines
+      .map((line) => {
+        const markdownMatch = line.match(/^\d+\.\s+\*\*([^*]+)\*\*/);
+        const plainMatch = line.match(/^\d+\.\s+([^:]+)(?::|$)/);
+        const dashMarkdownMatch = line.match(/^-\s+\*\*([^*]+)\*\*/);
+        const dashPlainMatch = line.match(/^-\s+([^:]+)(?::|$)/);
+
+        const title =
+          markdownMatch?.[1] ||
+          plainMatch?.[1] ||
+          dashMarkdownMatch?.[1] ||
+          dashPlainMatch?.[1];
+
+        if (title) {
+          return { title: title.trim(), raw: line };
+        }
+        return null;
+      })
+      .filter(Boolean) as { title: string; raw: string }[];
   };
 
   const renderMessage = (msg: Message) => {
@@ -186,6 +358,8 @@ const AIChatScreen: React.FC = () => {
         </View>
       );
     }
+
+    const parsedOptions = extractOptions(msg.text);
 
     return (
       <View key={msg.id} style={styles.aiMessageContainer}>
@@ -201,14 +375,39 @@ const AIChatScreen: React.FC = () => {
           <View style={styles.aiBubble}>
             <Text style={styles.aiText}>{msg.text}</Text>
           </View>
+          {parsedOptions.length > 0 && (
+            <View style={styles.optionChipsContainer}>
+              {parsedOptions.map((opt, index) => (
+                <TouchableOpacity
+                  key={`${opt.title}-${index}`}
+                  style={styles.optionChip}
+                  onPress={() => handleOptionPress(opt.title)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.optionChipText}>{opt.title}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
           {msg.recommendations && msg.recommendations.length > 0 && (
             <View style={styles.recommendationsContainer}>
               {msg.recommendations.map((dish) => (
-                <View key={dish.id} style={styles.dishCard}>
-                  <Image
-                    source={{ uri: dish.image }}
-                    style={styles.dishImage}
-                  />
+                <TouchableOpacity
+                  key={dish.id}
+                  style={styles.dishCard}
+                  activeOpacity={0.8}
+                  onPress={() => handleDishFromChatPress(dish.name, dish.restaurant)}
+                >
+                  {dish.image ? (
+                    <Image
+                      source={{ uri: dish.image }}
+                      style={styles.dishImage}
+                    />
+                  ) : (
+                    <View style={[styles.dishImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
+                      <Icon name="image" size={32} color="#9CA3AF" />
+                    </View>
+                  )}
                   <View style={styles.dishInfo}>
                     <Text style={styles.dishName}>{dish.name}</Text>
                     <Text style={styles.restaurantName}>{dish.restaurant}</Text>
@@ -238,7 +437,7 @@ const AIChatScreen: React.FC = () => {
                       </TouchableOpacity>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           )}
@@ -360,6 +559,14 @@ const AIChatScreen: React.FC = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
+      {selectedDish && (
+        <DishDetailModal
+          visible={dishModalVisible}
+          onClose={() => setDishModalVisible(false)}
+          dish={selectedDish}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -539,6 +746,23 @@ const styles = StyleSheet.create({
   addButton: {
     borderRadius: BORDER_RADIUS.md,
     overflow: 'hidden',
+  },
+  optionChipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+  },
+  optionChip: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  optionChipText: {
+    color: colors.text,
+    fontWeight: '600',
   },
   addButtonGradient: {
     flexDirection: 'row',

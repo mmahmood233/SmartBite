@@ -156,75 +156,24 @@ const CheckoutScreen: React.FC = () => {
       return;
     }
 
-    setPlacingOrder(true);
-    
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Create order in Supabase
-      const orderData = {
-        user_id: user.id,
+    // Navigate to payment screen
+    // @ts-ignore - Navigation types not updated yet
+    navigation.navigate('Payment', {
+      amount: cart.total,
+      orderData: {
+        user_id: userProfile.id,
         restaurant_id: cart.restaurantId,
-        status: 'pending',
-        total_amount: cart.total,
-        delivery_fee: cart.deliveryFee,
+        restaurantName: cart.restaurantName,
+        items: cart.items,
         subtotal: cart.subtotal,
+        delivery_fee: cart.deliveryFee,
+        total_amount: cart.total,
         delivery_address: userProfile?.address,
         delivery_phone: userProfile?.phone,
         delivery_notes: deliveryNotes || null,
-        payment_method: selectedPayment,
         contactless_delivery: contactlessDelivery,
-      };
-
-      // @ts-ignore - Supabase types not updated yet
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItems = cart.items.map(item => ({
-        order_id: order.id,
-        dish_id: item.dishId,
-        dish_name: item.name,
-        quantity: item.quantity,
-        unit_price: item.price,
-        subtotal: item.price * item.quantity,
-        special_request: item.specialRequest || null,
-      }));
-
-      // @ts-ignore - Supabase types not updated yet
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // Clear cart after successful order
-      await clearCart();
-      
-      // Navigate to order confirmation screen with order data
-      // @ts-ignore - Navigation types not updated yet
-      navigation.replace('OrderConfirmation', {
-        orderId: order.id,
-        orderNumber: order.order_number,
-        restaurantName: cart.restaurantName,
-        items: cart.items,
-        total: cart.total,
-      });
-    } catch (error) {
-      console.error('Error placing order:', error);
-      Alert.alert('Error', 'Failed to place order. Please try again.');
-    } finally {
-      setPlacingOrder(false);
-    }
+      },
+    });
   };
 
   return (
@@ -303,112 +252,25 @@ const CheckoutScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Payment Method */}
+        {/* Payment Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pay with</Text>
-          <View style={styles.card}>
-            {/* Apple Pay */}
-            <TouchableOpacity
-              style={styles.paymentOptionEnhanced}
-              onPress={() => setSelectedPayment('apple')}
-              activeOpacity={0.7}
-            >
-              <View style={styles.paymentOptionLeft}>
-                <View style={styles.paymentIconContainer}>
-                  <Text style={styles.applePayIcon}></Text>
-                </View>
-                <Text style={styles.paymentOptionText}>Apple Pay</Text>
-              </View>
-              <View style={[styles.radioButton, selectedPayment === 'apple' && styles.radioButtonActive]}>
-                {selectedPayment === 'apple' && <View style={styles.radioButtonInner} />}
-              </View>
-            </TouchableOpacity>
-
-            <View style={styles.paymentDivider} />
-
-            {/* PayPal */}
-            <TouchableOpacity
-              style={styles.paymentOptionEnhanced}
-              onPress={() => setSelectedPayment('paypal')}
-              activeOpacity={0.7}
-            >
-              <View style={styles.paymentOptionLeft}>
-                <View style={styles.paymentIconContainer}>
-                  <Text style={styles.paypalIcon}>P</Text>
-                </View>
-                <Text style={styles.paymentOptionText}>PayPal</Text>
-              </View>
-              <View style={[styles.radioButton, selectedPayment === 'paypal' && styles.radioButtonActive]}>
-                {selectedPayment === 'paypal' && <View style={styles.radioButtonInner} />}
-              </View>
-            </TouchableOpacity>
-
-            <View style={styles.paymentDivider} />
-
-            {/* Credit/Debit Card */}
-            <TouchableOpacity
-              style={styles.paymentOptionEnhanced}
-              onPress={() => setSelectedPayment('card')}
-              activeOpacity={0.7}
-            >
-              <View style={styles.paymentOptionLeft}>
-                <View style={styles.paymentIconContainer}>
-                  <Icon name="credit-card" size={20} color={colors.primary} />
-                </View>
-                <View>
-                  <Text style={styles.paymentOptionText}>Credit/Debit Card</Text>
-                  {selectedPayment === 'card' && (
-                    <Text style={styles.paymentSubtext}>•••• {paymentMethod.last4}</Text>
-                  )}
-                </View>
-              </View>
-              <View style={[styles.radioButton, selectedPayment === 'card' && styles.radioButtonActive]}>
-                {selectedPayment === 'card' && <View style={styles.radioButtonInner} />}
-              </View>
-            </TouchableOpacity>
-
-            <View style={styles.paymentDivider} />
-
-            {/* Cash */}
-            <TouchableOpacity
-              style={styles.paymentOptionEnhanced}
-              onPress={() => setSelectedPayment('cash')}
-              activeOpacity={0.7}
-            >
-              <View style={styles.paymentOptionLeft}>
-                <View style={styles.paymentIconContainer}>
-                  <Icon name="dollar-sign" size={20} color={colors.primary} />
-                </View>
-                <Text style={styles.paymentOptionText}>Cash</Text>
-              </View>
-              <View style={[styles.radioButton, selectedPayment === 'cash' && styles.radioButtonActive]}>
-                {selectedPayment === 'cash' && <View style={styles.radioButtonInner} />}
-              </View>
-            </TouchableOpacity>
-
-            {/* Cash Note */}
-            {selectedPayment === 'cash' && (
-              <View style={styles.cashNote}>
-                <Icon name="info" size={14} color="#666666" />
-                <Text style={styles.cashNoteText}>
-                  Please prepare exact amount — riders may carry limited change.
+          <Text style={styles.sectionTitle}>Payment</Text>
+          <TouchableOpacity 
+            style={styles.card}
+            onPress={handlePlaceOrder}
+            activeOpacity={0.7}
+          >
+            <View style={styles.paymentInfo}>
+              <Icon name="credit-card" size={24} color={colors.primary} />
+              <View style={styles.paymentInfoText}>
+                <Text style={styles.paymentInfoTitle}>Payment Method</Text>
+                <Text style={styles.paymentInfoSubtitle}>
+                  Tap to select payment method
                 </Text>
               </View>
-            )}
-
-            {/* Contactless Delivery Option */}
-            <View style={styles.paymentDivider} />
-            <TouchableOpacity
-              style={styles.checkboxRow}
-              onPress={() => setContactlessDelivery(!contactlessDelivery)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.checkbox, contactlessDelivery && styles.checkboxActive]}>
-                {contactlessDelivery && <Icon name="check" size={14} color="#FFFFFF" />}
-              </View>
-              <Text style={styles.checkboxLabel}>Contactless delivery</Text>
-            </TouchableOpacity>
-          </View>
+              <Icon name="chevron-right" size={20} color="#999" />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Order Summary */}
@@ -1105,6 +967,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  paymentInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  paymentInfoText: {
+    flex: 1,
+  },
+  paymentInfoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#212121',
+    marginBottom: 4,
+  },
+  paymentInfoSubtitle: {
+    fontSize: 13,
+    color: '#666666',
   },
 });
 

@@ -13,6 +13,7 @@ import AllRestaurantsScreen from '../screens/user/restaurant/AllRestaurantsScree
 // User Portal - Cart & Checkout
 import CartScreen from '../screens/user/cart/CartScreen';
 import CheckoutScreen from '../screens/user/cart/CheckoutScreen';
+import PaymentScreen from '../screens/user/checkout/PaymentScreen';
 
 // User Portal - Orders
 import OrderConfirmationScreen from '../screens/user/orders/OrderConfirmationScreen';
@@ -68,6 +69,7 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="RestaurantDetail" component={RestaurantDetailScreen} />
       <Stack.Screen name="Cart" component={CartScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
+      <Stack.Screen name="Payment" component={PaymentScreen} />
       <Stack.Screen name="OrderConfirmation" component={OrderConfirmationScreen} />
       <Stack.Screen name="OrderTracking" component={OrderTrackingScreen} />
       <Stack.Screen name="DeliveryComplete" component={DeliveryCompleteScreen} />

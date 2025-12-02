@@ -18,7 +18,18 @@ export type RootStackParamList = {
   };
   Cart: undefined;
   Checkout: undefined;
-  OrderConfirmation: undefined;
+  Payment: {
+    amount: number;
+    orderData: any;
+  };
+  OrderConfirmation: {
+    orderId: string;
+    orderNumber?: string;
+    paymentId?: string;
+    restaurantName?: string;
+    items?: any[];
+    total?: number;
+  };
   OrderTracking: {
     orderNumber: string;
   };

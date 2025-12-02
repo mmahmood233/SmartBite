@@ -21,7 +21,7 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
     type: 'cash',
   },
   {
-    id: 'benefit',
+    id: 'benefitpay',
     name: 'BenefitPay',
     icon: 'wallet',
     type: 'benefit',
@@ -59,7 +59,7 @@ export const processPayment = async (
         success: true,
         paymentId: `cod_${Date.now()}`,
       };
-    } else if (paymentMethod === 'benefit') {
+    } else if (paymentMethod === 'benefitpay') {
       return {
         success: true,
         paymentId: `ben_${Date.now()}`,

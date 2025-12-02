@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types/navigation';
@@ -77,7 +78,77 @@ export default function PaymentScreen({ navigation, route }: Props) {
     return true;
   };
 
+  const createOrderInDB = async (paymentResult: any) => {
+    // Create order in database after successful payment
+    // @ts-ignore - Supabase types
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        user_id: orderData.user_id,
+        restaurant_id: orderData.restaurant_id,
+        status: 'pending',
+        total_amount: orderData.total_amount,
+        delivery_fee: orderData.delivery_fee,
+        subtotal: orderData.subtotal,
+        delivery_address: orderData.delivery_address,
+        delivery_phone: orderData.delivery_phone,
+        delivery_notes: orderData.delivery_notes,
+        payment_method: selectedMethod,
+      })
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // Create order items
+    const orderItems = orderData.items.map((item: any) => ({
+      order_id: order.id,
+      dish_id: item.dishId,
+      dish_name: item.name,
+      quantity: item.quantity,
+      unit_price: item.price,
+      subtotal: item.price * item.quantity,
+      special_request: item.specialRequest || null,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems);
+
+    if (itemsError) throw itemsError;
+
+    // Clear cart
+    await clearCart();
+
+    // Navigate to confirmation
+    navigation.replace('OrderConfirmation', {
+      orderId: order.id,
+      orderNumber: order.order_number,
+      paymentId: paymentResult.paymentId!,
+      restaurantName: orderData.restaurantName,
+      items: orderData.items,
+      total: amount,
+    });
+  };
+
   const handlePayment = async () => {
+    // If BenefitPay, navigate to BenefitPay screen
+    if (selectedMethod === 'benefitpay') {
+      // @ts-ignore
+      navigation.navigate('BenefitPay', {
+        amount,
+        onSuccess: async (result: any) => {
+          try {
+            await createOrderInDB(result);
+          } catch (error) {
+            console.error('Order creation error:', error);
+            Alert.alert('Error', 'Failed to create order. Please try again.');
+          }
+        },
+      });
+      return;
+    }
+
     if (!validateForm()) return;
 
     setLoading(true);
@@ -91,64 +162,10 @@ export default function PaymentScreen({ navigation, route }: Props) {
       });
 
       if (result.success) {
-        // Create order in database after successful payment
-        // @ts-ignore - Supabase types
-        const { data: order, error: orderError } = await supabase
-          .from('orders')
-          .insert({
-            user_id: orderData.user_id,
-            restaurant_id: orderData.restaurant_id,
-            status: 'pending',
-            total_amount: orderData.total_amount,
-            delivery_fee: orderData.delivery_fee,
-            subtotal: orderData.subtotal,
-            delivery_address: orderData.delivery_address,
-            delivery_phone: orderData.delivery_phone,
-            delivery_notes: orderData.delivery_notes,
-            payment_method: selectedMethod,
-          })
-          .select()
-          .single();
-
-        if (orderError) throw orderError;
-
-        // Create order items
-        const orderItems = orderData.items.map((item: any) => ({
-          order_id: order.id,
-          dish_id: item.dishId,
-          dish_name: item.name,
-          quantity: item.quantity,
-          unit_price: item.price,
-          subtotal: item.price * item.quantity,
-          special_request: item.specialRequest || null,
-        }));
-
-        const { error: itemsError } = await supabase
-          .from('order_items')
-          .insert(orderItems);
-
-        if (itemsError) throw itemsError;
-
-        // Clear cart
-        await clearCart();
-
-        // Show success and navigate
+        await createOrderInDB(result);
         Alert.alert(
           'Payment Successful!',
-          `Your order has been confirmed.\nPayment ID: ${result.paymentId}`,
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.replace('OrderConfirmation', {
-                orderId: order.id,
-                orderNumber: order.order_number,
-                paymentId: result.paymentId!,
-                restaurantName: orderData.restaurantName,
-                items: orderData.items,
-                total: amount,
-              }),
-            },
-          ]
+          `Your order has been confirmed.\nPayment ID: ${result.paymentId}`
         );
       } else {
         Alert.alert('Payment Failed', result.error || 'Please try again');
@@ -162,7 +179,7 @@ export default function PaymentScreen({ navigation, route }: Props) {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={24} color="#000" />
@@ -170,6 +187,8 @@ export default function PaymentScreen({ navigation, route }: Props) {
         <Text style={styles.headerTitle}>Payment</Text>
         <View style={{ width: 24 }} />
       </View>
+      
+      <ScrollView style={styles.container}>
 
       <View style={styles.amountCard}>
         <Text style={styles.amountLabel}>Total Amount</Text>
@@ -307,10 +326,15 @@ export default function PaymentScreen({ navigation, route }: Props) {
         </Text>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8f8f8',

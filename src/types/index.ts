@@ -22,6 +22,10 @@ export type RootStackParamList = {
     amount: number;
     orderData: any;
   };
+  BenefitPay: {
+    amount: number;
+    onSuccess: (result: any) => void;
+  };
   OrderConfirmation: {
     orderId: string;
     orderNumber?: string;

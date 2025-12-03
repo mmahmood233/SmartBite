@@ -23,12 +23,14 @@ import PartnerTopNav from '../../components/partner/PartnerTopNav';
 import { supabase } from '../../lib/supabase';
 import { getOrderStats, getActiveOrders, PartnerOrder } from '../../services/partner-orders.service';
 import { useFocusEffect } from '@react-navigation/native';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
 
 const OverviewDashboard: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { t } = useLanguage();
   
   // State
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
@@ -314,7 +316,7 @@ const OverviewDashboard: React.FC = () => {
         {/* Active Orders Preview */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Active Orders</Text>
+            <Text style={styles.headerTitle}>{t('partner.dashboard')}</Text>
             <TouchableOpacity 
               activeOpacity={0.7}
               onPress={() => navigation.navigate('LiveOrders' as never)}

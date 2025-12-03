@@ -7,7 +7,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchRestaurantById } from './restaurants.service';
 
-const CART_STORAGE_KEY = '@smartbite_cart';
+const CART_STORAGE_KEY = '@wajba_cart';
 
 export interface CartItem {
   id: string;

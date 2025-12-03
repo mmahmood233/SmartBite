@@ -23,11 +23,14 @@ import {
   getCardType,
 } from '../../../services/payment.service';
 import { supabase } from '../../../lib/supabase';
+import { colors } from '../../../theme/colors';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCart } from '../../../contexts/CartContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Payment'>;
 
-export default function PaymentScreen({ navigation, route }: Props) {
+const PaymentScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { t } = useLanguage();
   const { amount, orderData } = route.params || { amount: 0, orderData: null };
   const { clearCart } = useCart();
 
@@ -487,3 +490,5 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 });
+
+export default PaymentScreen;

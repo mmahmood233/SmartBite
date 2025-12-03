@@ -21,6 +21,7 @@ import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency } from '../../../utils';
 import { useCart } from '../../../contexts/CartContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { getActivePromotions, Promotion } from '../../../services/promotions.service';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -48,8 +49,10 @@ interface Restaurant {
 
 const CartScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { cart, loading, updateQuantity, removeFromCart, clearCart: clearCartContext } = useCart();
+  const { t } = useLanguage();
+  const { cart, removeFromCart, updateQuantity, clearCart: clearCartContext } = useCart();
   
+  const [loading, setLoading] = useState(false);
   const [promoApplied, setPromoApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [appliedPromotion, setAppliedPromotion] = useState<Promotion | null>(null);
@@ -166,14 +169,14 @@ const CartScreen: React.FC = () => {
         {/* Empty State */}
         <View style={styles.emptyState}>
           <Text style={styles.emptyIcon}>🛍️</Text>
-          <Text style={styles.emptyTitle}>Your cart is empty</Text>
-          <Text style={styles.emptySubtitle}>Add something delicious!</Text>
+          <Text style={styles.emptyTitle}>{t('cart.emptyCart')}</Text>
+          <Text style={styles.emptySubtitle}>{t('cart.emptyCartMessage')}</Text>
           <TouchableOpacity
             style={styles.browseButton}
             onPress={() => navigation.goBack()}
             activeOpacity={0.8}
           >
-            <Text style={styles.browseButtonText}>Browse Restaurants</Text>
+            <Text style={styles.browseButtonText}>{t('home.browseAllRestaurants')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -213,7 +216,7 @@ const CartScreen: React.FC = () => {
 
         {/* Items List */}
         <View style={styles.itemsSection}>
-          <Text style={styles.sectionTitle}>Order Items</Text>
+          <Text style={styles.sectionTitle}>{t('cart.orderItems')}</Text>
           {cart.items.map((item: any) => (
             <View key={item.id} style={styles.cartItem}>
               <Image source={item.image} style={styles.itemImage} />
@@ -304,11 +307,11 @@ const CartScreen: React.FC = () => {
           <Text style={styles.sectionTitle}>Order Summary</Text>
           <View style={styles.summaryCard}>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryLabel}>{t('cart.subtotal')}</Text>
               <Text style={styles.summaryValue}>BD {cart.subtotal.toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Delivery Fee</Text>
+              <Text style={styles.summaryLabel}>{t('cart.deliveryFee')}</Text>
               <Text style={styles.summaryValue}>BD {cart.deliveryFee.toFixed(2)}</Text>
             </View>
             {discount > 0 && (
@@ -321,7 +324,7 @@ const CartScreen: React.FC = () => {
             )}
             <View style={styles.divider} />
             <View style={styles.summaryRow}>
-              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalLabel}>{t('cart.total')}</Text>
               <Text style={styles.totalValue}>BD {(cart.total - discount).toFixed(2)}</Text>
             </View>
           </View>
@@ -334,7 +337,7 @@ const CartScreen: React.FC = () => {
       {/* Sticky Checkout Button */}
       <View style={styles.checkoutFooter}>
         <View style={styles.footerLeft}>
-          <Text style={styles.footerLabel}>Total</Text>
+          <Text style={styles.footerLabel}>{t('cart.total')}</Text>
           <Text style={styles.footerTotal}>BD {(cart.total - discount).toFixed(2)}</Text>
         </View>
         <TouchableOpacity

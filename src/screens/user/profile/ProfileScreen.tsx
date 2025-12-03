@@ -25,6 +25,7 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import Snackbar from '../../../components/Snackbar';
 import ProfileMenuItem from '../../../components/ProfileMenuItem';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -38,8 +39,8 @@ interface MenuItem {
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { language, changeLanguage, t } = useLanguage();
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('English');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -124,11 +125,10 @@ const ProfileScreen: React.FC = () => {
     console.log('Dark Mode:', value);
   };
 
-  const handleLanguageSelect = (language: string) => {
-    setCurrentLanguage(language);
+  const handleLanguageSelect = async (lang: 'en' | 'ar') => {
+    await changeLanguage(lang);
     setLanguageModalVisible(false);
-    // TODO: Apply language change
-    console.log('Language changed to:', language);
+    showSnackbar(t('settings.languageChanged'), 'success');
   };
 
   const handleChangePassword = () => {
@@ -252,7 +252,7 @@ const ProfileScreen: React.FC = () => {
       <View style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading profile...</Text>
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
       </View>
     );
@@ -262,7 +262,7 @@ const ProfileScreen: React.FC = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
+        <Text style={styles.headerTitle}>{t('profile.title')}</Text>
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -291,7 +291,7 @@ const ProfileScreen: React.FC = () => {
             activeOpacity={0.7}
           >
             <Icon name="edit-2" size={15} color={colors.primary} />
-            <Text style={styles.editButtonText}>Edit Profile</Text>
+            <Text style={styles.editButtonText}>{t('profile.editProfile')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -324,23 +324,23 @@ const ProfileScreen: React.FC = () => {
 
         {/* My Account Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My Account</Text>
-          <ProfileMenuItem icon="heart" label="Favorites" onPress={handleFavorites} color={colors.primary} />
-          <ProfileMenuItem icon="home" label="Saved Addresses" onPress={handleAddresses} color={colors.primary} />
-          <ProfileMenuItem icon="credit-card" label="Payment Methods" onPress={handlePaymentMethods} color={colors.primary} />
-          <ProfileMenuItem icon="gift" label="Offers & Promotions" onPress={handleOffers} color={colors.primary} />
-          <ProfileMenuItem icon="message-circle" label="Help & Support" onPress={handleHelp} color={colors.primary} />
+          <Text style={styles.sectionTitle}>{t('profile.myAccount')}</Text>
+          <ProfileMenuItem icon="heart" label={t('profile.favorites')} onPress={handleFavorites} color={colors.primary} />
+          <ProfileMenuItem icon="home" label={t('profile.addresses')} onPress={handleAddresses} color={colors.primary} />
+          <ProfileMenuItem icon="credit-card" label={t('profile.paymentMethods')} onPress={handlePaymentMethods} color={colors.primary} />
+          <ProfileMenuItem icon="gift" label={t('profile.offers')} onPress={handleOffers} color={colors.primary} />
+          <ProfileMenuItem icon="message-circle" label={t('help.title')} onPress={handleHelp} color={colors.primary} />
         </View>
 
         {/* App Preferences Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>App Preferences</Text>
+          <Text style={styles.sectionTitle}>{t('settings.title')}</Text>
           
           {/* Dark Mode Toggle */}
           <View style={styles.preferenceCard}>
             <View style={styles.menuLeft}>
               <Icon name="moon" size={20} color={colors.primary} />
-              <Text style={styles.menuText}>Dark Mode</Text>
+              <Text style={styles.menuText}>{t('settings.darkMode')}</Text>
             </View>
             <Switch
               value={isDarkMode}
@@ -359,10 +359,10 @@ const ProfileScreen: React.FC = () => {
           >
             <View style={styles.menuLeft}>
               <Icon name="globe" size={20} color={colors.primary} />
-              <Text style={styles.menuText}>Language</Text>
+              <Text style={styles.menuText}>{t('settings.language')}</Text>
             </View>
             <View style={styles.languageSelector}>
-              <Text style={styles.languageText}>{currentLanguage}</Text>
+              <Text style={styles.languageText}>{language === 'ar' ? 'العربية' : 'English'}</Text>
               <Icon name="chevron-down" size={18} color="#9E9E9E" />
             </View>
           </TouchableOpacity>
@@ -370,7 +370,7 @@ const ProfileScreen: React.FC = () => {
 
         {/* Security & Account Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Security & Account</Text>
+          <Text style={styles.sectionTitle}>{t('profile.securityAccount')}</Text>
           
           {/* Change Password */}
           <TouchableOpacity
@@ -380,7 +380,7 @@ const ProfileScreen: React.FC = () => {
           >
             <View style={styles.menuLeft}>
               <Icon name="lock" size={20} color={colors.primary} />
-              <Text style={styles.menuText}>Change Password</Text>
+              <Text style={styles.menuText}>{t('profile.changePassword')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color="#9E9E9E" />
           </TouchableOpacity>
@@ -393,7 +393,7 @@ const ProfileScreen: React.FC = () => {
           >
             <View style={styles.menuLeft}>
               <Icon name="log-out" size={20} color={colors.primary} />
-              <Text style={styles.menuText}>Logout</Text>
+              <Text style={styles.menuText}>{t('profile.logout')}</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -406,7 +406,7 @@ const ProfileScreen: React.FC = () => {
             onPress={handleDeleteAccount}
             activeOpacity={0.7}
           >
-            <Text style={styles.deleteButtonText}>Delete Account</Text>
+            <Text style={styles.deleteButtonText}>{t('profile.deleteAccount')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -446,11 +446,11 @@ const ProfileScreen: React.FC = () => {
 
             <TouchableOpacity
               style={styles.languageOption}
-              onPress={() => handleLanguageSelect('English')}
+              onPress={() => handleLanguageSelect('en')}
               activeOpacity={0.7}
             >
               <Text style={styles.languageOptionText}>English</Text>
-              {currentLanguage === 'English' && (
+              {language === 'en' && (
                 <Icon name="check" size={20} color={colors.primary} />
               )}
             </TouchableOpacity>
@@ -459,11 +459,11 @@ const ProfileScreen: React.FC = () => {
 
             <TouchableOpacity
               style={styles.languageOption}
-              onPress={() => handleLanguageSelect('العربية')}
+              onPress={() => handleLanguageSelect('ar')}
               activeOpacity={0.7}
             >
-              <Text style={styles.languageOptionText}>العربية</Text>
-              {currentLanguage === 'العربية' && (
+              <Text style={styles.languageOptionText}>العربية (Arabic)</Text>
+              {language === 'ar' && (
                 <Icon name="check" size={20} color={colors.primary} />
               )}
             </TouchableOpacity>

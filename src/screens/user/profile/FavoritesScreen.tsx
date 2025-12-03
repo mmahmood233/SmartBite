@@ -21,6 +21,7 @@ import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency, formatRating } from '../../../utils';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import EmptyState from '../../../components/EmptyState';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -38,6 +39,7 @@ interface FavoriteRestaurant {
 
 const FavoritesScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
   const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -88,7 +90,7 @@ const FavoritesScreen: React.FC = () => {
       setFavorites(transformedFavorites);
     } catch (error) {
       console.error('Error loading favorites:', error);
-      Alert.alert('Error', 'Failed to load favorites');
+      Alert.alert(t('common.error'), t('favorites.loadError'));
     } finally {
       setLoading(false);
     }
@@ -106,12 +108,12 @@ const FavoritesScreen: React.FC = () => {
 
   const handleRemoveFavorite = (favoriteId: string, name: string) => {
     Alert.alert(
-      'Remove Favorite',
-      `Remove ${name} from your favorites?`,
+      t('favorites.removeFavorite'),
+      `${t('favorites.removeConfirm')} ${name}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Remove',
+          text: t('common.remove'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -125,10 +127,10 @@ const FavoritesScreen: React.FC = () => {
 
               // Update local state
               setFavorites(favorites.filter(fav => fav.favoriteId !== favoriteId));
-              Alert.alert('Success', `${name} removed from favorites`);
+              Alert.alert(t('common.success'), `${name} ${t('favorites.removed')}`);
             } catch (error) {
               console.error('Error removing favorite:', error);
-              Alert.alert('Error', 'Failed to remove favorite');
+              Alert.alert(t('common.error'), t('favorites.removeError'));
             }
           },
         },
@@ -152,9 +154,9 @@ const FavoritesScreen: React.FC = () => {
       <View style={styles.emptyIconContainer}>
         <Text style={styles.emptyIcon}>❤️</Text>
       </View>
-      <Text style={styles.emptyTitle}>No favorites yet</Text>
+      <Text style={styles.emptyTitle}>{t('favorites.noFavorites')}</Text>
       <Text style={styles.emptySubtitle}>
-        Start adding your favorite restaurants to order again anytime!
+        {t('favorites.noFavoritesMessage')}
       </Text>
       <TouchableOpacity
         style={styles.browseButton}
@@ -167,7 +169,7 @@ const FavoritesScreen: React.FC = () => {
           end={{ x: 1, y: 0 }}
           style={styles.browseButtonGradient}
         >
-          <Text style={styles.browseButtonText}>Browse Restaurants</Text>
+          <Text style={styles.browseButtonText}>{t('home.browseAllRestaurants')}</Text>
           <Icon name="arrow-right" size={18} color="#FFFFFF" />
         </LinearGradient>
       </TouchableOpacity>
@@ -230,12 +232,12 @@ const FavoritesScreen: React.FC = () => {
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <Icon name="arrow-left" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Favorites</Text>
+          <Text style={styles.headerTitle}>{t('profile.favorites')}</Text>
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading favorites...</Text>
+          <Text style={styles.loadingText}>{t('favorites.loading')}</Text>
         </View>
       </View>
     );
@@ -268,9 +270,9 @@ const FavoritesScreen: React.FC = () => {
         {favorites.length === 0 ? (
           <EmptyState
             emoji="💔"
-            title="No Favorites Yet"
-            message="Start adding your favorite restaurants to see them here"
-            actionText="Browse Restaurants"
+            title={t('favorites.noFavorites')}
+            message={t('favorites.noFavoritesMessage')}
+            actionText={t('home.browseAllRestaurants')}
             onAction={() => navigation.navigate('MainTabs')}
           />
         ) : (

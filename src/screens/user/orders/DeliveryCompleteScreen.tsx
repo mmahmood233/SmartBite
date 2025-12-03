@@ -14,6 +14,7 @@ import { RootStackParamList } from '../../../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather as Icon } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatOrderNumber } from '../../../utils';
 
@@ -21,6 +22,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const DeliveryCompleteScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');

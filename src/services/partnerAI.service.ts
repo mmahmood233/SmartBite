@@ -28,7 +28,8 @@ export class PartnerAIService {
   static async askQuestion(
     question: string,
     analytics: RestaurantAnalytics,
-    conversationHistory: ChatMessage[] = []
+    conversationHistory: ChatMessage[] = [],
+    language: string = 'en'
   ): Promise<string> {
     try {
       // Build context from restaurant data
@@ -38,7 +39,7 @@ export class PartnerAIService {
       const messages: ChatMessage[] = [
         {
           role: 'system',
-          content: `You are a professional business advisor and analytics assistant for restaurant partners. 
+          content: `You are a professional business advisor and analytics assistant for restaurant partners in Bahrain. 
 Your role is to help restaurant owners understand their business performance and make data-driven decisions.
 
 ${context}
@@ -49,6 +50,8 @@ Guidelines:
 - Provide insights and recommendations
 - Be friendly and professional
 - Format numbers with BD currency (Bahraini Dinar)
+- ${language === 'ar' ? 'IMPORTANT: Respond in Arabic (العربية). Use natural Gulf Arabic dialect.' : 'Respond in English.'}
+- Automatically detect the language of the question and respond in the same language
 - If asked about data you don't have, politely say so`
         },
         ...conversationHistory,

@@ -19,6 +19,7 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency, formatDate, formatOrderNumber } from '../../../utils';
 import EmptyState from '../../../components/EmptyState';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -42,6 +43,7 @@ interface Order {
 
 const OrdersScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('active');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -304,7 +306,7 @@ const OrdersScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.headerTitle}>My Orders</Text>
+          <Text style={styles.headerTitle}>{t('orders.title')}</Text>
           <Text style={styles.headerSubtitle}>View your active and past orders</Text>
         </View>
       </View>
@@ -316,9 +318,7 @@ const OrdersScreen: React.FC = () => {
           onPress={() => setActiveTab('active')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.tabText, activeTab === 'active' && styles.tabTextActive]}>
-            Active
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'active' && styles.tabTextActive]}>{t('orders.active')}</Text>
           {activeOrders.length > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{activeOrders.length}</Text>
@@ -331,9 +331,7 @@ const OrdersScreen: React.FC = () => {
           onPress={() => setActiveTab('past')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.tabText, activeTab === 'past' && styles.tabTextActive]}>
-            Past
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'past' && styles.tabTextActive]}>{t('orders.past')}</Text>
         </TouchableOpacity>
       </View>
 

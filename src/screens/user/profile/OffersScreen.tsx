@@ -18,6 +18,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { getActivePromotions, Promotion } from '../../../services/promotions.service';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -35,6 +36,7 @@ interface Offer {
 
 const OffersScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
 
   const [activeOffers, setActiveOffers] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,7 +109,7 @@ const OffersScreen: React.FC = () => {
           <View style={styles.offerInfo}>
             <Text style={styles.offerTitle}>{offer.title}</Text>
             <Text style={styles.offerDescription}>
-              {offer.description || 'Special offer'}
+              {offer.description || t('offers.specialOffer') || 'Special offer'}
             </Text>
           </View>
         </View>
@@ -126,7 +128,7 @@ const OffersScreen: React.FC = () => {
               color={isPast ? '#94A3B8' : '#64748B'}
             />
             <Text style={styles.offerValidText}>
-              Valid until {new Date(offer.valid_until).toLocaleDateString()}
+              {t('offers.validUntil')} {new Date(offer.valid_until).toLocaleDateString()}
             </Text>
           </View>
         </View>
@@ -139,7 +141,7 @@ const OffersScreen: React.FC = () => {
                 ? `${offer.discount_value}%`
                 : offer.type === 'fixed'
                 ? `BD ${offer.discount_value}`
-                : 'Free Delivery'}
+                : t('offers.freeDelivery') || 'Free Delivery'}
             </Text>
           </View>
         )}
@@ -154,7 +156,7 @@ const OffersScreen: React.FC = () => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Offers & Promotions</Text>
+        <Text style={styles.headerTitle}>{t('offers.title')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -166,11 +168,11 @@ const OffersScreen: React.FC = () => {
       >
         {/* Active Offers */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Active Offers</Text>
+          <Text style={styles.sectionTitle}>{t('offers.activeOffers')}</Text>
           {loading ? (
-            <Text style={styles.emptyText}>Loading promotions...</Text>
+            <Text style={styles.emptyText}>{t('offers.loading') || 'Loading promotions...'}</Text>
           ) : activeOffers.length === 0 ? (
-            <Text style={styles.emptyText}>No active promotions available</Text>
+            <Text style={styles.emptyText}>{t('offers.noOffers')}</Text>
           ) : (
             activeOffers.map((offer) => renderOfferCard(offer, false))
           )}
@@ -179,7 +181,7 @@ const OffersScreen: React.FC = () => {
         {/* Saved Promo Codes */}
         {savedCodes.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Saved Promo Codes</Text>
+            <Text style={styles.sectionTitle}>{t('offers.savedCodes')}</Text>
             {savedCodes.map((offer) => renderOfferCard(offer, false))}
             {savedCodes.map(offer => renderOfferCard(offer, false))}
           </View>
@@ -188,7 +190,7 @@ const OffersScreen: React.FC = () => {
         {/* Past Offers */}
         {pastOffers.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Past Offers</Text>
+            <Text style={styles.sectionTitle}>{t('offers.pastOffers')}</Text>
             {pastOffers.map(offer => renderOfferCard(offer, true))}
           </View>
         )}

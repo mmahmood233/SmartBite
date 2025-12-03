@@ -25,6 +25,7 @@ import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography }
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { getAllRestaurants, toggleRestaurantStatus, searchRestaurants, AdminRestaurant } from '../../services/admin-restaurants.service';
 import { getActiveCategories, Category } from '../../services/categories.service';
 
@@ -99,6 +100,7 @@ const MOCK_RESTAURANTS: Restaurant[] = [
 ];
 
 const RestaurantsManagementScreen: React.FC = () => {
+  const { t } = useLanguage();
   // State
   const [restaurants, setRestaurants] = useState<AdminRestaurant[]>([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState<AdminRestaurant[]>([]);

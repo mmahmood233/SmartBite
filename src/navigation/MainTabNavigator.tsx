@@ -10,11 +10,13 @@ import OrdersScreen from '../screens/user/orders/OrdersScreen';
 import ProfileScreen from '../screens/user/profile/ProfileScreen';
 import { colors } from '../theme/colors';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Tab = createBottomTabNavigator();
 
 const MainTabNavigator: React.FC = () => {
   const { itemCount } = useCart();
+  const { t } = useLanguage();
   
   return (
     <Tab.Navigator
@@ -31,7 +33,7 @@ const MainTabNavigator: React.FC = () => {
         name="HomeTab"
         component={HomeScreen}
         options={{
-          tabBarLabel: 'Home',
+          tabBarLabel: t('navigation.home'),
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
               <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
@@ -46,7 +48,7 @@ const MainTabNavigator: React.FC = () => {
         name="AIChatTab"
         component={AIChatScreen}
         options={{
-          tabBarLabel: 'AI Chat',
+          tabBarLabel: t('navigation.aiChat'),
           tabBarIcon: ({ focused }) => (
             <View style={[styles.aiIconWrapper, focused && styles.aiIconWrapperActive]}>
               {focused ? (
@@ -69,7 +71,7 @@ const MainTabNavigator: React.FC = () => {
         name="CartTab"
         component={CartScreen}
         options={{
-          tabBarLabel: 'Cart',
+          tabBarLabel: t('navigation.cart'),
           tabBarBadge: itemCount > 0 ? itemCount : undefined,
           tabBarBadgeStyle: styles.badge,
           tabBarIcon: ({ color, focused }) => (
@@ -86,7 +88,7 @@ const MainTabNavigator: React.FC = () => {
         name="OrdersTab"
         component={OrdersScreen}
         options={{
-          tabBarLabel: 'Orders',
+          tabBarLabel: t('navigation.orders'),
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
               <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
@@ -101,7 +103,7 @@ const MainTabNavigator: React.FC = () => {
         name="ProfileTab"
         component={ProfileScreen}
         options={{
-          tabBarLabel: 'Profile',
+          tabBarLabel: t('navigation.profile'),
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
               <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>

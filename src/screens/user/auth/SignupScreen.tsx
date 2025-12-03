@@ -26,6 +26,7 @@ import { AuthStackParamList, RootStackParamList } from '../../../types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp as RootNav } from '@react-navigation/native-stack';
 import { signUp, signInWithApple, signInWithGoogle } from '../../../services/auth.service';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type SignupScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -37,6 +38,7 @@ interface SignupScreenProps {
 }
 
 const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
+  const { t } = useLanguage();
   const rootNav = useNavigation<RootNav<RootStackParamList>>();
   const [fullName, setFullName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -104,8 +106,8 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
 
       // Show success message
       Alert.alert(
-        'Account Created!',
-        'Welcome to Wajba! Your account has been created successfully.',
+        t('auth.accountCreated'),
+        t('auth.welcomeMessage'),
         [
           {
             text: 'Continue',
@@ -165,9 +167,9 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           >
             ← Back
           </Link>
-          <Text style={styles.welcomeText}>Create Account</Text>
+          <Text style={styles.welcomeText}>{t('auth.createAccount')}</Text>
           <Text style={styles.subtitleText}>
-            Join SmartBite and let AI personalize your food journey
+            {t('auth.joinMessage')}
           </Text>
         </View>
 
@@ -289,7 +291,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
             onPress={handleSignUp}
             disabled={!isFormValid || loading}
             loading={loading}
-            accessibilityLabel="Create your SmartBite account"
+            accessibilityLabel="Create your Wajba account"
           />
 
           {/* Divider */}
@@ -320,7 +322,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
             <Text style={styles.loginText}>Already have an account? </Text>
             <Link 
               onPress={() => navigation.navigate('Login')}
-              accessibilityLabel="Sign in to SmartBite"
+              accessibilityLabel="Sign in to Wajba"
             >
               Sign In
             </Link>

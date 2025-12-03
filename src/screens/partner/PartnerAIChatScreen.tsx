@@ -21,6 +21,7 @@ import { RootStackParamList } from '../../types';
 import { Feather as Icon } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { PartnerAIService, ChatMessage } from '../../services/partnerAI.service';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PartnerAIChat'>;
 
@@ -32,6 +33,7 @@ interface Message {
 }
 
 export default function PartnerAIChatScreen({ navigation }: Props) {
+  const { language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -160,7 +162,8 @@ export default function PartnerAIChatScreen({ navigation }: Props) {
           dishes: restaurantData.menuItems,
           reviews: restaurantData.reviews
         },
-        conversationHistory
+        conversationHistory,
+        language
       );
 
       return response;

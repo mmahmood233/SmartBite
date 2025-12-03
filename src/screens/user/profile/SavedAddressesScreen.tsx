@@ -23,6 +23,7 @@ import EmptyState from '../../../components/EmptyState';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import Snackbar from '../../../components/Snackbar';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { getUserAddresses, deleteAddress, setDefaultAddress, formatAddress, UserAddress } from '../../../services/user-addresses.service';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
@@ -32,6 +33,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const SavedAddressesScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
 
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +82,7 @@ const SavedAddressesScreen: React.FC = () => {
       setAddresses(transformedAddresses);
     } catch (error) {
       console.error('Error loading addresses:', error);
-      showSnackbar('Failed to load addresses', 'error');
+      showSnackbar(t('addresses.loadError') || 'Failed to load addresses', 'error');
     } finally {
       setLoading(false);
     }
@@ -103,12 +105,12 @@ const SavedAddressesScreen: React.FC = () => {
 
   const handleDeleteAddress = (id: string, title: string) => {
     Alert.alert(
-      'Delete Address',
-      `Remove ${title} from your saved addresses?`,
+      t('addresses.deleteAddress'),
+      t('addresses.deleteConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             setIsLoading(true);
@@ -121,10 +123,10 @@ const SavedAddressesScreen: React.FC = () => {
               if (error) throw error;
 
               setAddresses(addresses.filter(addr => addr.id !== id));
-              showSnackbar('Address removed', 'success');
+              showSnackbar(t('addresses.addressRemoved'), 'success');
             } catch (error) {
               console.error('Error deleting address:', error);
-              showSnackbar('Failed to delete address', 'error');
+              showSnackbar(t('common.error'), 'error');
             } finally {
               setIsLoading(false);
             }
@@ -158,10 +160,10 @@ const SavedAddressesScreen: React.FC = () => {
         }))
       );
       
-      showSnackbar('Default address updated', 'success');
+      showSnackbar(t('addresses.defaultUpdated') || 'Default address updated', 'success');
     } catch (error) {
       console.error('Error setting default address:', error);
-      showSnackbar('Failed to update default address', 'error');
+      showSnackbar(t('common.error'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -185,7 +187,7 @@ const SavedAddressesScreen: React.FC = () => {
           {address.isDefault && (
             <View style={styles.defaultBadge}>
               <MaterialCommunityIcons name="check-circle" size={14} color={colors.primary} />
-              <Text style={styles.defaultText}>Default</Text>
+              <Text style={styles.defaultText}>{t('addresses.default')}</Text>
             </View>
           )}
         </View>
@@ -201,7 +203,7 @@ const SavedAddressesScreen: React.FC = () => {
               onPress={() => handleSetDefault(address.id)}
               activeOpacity={0.7}
             >
-              <Text style={styles.actionButtonText}>Set as Default</Text>
+              <Text style={styles.actionButtonText}>{t('addresses.setAsDefault')}</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -209,14 +211,14 @@ const SavedAddressesScreen: React.FC = () => {
             onPress={() => handleEditAddress(address)}
             activeOpacity={0.7}
           >
-            <Text style={styles.actionButtonText}>Edit</Text>
+            <Text style={styles.actionButtonText}>{t('common.edit')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, styles.deleteButton]}
             onPress={() => handleDeleteAddress(address.id, address.title)}
             activeOpacity={0.7}
           >
-            <Text style={styles.deleteButtonText}>Delete</Text>
+            <Text style={styles.deleteButtonText}>{t('common.delete')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -230,12 +232,12 @@ const SavedAddressesScreen: React.FC = () => {
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <Icon name="arrow-left" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Saved Addresses</Text>
+          <Text style={styles.headerTitle}>{t('addresses.title')}</Text>
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading addresses...</Text>
+          <Text style={styles.loadingText}>{t('addresses.loading') || 'Loading addresses...'}</Text>
         </View>
       </View>
     );
@@ -248,7 +250,7 @@ const SavedAddressesScreen: React.FC = () => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Saved Addresses</Text>
+        <Text style={styles.headerTitle}>{t('addresses.title')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -268,8 +270,8 @@ const SavedAddressesScreen: React.FC = () => {
         {addresses.length === 0 ? (
           <EmptyState
             emoji="🏠"
-            title="No Saved Addresses"
-            message="Add your delivery addresses to make ordering faster and easier"
+            title={t('addresses.noAddresses')}
+            message={t('addresses.noAddressesMessage')}
           />
         ) : (
           <View style={styles.addressesContainer}>
@@ -290,7 +292,7 @@ const SavedAddressesScreen: React.FC = () => {
             style={styles.addButtonGradient}
           >
             <Icon name="plus" size={20} color="#FFFFFF" />
-            <Text style={styles.addButtonText}>Add New Address</Text>
+            <Text style={styles.addButtonText}>{t('addresses.addNewAddress')}</Text>
           </LinearGradient>
         </TouchableOpacity>
 

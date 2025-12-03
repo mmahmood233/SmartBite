@@ -18,6 +18,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { PartnerColors, PartnerSpacing, PartnerTypography } from '../../constants/partnerTheme';
+import { useLanguage } from '../../contexts/LanguageContext';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { createPromotion, updatePromotion, Promotion } from '../../services/promotions.service';
@@ -43,6 +44,7 @@ const PROMOTION_TYPES = [
 ];
 
 const AddPromotionScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation();
   const route = useRoute();
   const params = route.params as any;

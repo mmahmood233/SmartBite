@@ -14,15 +14,22 @@ import { RootStackParamList } from '../../../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather as Icon } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency, formatOrderNumber } from '../../../utils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type OrderConfirmationRouteProp = RouteProp<RootStackParamList, 'OrderConfirmation'>;
 
-const OrderConfirmationScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<OrderConfirmationRouteProp>();
+interface OrderConfirmationScreenProps {
+  navigation: NavigationProp;
+  route: OrderConfirmationRouteProp;
+}
+
+const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = ({ route, navigation }) => {
+  const { t } = useLanguage();
+  const navigationProp = useNavigation<NavigationProp>();
+  const routeProp = useRoute<OrderConfirmationRouteProp>();
   
   // Get real order data from route params or use defaults
   const {

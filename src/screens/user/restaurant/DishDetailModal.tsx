@@ -19,6 +19,7 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency } from '../../../utils';
 import { fetchDishAddons } from '../../../services/restaurants.service';
 import { useCart } from '../../../contexts/CartContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { Alert } from 'react-native';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -51,11 +52,8 @@ interface DishDetailModalProps {
   };
 }
 
-const DishDetailModal: React.FC<DishDetailModalProps> = ({
-  visible,
-  onClose,
-  dish,
-}) => {
+const DishDetailModal: React.FC<DishDetailModalProps> = ({ visible, dish, onClose, onAddToCart }) => {
+  const { t } = useLanguage();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [specialRequest, setSpecialRequest] = useState('');

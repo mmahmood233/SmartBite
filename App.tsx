@@ -6,24 +6,29 @@ import { StatusBar } from 'expo-status-bar';
 import RootNavigator from './src/navigation/RootNavigator';
 import { WajbaLightTheme } from './src/theme/theme';
 import { CartProvider } from './src/contexts/CartContext';
+import { LanguageProvider } from './src/contexts/LanguageContext';
+import './src/i18n'; // Initialize i18n
 
 /**
  * Wajba App Root Component
  * Brand: Middle Eastern warmth meets intelligent personalization
  * Flow: Splash → Onboarding → Auth → Main App
+ * Features: Bilingual (English/Arabic) with RTL support
  */
 
 const App: React.FC = () => {
   return (
     <SafeAreaProvider>
-      <PaperProvider theme={WajbaLightTheme}>
-        <CartProvider>
-          <NavigationContainer>
-            <StatusBar style="dark" />
-            <RootNavigator />
-          </NavigationContainer>
-        </CartProvider>
-      </PaperProvider>
+      <LanguageProvider>
+        <PaperProvider theme={WajbaLightTheme}>
+          <CartProvider>
+            <NavigationContainer>
+              <StatusBar style="dark" />
+              <RootNavigator />
+            </NavigationContainer>
+          </CartProvider>
+        </PaperProvider>
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 };

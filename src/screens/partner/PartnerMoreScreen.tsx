@@ -15,11 +15,13 @@ import { getStrings } from '../../constants/partnerStrings';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const strings = getStrings('en');
 
 const PartnerMoreScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { t } = useLanguage();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('English');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AnimatedLogo } from '../../../components';
 import { colors } from '../../../theme/colors';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { tokens } from '../../../theme/theme';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { RootStackParamList } from '../../../types';
@@ -22,6 +23,7 @@ interface SplashScreenProps {
  * Duration: 2.5s before transitioning to onboarding
  */
 const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
+  const { t } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -47,10 +49,11 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
       <AnimatedLogo size={100} />
 
       {/* Brand tagline */}
-      <Animated.View style={[styles.taglineContainer, { opacity: fadeAnim }]}>
-        <Text style={styles.tagline}>
-          Middle Eastern warmth meets{'\n'}intelligent personalization
-        </Text>
+      <Animated.View style={[styles.taglineContainer]}>
+        <Text style={styles.brandName}>Wajba</Text>
+        <Animated.Text style={[styles.tagline, { opacity: fadeAnim }]}>
+          {t('auth.tagline')}
+        </Animated.Text>
       </Animated.View>
     </View>
   );

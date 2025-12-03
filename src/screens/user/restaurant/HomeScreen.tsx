@@ -13,6 +13,7 @@ import { useRestaurantSearch } from '../../../hooks/useRestaurantSearch';
 import { fetchRestaurants, fetchFeaturedRestaurants } from '../../../services/restaurants.service';
 import { supabase } from '../../../lib/supabase';
 import { getCurrentLocation, calculateDistance, formatDeliveryTime, estimateDeliveryTime, Coordinates } from '../../../services/location.service';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -22,26 +23,29 @@ const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight |
 
 // Removed: Category icons row - redundant with All Restaurants filters
 
-const smartSuggestions = [
-  { emoji: '🍴', text: 'Feeling like something spicy?', query: 'I want something spicy' },
-  { emoji: '🥗', text: 'Maybe something light and healthy?', query: 'I want something light and healthy' },
-  { emoji: '🍔', text: 'In the mood for a burger tonight?', query: 'I want a burger' },
-  { emoji: '🍣', text: 'Craving sushi or something fresh?', query: 'I want sushi or something fresh' },
-  { emoji: '☕', text: 'Just a quick coffee break?', query: 'I want coffee' },
-  { emoji: '🍛', text: 'Craving comfort food tonight?', query: 'I want comfort food' },
-];
 
 // Mock data removed - now using real Supabase data
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
+  
+  const smartSuggestions = [
+    { emoji: '🍴', text: t('home.suggestion1'), query: 'I want something spicy' },
+    { emoji: '🥗', text: t('home.suggestion2'), query: 'I want something light and healthy' },
+    { emoji: '🍔', text: t('home.suggestion3'), query: 'I want a burger' },
+    { emoji: '🍣', text: t('home.suggestion4'), query: 'I want sushi or something fresh' },
+    { emoji: '☕', text: t('home.suggestion5'), query: 'I want coffee' },
+    { emoji: '🍛', text: t('home.suggestion6'), query: 'I want comfort food' },
+  ];
+  
   const [suggestionIndex, setSuggestionIndex] = useState(0);
   const [featuredRestaurants, setFeaturedRestaurants] = useState<any[]>([]);
   const [allRestaurants, setAllRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [userName, setUserName] = useState('Guest');
-  const [greeting, setGreeting] = useState('Good evening');
+  const [userName, setUserName] = useState(t('home.guest'));
+  const [greeting, setGreeting] = useState(t('home.goodEvening'));
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
   
   // Use shared search hook
@@ -182,11 +186,11 @@ const HomeScreen: React.FC = () => {
   const updateGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) {
-      setGreeting('Good morning');
+      setGreeting(t('home.goodMorning'));
     } else if (hour < 18) {
-      setGreeting('Good afternoon');
+      setGreeting(t('home.goodAfternoon'));
     } else {
-      setGreeting('Good evening');
+      setGreeting(t('home.goodEvening'));
     }
   };
 
@@ -337,7 +341,7 @@ const HomeScreen: React.FC = () => {
             onFocus={handleSearchFocus}
             onBlur={handleSearchBlur}
             onAIPress={() => handleAIChatPress()}
-            placeholder="Search restaurants or ask Wajba AI..."
+            placeholder={t('home.searchPlaceholder')} // Ask Wajba AI..."
           />
           
           {/* Search Suggestions Dropdown */}
@@ -468,7 +472,7 @@ const HomeScreen: React.FC = () => {
             activeOpacity={0.8}
           >
             <Icon name="grid" size={20} color={colors.primary} />
-            <Text style={styles.actionButtonText}>Browse All Restaurants</Text>
+            <Text style={styles.actionButtonText}>{t('home.browseAllRestaurants')}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -477,7 +481,7 @@ const HomeScreen: React.FC = () => {
             activeOpacity={0.8}
           >
             <Icon name="zap" size={20} color={colors.primary} />
-            <Text style={styles.actionButtonText}>Talk to Wajba AI</Text>
+            <Text style={styles.actionButtonText}>{t('home.talkToWajbaAI')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -488,8 +492,8 @@ const HomeScreen: React.FC = () => {
         >
           <View style={styles.sectionHeaderRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.sectionTitle}>✨ For You</Text>
-              <Text style={styles.sectionSub}>Curated by Wajba AI</Text>
+              <Text style={styles.sectionTitle}>{t('home.allRestaurants')}</Text>
+              <Text style={styles.sectionSub}>{t('home.curatedByWajbaAI')}</Text>
             </View>
             <View style={styles.headerActions}>
               <TouchableOpacity 
@@ -498,7 +502,7 @@ const HomeScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <Text style={styles.inlineTipIcon}>💡</Text>
-                <Text style={styles.inlineTipText}>Try asking</Text>
+                <Text style={styles.inlineTipText}>{t('home.tryAsking')}</Text>
                 <Icon name="chevron-right" size={14} color={colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity 
@@ -506,7 +510,7 @@ const HomeScreen: React.FC = () => {
                 onPress={handleBrowseAllPress}
               >
                 <View style={styles.seeAllContainer}>
-                  <Text style={styles.link}>See All</Text>
+                  <Text style={styles.link}>{t('common.seeAll')}</Text>
                   <Icon name="arrow-right" size={16} color={colors.primary} style={{ marginLeft: 4 }} />
                 </View>
               </TouchableOpacity>
@@ -563,15 +567,15 @@ const HomeScreen: React.FC = () => {
         >
           <View style={styles.sectionHeaderRow}>
             <View>
-              <Text style={styles.sectionTitle}>🔥 Popular Near You</Text>
-              <Text style={styles.sectionSub}>Discover trending restaurants nearby</Text>
+              <Text style={styles.sectionTitle}>{t('home.popularRestaurants')}</Text>
+              <Text style={styles.sectionSub}>{t('home.discoverTrending')}</Text>
             </View>
             <TouchableOpacity 
               activeOpacity={0.7}
               onPress={handleBrowseAllPress}
             >
               <View style={styles.seeAllContainer}>
-                <Text style={styles.link}>See All</Text>
+                <Text style={styles.link}>{t('common.seeAll')}</Text>
                 <Icon name="arrow-right" size={16} color={colors.primary} style={{ marginLeft: 4 }} />
               </View>
             </TouchableOpacity>
@@ -599,7 +603,7 @@ const HomeScreen: React.FC = () => {
               />
             ))
           ) : (
-            <Text style={{ padding: 20, color: colors.textSecondary }}>No restaurants available</Text>
+            <Text style={{ padding: 20, color: colors.textSecondary }}>{t('home.noRestaurants')}</Text>
           )}
         </View>
 

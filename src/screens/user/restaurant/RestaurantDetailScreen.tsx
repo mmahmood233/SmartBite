@@ -26,6 +26,7 @@ import DishDetailModal from './DishDetailModal';
 import ReviewModal from '../../../components/ReviewModal';
 import { createReview, fetchRestaurantReviews } from '../../../services/reviews.service';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { useCart } from '../../../contexts/CartContext';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
@@ -70,10 +71,16 @@ const getTimeAgo = (dateString: string): string => {
   return `${Math.floor(seconds / 2592000)} months ago`;
 };
 
-const RestaurantDetailScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RestaurantDetailRouteProp>();
-  const { restaurantId } = route.params;
+interface RestaurantDetailScreenProps {
+  route: any;
+  navigation: any;
+}
+
+const RestaurantDetailScreen: React.FC<RestaurantDetailScreenProps> = ({ route, navigation }) => {
+  const { t } = useLanguage();
+  const navigationProp = useNavigation<NavigationProp>();
+  const routeProp = useRoute<RestaurantDetailRouteProp>();
+  const { restaurantId } = routeProp.params;
   const { cart, itemCount, addToCart } = useCart();
   
   const [restaurant, setRestaurant] = useState<any>(null);

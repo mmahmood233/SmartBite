@@ -21,6 +21,7 @@ import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency } from '../../../utils';
 import { useCart } from '../../../contexts/CartContext';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { supabase } from '../../../lib/supabase';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { getCurrentLocation, geocodeAddress, Coordinates } from '../../../services/location.service';
@@ -37,7 +38,8 @@ interface OrderItem {
 
 const CheckoutScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { cart, clearCart } = useCart();
+  const { t } = useLanguage();
+  const { items, clearCart, getTotalPrice } = useCart();
   
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [selectedPayment, setSelectedPayment] = useState<'apple' | 'paypal' | 'card' | 'cash'>('card');
@@ -183,7 +185,7 @@ const CheckoutScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
+        <Text style={styles.headerTitle}>{t('checkout.title')}</Text>
         <View style={styles.cartIconContainer}>
           <Icon name="shopping-cart" size={20} color={colors.primary} />
         </View>
@@ -192,7 +194,7 @@ const CheckoutScreen: React.FC = () => {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Delivery Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery Details</Text>
+          <Text style={styles.sectionTitle}>{t('checkout.deliveryAddress')}</Text>
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardLabel}>Delivering to:</Text>
@@ -254,7 +256,7 @@ const CheckoutScreen: React.FC = () => {
 
         {/* Payment Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment</Text>
+          <Text style={styles.sectionTitle}>{t('checkout.paymentMethod')}</Text>
           <TouchableOpacity 
             style={styles.card}
             onPress={handlePlaceOrder}

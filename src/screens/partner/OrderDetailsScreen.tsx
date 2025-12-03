@@ -21,12 +21,14 @@ import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography }
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { getOrderDetails, acceptOrder, rejectOrder, updateOrderStatus } from '../../services/partner-orders.service';
-import { PartnerOrder } from '../../services/partner-orders.service';
+import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type OrderDetailsRouteProp = RouteProp<{ OrderDetails: { orderId: string } }, 'OrderDetails'>;
 
 const OrderDetailsScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { t } = useLanguage();
   const route = useRoute<OrderDetailsRouteProp>();
   const { orderId } = route.params;
 

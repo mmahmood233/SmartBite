@@ -26,11 +26,13 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import Snackbar from '../../../components/Snackbar';
 import { GradientButton, Input } from '../../../components';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
 
   // Form state
   const [fullName, setFullName] = useState('');

@@ -10,12 +10,15 @@ import {
   Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../types';
+import { RootStackParamList } from '../../../types';
+import { colors } from '../../../theme/colors';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BenefitPay'>;
 
-export default function BenefitPayScreen({ navigation, route }: Props) {
+const BenefitPayScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { t } = useLanguage();
   const { amount, onSuccess } = route.params;
   
   const [cardNumber, setCardNumber] = useState('');
@@ -339,3 +342,5 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 });
+
+export default BenefitPayScreen;

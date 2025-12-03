@@ -20,10 +20,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-chart-kit';
 import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography } from '../../constants/partnerTheme';
 import { getDashboardStats, getRevenueData, getRecentActivity, DashboardStats } from '../../services/admin-analytics.service';
+import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const screenWidth = Dimensions.get('window').width;
 
 const AdminDashboardScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [revenueData, setRevenueData] = useState<{ labels: string[]; datasets: { data: number[] }[] } | null>(null);

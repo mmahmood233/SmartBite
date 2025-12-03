@@ -25,6 +25,7 @@ import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography }
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { getActiveCategories, Category } from '../../services/categories.service';
 
 interface EditBusinessInfoModalProps {
@@ -62,6 +63,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
   businessData,
   onSave,
 }) => {
+  const { t } = useLanguage();
   const [name, setName] = useState(businessData.name);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     businessData.category.split(' • ')

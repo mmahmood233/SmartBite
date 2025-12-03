@@ -15,6 +15,7 @@ import { RootStackParamList } from '../../../types';
 import { Feather as Icon } from '@expo/vector-icons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../../theme/colors';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -30,6 +31,7 @@ interface SupportOption {
 
 const HelpSupportScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
 
   const handleBack = () => {
     navigation.goBack();
@@ -100,23 +102,23 @@ const HelpSupportScreen: React.FC = () => {
       id: '1',
       icon: 'package',
       iconType: 'feather',
-      title: 'Need help with an order?',
-      subtitle: 'View your orders and get help',
+      title: t('help.needHelpWithOrder'),
+      subtitle: t('help.viewOrders'),
       action: handleViewOrders,
     },
     {
       id: '2',
       icon: 'message-circle',
       iconType: 'feather',
-      title: 'Chat with Support',
-      subtitle: 'Get instant help from our team',
+      title: t('help.chatWithSupport'),
+      subtitle: t('help.chatMessage'),
       action: handleChatSupport,
     },
     {
       id: '3',
       icon: 'phone',
       iconType: 'feather',
-      title: 'Call Us',
+      title: t('help.callUs'),
       subtitle: '+973 3356 0803',
       action: handleCallSupport,
     },
@@ -124,7 +126,7 @@ const HelpSupportScreen: React.FC = () => {
       id: '4',
       icon: 'mail',
       iconType: 'feather',
-      title: 'Email Support',
+      title: t('help.emailSupport'),
       subtitle: 'support@wajba.bh',
       action: handleEmailSupport,
     },
@@ -132,24 +134,24 @@ const HelpSupportScreen: React.FC = () => {
       id: '5',
       icon: 'help-circle',
       iconType: 'feather',
-      title: 'FAQs',
-      subtitle: 'Find answers to common questions',
+      title: t('help.faqs'),
+      subtitle: t('help.faqsMessage'),
       action: handleFAQ,
     },
     {
       id: '6',
       icon: 'file-text',
       iconType: 'feather',
-      title: 'Terms & Conditions',
-      subtitle: 'Read our terms of service',
+      title: t('common.termsConditions') || 'Terms & Conditions',
+      subtitle: t('help.termsMessage') || 'Read our terms of service',
       action: handleTerms,
     },
     {
       id: '7',
       icon: 'shield',
       iconType: 'feather',
-      title: 'Privacy Policy',
-      subtitle: 'Learn how we protect your data',
+      title: t('common.privacyPolicy') || 'Privacy Policy',
+      subtitle: t('help.privacyMessage') || 'Learn how we protect your data',
       action: handlePrivacy,
     },
   ];
@@ -183,7 +185,7 @@ const HelpSupportScreen: React.FC = () => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Help & Support</Text>
+        <Text style={styles.headerTitle}>{t('help.title')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -198,9 +200,9 @@ const HelpSupportScreen: React.FC = () => {
           <View style={styles.messageIconContainer}>
             <MaterialCommunityIcons name="headset" size={32} color={colors.primary} />
           </View>
-          <Text style={styles.messageTitle}>We're here to help!</Text>
+          <Text style={styles.messageTitle}>{t('help.weAreHere')}</Text>
           <Text style={styles.messageText}>
-            Our support team is available 24/7 to assist you with any questions or concerns.
+            {t('help.supportMessage')}
           </Text>
         </View>
 

@@ -29,6 +29,7 @@ import { useRestaurantSearch } from '../../../hooks/useRestaurantSearch';
 import { fetchRestaurants } from '../../../services/restaurants.service';
 import { getActiveCategories, Category } from '../../../services/categories.service';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type FeatherIconName = keyof typeof Icon.glyphMap;
@@ -65,6 +66,7 @@ const getCategoryIcon = (name: string): FeatherIconName => {
 
 const AllRestaurantsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
   
   const [restaurants, setRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

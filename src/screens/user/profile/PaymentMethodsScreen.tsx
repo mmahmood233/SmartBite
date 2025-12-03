@@ -23,6 +23,7 @@ import EmptyState from '../../../components/EmptyState';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import Snackbar from '../../../components/Snackbar';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -39,6 +40,7 @@ interface PaymentMethod {
 
 const PaymentMethodsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
 
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +88,7 @@ const PaymentMethodsScreen: React.FC = () => {
       setPaymentMethods(transformedMethods);
     } catch (error) {
       console.error('Error loading payment methods:', error);
-      showSnackbar('Failed to load payment methods', 'error');
+      showSnackbar(t('payment.loadError') || 'Failed to load payment methods', 'error');
     } finally {
       setLoading(false);
     }
@@ -108,12 +110,12 @@ const PaymentMethodsScreen: React.FC = () => {
 
   const handleDeletePayment = (id: string, label: string) => {
     Alert.alert(
-      'Remove Payment Method',
-      `Remove ${label} from your payment methods?`,
+      t('payment.removePayment'),
+      t('payment.deleteConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Remove',
+          text: t('common.remove'),
           style: 'destructive',
           onPress: async () => {
             setIsLoading(true);
@@ -126,10 +128,10 @@ const PaymentMethodsScreen: React.FC = () => {
               if (error) throw error;
 
               setPaymentMethods(paymentMethods.filter(pm => pm.id !== id));
-              showSnackbar('Payment method removed', 'success');
+              showSnackbar(t('payment.removed') || 'Payment method removed', 'success');
             } catch (error) {
               console.error('Error deleting payment method:', error);
-              showSnackbar('Failed to remove payment method', 'error');
+              showSnackbar(t('common.error'), 'error');
             } finally {
               setIsLoading(false);
             }
@@ -157,10 +159,10 @@ const PaymentMethodsScreen: React.FC = () => {
         }))
       );
       
-      showSnackbar('Default payment method updated', 'success');
+      showSnackbar(t('payment.defaultUpdated') || 'Default payment method updated', 'success');
     } catch (error) {
       console.error('Error setting default payment:', error);
-      showSnackbar('Failed to update default payment method', 'error');
+      showSnackbar(t('common.error'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -187,13 +189,13 @@ const PaymentMethodsScreen: React.FC = () => {
           {payment.isDefault && (
             <View style={styles.defaultBadge}>
               <MaterialCommunityIcons name="check-circle" size={14} color={colors.primary} />
-              <Text style={styles.defaultText}>Default</Text>
+              <Text style={styles.defaultText}>{t('payment.default') || t('addresses.default')}</Text>
             </View>
           )}
         </View>
         
         {payment.expiryDate && (
-          <Text style={styles.expiryText}>Expires {payment.expiryDate}</Text>
+          <Text style={styles.expiryText}>{t('payment.expires')} {payment.expiryDate}</Text>
         )}
 
         {/* Action Buttons */}
@@ -204,7 +206,7 @@ const PaymentMethodsScreen: React.FC = () => {
               onPress={() => handleSetDefault(payment.id)}
               activeOpacity={0.7}
             >
-              <Text style={styles.actionButtonText}>Set as Default</Text>
+              <Text style={styles.actionButtonText}>{t('payment.setAsDefault')}</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -212,7 +214,7 @@ const PaymentMethodsScreen: React.FC = () => {
             onPress={() => handleDeletePayment(payment.id, payment.label)}
             activeOpacity={0.7}
           >
-            <Text style={styles.deleteButtonText}>Remove</Text>
+            <Text style={styles.deleteButtonText}>{t('common.remove')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -226,12 +228,12 @@ const PaymentMethodsScreen: React.FC = () => {
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <Icon name="arrow-left" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Payment Methods</Text>
+          <Text style={styles.headerTitle}>{t('payment.title')}</Text>
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading payment methods...</Text>
+          <Text style={styles.loadingText}>{t('payment.loading') || 'Loading payment methods...'}</Text>
         </View>
       </View>
     );
@@ -264,8 +266,8 @@ const PaymentMethodsScreen: React.FC = () => {
         {paymentMethods.length === 0 ? (
           <EmptyState
             emoji="💳"
-            title="No Payment Methods"
-            message="Add a payment method to checkout faster and easier"
+            title={t('payment.noMethods')}
+            message={t('payment.noMethodsMessage')}
           />
         ) : (
           <View style={styles.paymentsContainer}>
@@ -286,7 +288,7 @@ const PaymentMethodsScreen: React.FC = () => {
             style={styles.addButtonGradient}
           >
             <Icon name="plus" size={20} color="#FFFFFF" />
-            <Text style={styles.addButtonText}>Add Payment Method</Text>
+            <Text style={styles.addButtonText}>{t('payment.addPaymentMethod')}</Text>
           </LinearGradient>
         </TouchableOpacity>
 

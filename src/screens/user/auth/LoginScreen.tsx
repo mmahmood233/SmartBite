@@ -25,6 +25,7 @@ import { AuthStackParamList, RootStackParamList } from '../../../types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp as RootNav } from '@react-navigation/native-stack';
 import { signIn, signInWithApple, signInWithGoogle } from '../../../services/auth.service';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -37,6 +38,7 @@ interface LoginScreenProps {
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const rootNav = useNavigation<RootNav<RootStackParamList>>();
+  const { t } = useLanguage();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -46,7 +48,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const handleSignIn = async (): Promise<void> => {
     // Validate inputs
     if (!email.trim() || !password.trim()) {
-      setError('Please enter both email and password');
+      setError(t('validation.required'));
       return;
     }
 
@@ -135,17 +137,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         <View style={styles.headerSection}>
           <AnimatedLogo size={80} />
           <Text style={styles.brandName}>Wajba</Text>
-          <Text style={styles.tagline}>Middle Eastern warmth meets intelligent personalization</Text>
+          <Text style={styles.tagline}>{t('auth.tagline')}</Text>
         </View>
 
         {/* Form Section */}
         <View style={styles.formSection}>
-          <Text style={styles.welcomeText}>Welcome Back</Text>
-          <Text style={styles.subtitleText}>Sign in to continue</Text>
+          <Text style={styles.welcomeText}>{t('auth.welcomeBack')}</Text>
+          <Text style={styles.subtitleText}>{t('auth.signInToContinue')}</Text>
 
           {/* Email Input */}
           <Input
-            label="Email"
+            label={t('auth.email')}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -154,7 +156,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           {/* Password Input */}
           <Input
-            label="Password"
+            label={t('auth.password')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
@@ -179,22 +181,22 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             style={styles.forgotPassword}
             accessibilityLabel="Forgot Password"
           >
-            Forgot Password?
+            {t('auth.forgotPassword')}
           </Link>
 
           {/* Login Button */}
           <GradientButton
-            title={loading ? "Signing In..." : "Sign In"}
+            title={loading ? t('auth.signingIn') : t('auth.signIn')}
             onPress={handleSignIn}
             disabled={loading}
             loading={loading}
-            accessibilityLabel="Sign in to SmartBite"
+            accessibilityLabel="Sign in to Wajba"
           />
 
           {/* Divider */}
           <View style={styles.dividerContainer}>
             <View style={styles.divider} />
-            <Text style={styles.dividerText}>or continue with</Text>
+            <Text style={styles.dividerText}>{t('auth.orContinueWith')}</Text>
             <View style={styles.divider} />
           </View>
 
@@ -216,12 +218,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           {/* Sign Up Link */}
           <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>Don't have an account? </Text>
+            <Text style={styles.signupText}>{t('auth.noAccount')} </Text>
             <Link 
               onPress={() => navigation.navigate('Signup')}
-              accessibilityLabel="Sign up for SmartBite"
+              accessibilityLabel="Sign up for Wajba"
             >
-              Sign Up
+              {t('auth.signUp')}
             </Link>
           </View>
         </View>

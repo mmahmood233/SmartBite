@@ -22,6 +22,7 @@ import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography }
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
   getAllCategories,
   createCategory,
@@ -34,6 +35,7 @@ import {
 // Using AdminCategory interface from service
 
 const CategoriesManagementScreen: React.FC = () => {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);

@@ -18,8 +18,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.wajba.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "SmartBite needs your location to show nearby restaurants and calculate accurate delivery times.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "SmartBite needs your location to show nearby restaurants and calculate accurate delivery times."
+        "NSLocationWhenInUseUsageDescription": "Wajba needs your location to show nearby restaurants and calculate accurate delivery times.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Wajba needs your location to show nearby restaurants and calculate accurate delivery times."
       },
       "config": {
         "googleMapsApiKey": ""
@@ -45,7 +45,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow SmartBite to use your location to show nearby restaurants and calculate delivery times."
+          "locationAlwaysAndWhenInUsePermission": "Allow Wajba to use your location to show nearby restaurants and calculate delivery times."
         }
       ]
     ]

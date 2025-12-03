@@ -26,6 +26,7 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { sendAIMessage, extractDishRecommendations } from '../../../services/ai.service';
 import { supabase } from '../../../lib/supabase';
 import DishDetailModal from '../restaurant/DishDetailModal';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -46,25 +47,28 @@ interface DishRecommendation {
   rating: number;
   eta: string;
   spicyLevel?: number;
+  icon: 'zap';
 }
-
-const QUICK_PROMPTS = [
-  { id: '1', text: 'I want something spicy 🌶️', icon: 'flame' },
-  { id: '2', text: 'Show vegetarian meals 🥗', icon: 'leaf' },
-  { id: '3', text: 'Cheap lunch near me 💸', icon: 'dollar-sign' },
-  { id: '4', text: 'Healthy options 🥗', icon: 'heart' },
-  { id: '5', text: 'Fast delivery ⚡', icon: 'zap' },
-];
 
 const AIChatScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
+  
+  const QUICK_PROMPTS = [
+    { id: '1', text: t('ai.quickPrompt1'), icon: 'flame' },
+    { id: '2', text: t('ai.quickPrompt2'), icon: 'leaf' },
+    { id: '3', text: t('ai.quickPrompt3'), icon: 'dollar-sign' },
+    { id: '4', text: t('ai.quickPrompt4'), icon: 'heart' },
+    { id: '5', text: t('ai.quickPrompt5'), icon: 'zap' },
+  ];
+
   const scrollViewRef = useRef<ScrollView>(null);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       type: 'ai',
-      text: "Hey! I'm Wajba AI 🤖\n\nTell me what you're craving, and I'll find the perfect meal for you! Try asking about spicy food, vegetarian options, or budget-friendly meals.",
+      text: `${t('ai.greeting')}\n\n${t('ai.welcomeMessage')}`,
       timestamp: new Date(),
     },
   ]);
@@ -530,7 +534,7 @@ const AIChatScreen: React.FC = () => {
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.input}
-            placeholder="Type your craving..."
+            placeholder={t('ai.placeholder')}
             placeholderTextColor="#94A3B8"
             value={message}
             onChangeText={setMessage}

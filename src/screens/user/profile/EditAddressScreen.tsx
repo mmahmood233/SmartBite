@@ -23,6 +23,7 @@ import { validateRequired } from '../../../utils';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import Snackbar from '../../../components/Snackbar';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'EditAddress'>;
@@ -31,6 +32,7 @@ const ADDRESS_TYPES = ['Home', 'Work', 'Other'];
 
 const EditAddressScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
   const route = useRoute<RouteProps>();
 
   const { addressId } = route.params;

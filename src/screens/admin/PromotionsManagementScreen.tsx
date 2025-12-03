@@ -20,6 +20,7 @@ import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography }
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
   getAllPromotions,
   deletePromotion,
@@ -30,6 +31,7 @@ import {
 // Promotion interface now imported from service
 
 const PromotionsManagementScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation();
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);

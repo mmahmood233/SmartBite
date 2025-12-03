@@ -24,6 +24,7 @@ import { getStrings } from '../../constants/partnerStrings';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
   getPartnerOrders,
   getNewOrders,
@@ -40,7 +41,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const strings = getStrings('en');
 
 const LiveOrdersScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { t } = useLanguage();
   const [selectedFilter, setSelectedFilter] = useState('all');
   
   // Refs for scrolling

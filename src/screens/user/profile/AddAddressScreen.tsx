@@ -22,14 +22,20 @@ import { validateRequired } from '../../../utils';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import Snackbar from '../../../components/Snackbar';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteParams = RouteProp<RootStackParamList, 'AddAddress'>;
 
 const ADDRESS_TYPES = ['Home', 'Work', 'Other'];
 
-const AddAddressScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
+interface AddAddressScreenProps {
+  navigation: NavigationProp;
+}
+
+const AddAddressScreen: React.FC<AddAddressScreenProps> = ({ navigation }) => {
+  const { t } = useLanguage();
+  const navigationProp = useNavigation<NavigationProp>();
   const route = useRoute<RouteParams>();
 
   const [addressTitle, setAddressTitle] = useState('Home');
@@ -176,7 +182,7 @@ const AddAddressScreen: React.FC = () => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add New Address</Text>
+        <Text style={styles.headerTitle}>{t('addresses.addAddress')}</Text>
         <View style={styles.headerRight} />
       </View>
 

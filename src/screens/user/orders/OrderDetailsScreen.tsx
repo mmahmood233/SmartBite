@@ -19,6 +19,7 @@ import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatCurrency, formatDate, formatOrderNumber } from '../../../utils';
 import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = RouteProp<RootStackParamList, 'OrderDetails'>;
@@ -31,10 +32,16 @@ interface OrderItem {
   addOns?: string[];
 }
 
-const OrderDetailsScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProps>();
-  const { orderId, isActive } = route.params;
+interface OrderDetailsScreenProps {
+  navigation: NavigationProp;
+  route: RouteProps;
+}
+
+const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigation }) => {
+  const { t } = useLanguage();
+  const navigationProp = useNavigation<NavigationProp>();
+  const routeProp = useRoute<RouteProps>();
+  const { orderId, isActive } = routeProp.params;
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -162,7 +169,7 @@ const OrderDetailsScreen: React.FC = () => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Icon name="arrow-left" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Order Details</Text>
+          <Text style={styles.headerTitle}>{t('orders.orderDetails')}</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.loadingContainer}>
@@ -180,10 +187,10 @@ const OrderDetailsScreen: React.FC = () => {
           <Icon name="arrow-left" size={24} color={colors.primary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Order Details</Text>
-          <Text style={styles.headerSubtitle}>Order #{orderData.orderNumber}</Text>
+          <Text style={styles.headerTitle}>{t('orders.orderDetails')}</Text>
+          <Text style={styles.headerSubtitle}>{t('orders.orderNumber')} #{orderData.orderNumber}</Text>
           <Text style={styles.headerMeta}>
-            {orderData.items.length} items • BD {orderData.total.toFixed(2)} • {isActive ? 'In Progress' : `Delivered ${orderData.deliveryDate}`}
+            {orderData.items.length} {t('orders.items')} • BD {orderData.total.toFixed(2)} • {isActive ? t('orders.inProgress') : `${t('orders.delivered')} ${orderData.deliveryDate}`}
           </Text>
         </View>
         <View style={{ width: 40 }} />
@@ -204,7 +211,7 @@ const OrderDetailsScreen: React.FC = () => {
                 <Text style={styles.restaurantName}>{orderData.restaurant.name}</Text>
                 <View style={styles.restaurantMeta}>
                   <Text style={styles.statusText}>
-                    {isActive ? 'In Progress' : 'Delivered'}
+                    {isActive ? t('orders.inProgress') : t('orders.delivered')}
                   </Text>
                   <Text style={styles.metaDot}>•</Text>
                   <Text style={styles.metaText}>{orderData.deliveryDate}</Text>
@@ -232,7 +239,7 @@ const OrderDetailsScreen: React.FC = () => {
                     style={styles.trackButtonGradient}
                   >
                     <Icon name="navigation" size={16} color="#FFFFFF" />
-                    <Text style={styles.trackButtonText}>Track Order</Text>
+                    <Text style={styles.trackButtonText}>{t('orders.trackOrder')}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               ) : (
@@ -248,7 +255,7 @@ const OrderDetailsScreen: React.FC = () => {
                     style={styles.reorderButtonGradient}
                   >
                     <Icon name="refresh-cw" size={16} color="#FFFFFF" />
-                    <Text style={styles.reorderButtonText}>Reorder</Text>
+                    <Text style={styles.reorderButtonText}>{t('orders.reorder')}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               )}
@@ -258,7 +265,7 @@ const OrderDetailsScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <Icon name="message-circle" size={16} color={colors.primary} />
-                <Text style={styles.supportButtonText}>Contact Support</Text>
+                <Text style={styles.supportButtonText}>{t('orders.contactSupport')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -266,7 +273,7 @@ const OrderDetailsScreen: React.FC = () => {
 
         {/* Items Ordered */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Items Ordered</Text>
+          <Text style={styles.sectionTitle}>{t('orders.itemsOrdered')}</Text>
           <View style={styles.card}>
             {orderData.items.map((item, index) => (
               <View key={item.id}>
@@ -292,11 +299,11 @@ const OrderDetailsScreen: React.FC = () => {
             <View style={styles.receiptDivider} />
 
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryLabel}>{t('cart.subtotal')}</Text>
               <Text style={styles.summaryValue}>BD {orderData.subtotal.toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Delivery Fee</Text>
+              <Text style={styles.summaryLabel}>{t('cart.deliveryFee')}</Text>
               <Text style={styles.summaryValue}>BD {orderData.deliveryFee.toFixed(2)}</Text>
             </View>
             {orderData.discount > 0 && (
@@ -311,7 +318,7 @@ const OrderDetailsScreen: React.FC = () => {
             <View style={styles.receiptDivider} />
 
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalLabel}>{t('cart.total')}</Text>
               <Text style={styles.totalValue}>BD {orderData.total.toFixed(2)}</Text>
             </View>
           </View>
@@ -319,7 +326,7 @@ const OrderDetailsScreen: React.FC = () => {
 
         {/* Delivery Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery Information</Text>
+          <Text style={styles.sectionTitle}>{t('orders.deliveryInformation')}</Text>
           <View style={styles.deliveryCard}>
             <View style={styles.deliveryRow}>
               <View style={styles.deliveryIconContainer}>
@@ -358,7 +365,7 @@ const OrderDetailsScreen: React.FC = () => {
             end={{ x: 1, y: 0 }}
             style={styles.footerReorderGradient}
           >
-            <Text style={styles.footerReorderText}>Reorder</Text>
+            <Text style={styles.footerReorderText}>{t('orders.reorder')}</Text>
             <Icon name="arrow-right" size={18} color="#FFFFFF" />
           </LinearGradient>
         </TouchableOpacity>
@@ -367,7 +374,7 @@ const OrderDetailsScreen: React.FC = () => {
           onPress={handleContactSupport}
           activeOpacity={0.7}
         >
-          <Text style={styles.footerSupportText}>Get Help</Text>
+          <Text style={styles.footerSupportText}>{t('orders.getHelp')}</Text>
         </TouchableOpacity>
       </View>
     </View>

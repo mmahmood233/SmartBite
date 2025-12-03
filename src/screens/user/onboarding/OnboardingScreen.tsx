@@ -12,6 +12,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { GradientButton } from '../../../components';
 import { colors } from '../../../theme/colors';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { tokens } from '../../../theme/theme';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { RootStackParamList } from '../../../types';
@@ -36,25 +37,25 @@ interface OnboardingSlide {
   backgroundColor: string;
 }
 
-const slides: OnboardingSlide[] = [
+const slidesData: OnboardingSlide[] = [
   {
     id: '1',
-    title: 'Discover local flavors with AI-powered recommendations',
-    subtitle: 'Skip the endless scrolling — Wajba finds what fits your craving',
+    title: 'onboarding.slide1Title',
+    subtitle: 'onboarding.slide1Description',
     image: require('../../../../assets/SC_Search_logo.png'),
     backgroundColor: '#F8F9FB',
   },
   {
     id: '2',
-    title: 'Personalize your meals based on your mood and taste',
-    subtitle: 'Our AI learns what you love — whether it\'s spicy, sweet, or healthy',
+    title: 'onboarding.slide2Title',
+    subtitle: 'onboarding.slide2Description',
     image: require('../../../../assets/SC_Thinking.png'),
     backgroundColor: '#F8F9FB',
   },
   {
     id: '3',
-    title: 'Enjoy Middle Eastern warmth, delivered to your door',
-    subtitle: 'Fast delivery, real flavor — Wajba brings your favorite dishes home',
+    title: 'onboarding.slide3Title',
+    subtitle: 'onboarding.slide3Description',
     image: require('../../../../assets/wajba_logo.png'),
     backgroundColor: '#F8F9FB',
   },
@@ -66,6 +67,7 @@ const slides: OnboardingSlide[] = [
  * Swipeable with progress indicators
  */
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
+  const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -82,7 +84,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   ).current;
 
   const handleNext = (): void => {
-    if (currentIndex < slides.length - 1) {
+    if (currentIndex < slidesData.length - 1) {
       flatListRef.current?.scrollToIndex({
         index: currentIndex + 1,
         animated: true,
@@ -108,15 +110,15 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
       {/* Content */}
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.subtitle}>{item.subtitle}</Text>
+        <Text style={styles.title}>{t(item.title)}</Text>
+        <Text style={styles.subtitle}>{t(item.subtitle)}</Text>
       </View>
     </View>
   );
 
   const renderPagination = () => (
     <View style={styles.paginationContainer}>
-      {slides.map((_, index) => (
+      {slidesData.map((_, index) => (
         <View
           key={index}
           style={[
@@ -133,7 +135,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
       {/* Slides */}
       <FlatList
         ref={flatListRef}
-        data={slides}
+        data={slidesData}
         renderItem={renderSlide}
         horizontal
         pagingEnabled
@@ -151,7 +153,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
         {/* Action button */}
         <GradientButton
-          title={currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
+          title={currentIndex === slidesData.length - 1 ? t('onboarding.getStarted') : t('onboarding.next')}
           onPress={handleNext}
           style={styles.button}
         />

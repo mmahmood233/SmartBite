@@ -20,6 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import { PartnerColors, PartnerSpacing, PartnerTypography } from '../../constants/partnerTheme';
 import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 import {
   getDefaultDeliveryFee,
   updateDefaultDeliveryFee,
@@ -29,6 +30,7 @@ import {
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const AdminSettingsScreen: React.FC = () => {
+  const { t } = useLanguage();
   const navigation = useNavigation();
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -38,7 +40,7 @@ const AdminSettingsScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [adminName, setAdminName] = useState('Admin User');
-  const [adminEmail, setAdminEmail] = useState('admin@smartbite.com');
+  const [adminEmail, setAdminEmail] = useState('admin@wajba.bh');
 
   // Fetch platform settings and user data
   useEffect(() => {
@@ -89,7 +91,7 @@ const AdminSettingsScreen: React.FC = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setAdminEmail(user.email || 'admin@smartbite.com');
+        setAdminEmail(user.email || 'admin@wajba.bh');
         
         // Try to get name from user metadata or profile
         const name = user.user_metadata?.name || user.user_metadata?.full_name;
@@ -393,7 +395,7 @@ const AdminSettingsScreen: React.FC = () => {
 
         {/* App Version */}
         <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>SmartBite Admin v1.0.0</Text>
+          <Text style={styles.versionText}>Wajba Admin v1.0.0</Text>
         </View>
 
         <View style={{ height: 100 }} />

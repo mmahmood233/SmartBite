@@ -12,6 +12,8 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types';
 import { Feather as Icon } from '@expo/vector-icons';
+import { supabase } from '../../../lib/supabase';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { colors } from '../../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { formatOrderNumber } from '../../../utils';
@@ -28,10 +30,16 @@ interface TimelineStep {
   active: boolean;
 }
 
-const OrderTrackingScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProps>();
-  const { orderNumber } = route.params;
+interface OrderTrackingScreenProps {
+  navigation: NavigationProp;
+  route: RouteProps;
+}
+
+const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, navigation }) => {
+  const { t } = useLanguage();
+  const navigationProp = useNavigation<NavigationProp>();
+  const routeProp = useRoute<RouteProps>();
+  const { orderNumber } = routeProp.params;
 
   const [currentStep, setCurrentStep] = useState(1);
 

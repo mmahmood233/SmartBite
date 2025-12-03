@@ -12,7 +12,8 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types';
-import MapView, { Marker, PROVIDER_DEFAULT, Region } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { Feather as Icon } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
 import { getCurrentLocation, reverseGeocode, Coordinates } from '../../../services/location.service';
@@ -22,6 +23,7 @@ type RouteParams = RouteProp<RootStackParamList, 'PickLocation'>;
 
 const PickLocationScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useLanguage();
   const route = useRoute<RouteParams>();
   
   const mapRef = useRef<MapView>(null);

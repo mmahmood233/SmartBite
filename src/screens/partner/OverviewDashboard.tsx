@@ -230,6 +230,22 @@ const OverviewDashboard: React.FC = () => {
         <Text style={styles.dateTime}>{getCurrentDateTime()}</Text>
       </View>
 
+      {/* AI Assistant Banner */}
+      <TouchableOpacity 
+        style={styles.aiBanner}
+        onPress={() => navigation.navigate('PartnerAIChat')}
+        activeOpacity={0.8}
+      >
+        <View style={styles.aiIconContainer}>
+          <Icon name="cpu" size={24} color="#00A86B" />
+        </View>
+        <View style={styles.aiTextContainer}>
+          <Text style={styles.aiTitle}>AI Business Assistant</Text>
+          <Text style={styles.aiSubtitle}>Get insights, tips & analytics</Text>
+        </View>
+        <Icon name="chevron-right" size={20} color="#666" />
+      </TouchableOpacity>
+
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -364,6 +380,46 @@ const styles = StyleSheet.create({
   dateTime: {
     fontSize: 13,
     color: '#A1A1A1',
+  },
+
+  // AI Assistant Banner
+  aiBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginVertical: 12,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#00A86B20',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  aiIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#00A86B10',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  aiTextContainer: {
+    flex: 1,
+  },
+  aiTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 2,
+  },
+  aiSubtitle: {
+    fontSize: 13,
+    color: '#666',
   },
   
   // 2-Column Layout

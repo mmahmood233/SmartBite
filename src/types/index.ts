@@ -26,6 +26,7 @@ export type RootStackParamList = {
     amount: number;
     onSuccess: (result: any) => void;
   };
+  PartnerAIChat: undefined;
   OrderConfirmation: {
     orderId: string;
     orderNumber?: string;

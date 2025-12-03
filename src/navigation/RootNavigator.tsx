@@ -24,6 +24,7 @@ import OrderDetailsScreen from '../screens/user/orders/OrderDetailsScreen';
 
 // Partner Portal - Screens
 import PartnerOrderDetailsScreen from '../screens/partner/OrderDetailsScreen';
+import PartnerAIChatScreen from '../screens/partner/PartnerAIChatScreen';
 
 // Admin Portal - Screens
 import AddPromotionScreen from '../screens/admin/AddPromotionScreen';
@@ -89,6 +90,7 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="PartnerPortal" component={PartnerTabNavigator} />
       <Stack.Screen name="PartnerOrderDetails" component={PartnerOrderDetailsScreen} />
+      <Stack.Screen name="PartnerAIChat" component={PartnerAIChatScreen} />
       <Stack.Screen name="AdminPortal" component={AdminTabNavigator} />
       <Stack.Screen name="AddPromotion" component={AddPromotionScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />

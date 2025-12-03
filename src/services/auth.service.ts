@@ -68,15 +68,23 @@ export const signUp = async (
  * @returns Session and user data
  */
 export const signIn = async (email: string, password: string) => {
+  console.log('🔐 Attempting login for:', email);
+  
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
+    // Log the actual error for debugging
+    console.error('❌ Auth error:', error);
+    console.error('Error code:', error.status);
+    console.error('Error message:', error.message);
     // Throw user-friendly error message
     throw new Error('Invalid email or password');
   }
+  
+  console.log('✅ Auth successful, user ID:', data.user?.id);
 
   // Fetch user profile
   const { data: userData, error: userError } = await supabase

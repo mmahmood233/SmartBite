@@ -26,7 +26,6 @@ import { useLanguage } from '../../contexts/LanguageContext';
 const screenWidth = Dimensions.get('window').width;
 
 const AdminDashboardScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
   const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [stats, setStats] = useState<DashboardStats | null>(null);

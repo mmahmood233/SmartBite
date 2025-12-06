@@ -72,6 +72,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         rootNav.reset({ index: 0, routes: [{ name: 'AdminPortal' }] });
       } else if (userRole === 'partner') {
         rootNav.reset({ index: 0, routes: [{ name: 'PartnerPortal' }] });
+      } else if (userRole === 'rider') {
+        rootNav.reset({ index: 0, routes: [{ name: 'RiderTabs' }] });
       } else {
         rootNav.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
       }

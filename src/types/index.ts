@@ -83,6 +83,13 @@ export type RootStackParamList = {
       isActive: boolean;
     };
   };
+  RiderTabs: undefined;
+  RiderHome: undefined;
+  RiderActiveDelivery: {
+    orderId: string;
+  };
+  RiderHistory: undefined;
+  RiderEarnings: undefined;
 };
 
 export type AuthStackParamList = {

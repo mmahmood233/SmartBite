@@ -143,6 +143,8 @@ const LiveOrdersScreen: React.FC = () => {
         getActiveOrders(restaurantId),
       ]);
 
+      console.log('Sample order with rider:', allOrders[0]);
+
       console.log('All orders:', allOrders.length);
       console.log('New orders:', newOrdersList.length);
       console.log('Active orders:', activeOrdersList.length);
@@ -386,6 +388,13 @@ const LiveOrdersScreen: React.FC = () => {
 
                 <Text style={styles.orderCustomer}>{order.users?.full_name || 'Customer'} • {order.order_items?.length || 0} items</Text>
 
+                {order.rider_id && order.riders && (
+                  <View style={styles.riderInfo}>
+                    <Icon name="truck" size={12} color={colors.textSecondary} />
+                    <Text style={styles.riderText}>Rider: {order.riders.full_name}</Text>
+                  </View>
+                )}
+
                 <View style={styles.expiresContainer}>
                   <Icon name="alert-circle" size={14} color="#FF9500" />
                   <Text style={styles.expiresText}>New order - Please respond</Text>
@@ -436,6 +445,13 @@ const LiveOrdersScreen: React.FC = () => {
               </View>
 
               <Text style={styles.orderCustomer}>{order.users?.full_name || 'Customer'} • {order.order_items?.length || 0} items</Text>
+
+              {order.rider_id && order.riders && (
+                <View style={styles.riderInfo}>
+                  <Icon name="truck" size={12} color={colors.textSecondary} />
+                  <Text style={styles.riderText}>Rider: {order.riders.full_name}</Text>
+                </View>
+              )}
 
               <View style={styles.orderFooter}>
                 <View style={[styles.statusPill, { backgroundColor: order.status === 'preparing' ? '#FFF5CC' : '#E3F2FD' }]}>
@@ -841,6 +857,17 @@ const styles = StyleSheet.create({
   },
   navLabelActive: {
     color: '#00A896',
+  },
+  riderInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  riderText: {
+    fontSize: 12,
+    color: '#6B7280',
   },
 });
 

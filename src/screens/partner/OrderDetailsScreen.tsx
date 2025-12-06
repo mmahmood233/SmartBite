@@ -54,6 +54,7 @@ const OrderDetailsScreen: React.FC = () => {
         const order = await getOrderDetails(orderId);
         console.log('Order details:', order);
         console.log('User data:', order?.users);
+        console.log('Rider data:', order?.riders);
         console.log('Address data:', order?.user_addresses);
         console.log('Order items:', order?.order_items);
         setOrderDetails(order);
@@ -66,6 +67,36 @@ const OrderDetailsScreen: React.FC = () => {
     };
 
     fetchOrder();
+  }, [orderId]);
+
+  // Real-time subscription for order updates
+  useEffect(() => {
+    if (!orderId) return;
+
+    const orderSubscription = supabase
+      .channel('partner-order-details')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${orderId}`,
+        },
+        (payload) => {
+          console.log('Order updated:', payload);
+          const fetchOrder = async () => {
+            const order = await getOrderDetails(orderId);
+            setOrderDetails(order);
+          };
+          fetchOrder();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(orderSubscription);
+    };
   }, [orderId]);
 
   const handleAcceptOrder = async () => {
@@ -249,6 +280,35 @@ const OrderDetailsScreen: React.FC = () => {
             </View>
           </View>
         </View>
+
+        {/* Rider Information - Only show if rider is assigned */}
+        {orderDetails.rider_id && orderDetails.riders && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Icon name="truck" size={18} color={PartnerColors.light.text.secondary} />
+              <Text style={styles.sectionTitle}>DELIVERY RIDER</Text>
+            </View>
+            <View style={styles.infoCard}>
+              <View style={styles.infoRow}>
+                <Icon name="user" size={16} color={PartnerColors.light.text.secondary} />
+                <Text style={styles.infoLabel}>Rider</Text>
+                <Text style={styles.infoValue}>{orderDetails.riders.full_name || 'Assigned'}</Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.infoRow}>
+                <Icon name="phone" size={16} color={PartnerColors.light.text.secondary} />
+                <Text style={styles.infoLabel}>Phone</Text>
+                <Text style={styles.infoValue}>{orderDetails.riders.phone || 'N/A'}</Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.infoRow}>
+                <Icon name="truck" size={16} color={PartnerColors.light.text.secondary} />
+                <Text style={styles.infoLabel}>Vehicle</Text>
+                <Text style={styles.infoValue}>{orderDetails.riders.vehicle_type || 'N/A'}</Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* Order Items */}
         <View style={styles.section}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   Image,
   Platform,
   ScrollView,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -41,17 +43,96 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
   const routeProp = useRoute<RouteProps>();
   const { orderNumber } = routeProp.params;
 
+  const [loading, setLoading] = useState(true);
+  const [orderData, setOrderData] = useState<any>(null);
+  const [riderData, setRiderData] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
 
-  const orderData = {
-    restaurant: 'Al Qariah',
-    orderNumber: orderNumber,
-    eta: '22 min',
-    rider: {
-      name: 'Ahmed',
-      phone: '+973 33560803',
-      rating: 4.8,
-    },
+  // Load order and rider data
+  useEffect(() => {
+    loadOrderData();
+  }, []);
+
+  // Real-time subscription for order updates
+  useEffect(() => {
+    if (!orderData?.id) return;
+
+    const orderSubscription = supabase
+      .channel('user-order-tracking')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${orderData.id}`,
+        },
+        (payload) => {
+          console.log('Order updated:', payload);
+          loadOrderData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(orderSubscription);
+    };
+  }, [orderData?.id]);
+
+  const loadOrderData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch order with rider and restaurant info
+      const { data: order, error } = await supabase
+        .from('orders')
+        .select(`
+          id,
+          order_number,
+          status,
+          delivery_status,
+          rider_id,
+          estimated_delivery_time,
+          restaurants (
+            name
+          ),
+          riders (
+            id,
+            full_name,
+            phone,
+            vehicle_type,
+            rating
+          )
+        `)
+        .eq('order_number', orderNumber)
+        .single();
+
+      if (error) throw error;
+
+      setOrderData(order);
+      setRiderData(order.riders);
+      
+      // Update step based on delivery status
+      updateStepFromStatus(order.delivery_status || order.status);
+    } catch (error) {
+      console.error('Error loading order:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStepFromStatus = (status: string) => {
+    const statusMap: Record<string, number> = {
+      'pending': 0,
+      'confirmed': 1,
+      'preparing': 1,
+      'ready_for_pickup': 2,
+      'rider_assigned': 2,
+      'picked_up': 3,
+      'out_for_delivery': 3,
+      'delivered': 4,
+    };
+    setCurrentStep(statusMap[status] || 0);
   };
 
   const timelineSteps: TimelineStep[] = [
@@ -98,7 +179,9 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
   ];
 
   const handleCallRider = () => {
-    console.log('Calling rider...');
+    if (riderData?.phone) {
+      Linking.openURL(`tel:${riderData.phone}`);
+    }
   };
 
   const handleContactSupport = () => {
@@ -109,6 +192,26 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
     navigation.navigate('DeliveryComplete');
   };
 
+  if (loading || !orderData) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Icon name="arrow-left" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>{t('orders.trackOrder')}</Text>
+          </View>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>{t('common.loading')}...</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -117,9 +220,9 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
           <Icon name="arrow-left" size={24} color={colors.primary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Track Order</Text>
+          <Text style={styles.headerTitle}>{t('orders.trackOrder')}</Text>
           <Text style={styles.headerSubtitle}>
-            {orderData.restaurant} • #{orderData.orderNumber}
+            {orderData.restaurants?.name || 'Restaurant'} • #{orderData.order_number}
           </Text>
         </View>
         <View style={{ width: 40 }} />
@@ -132,28 +235,27 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
             <Icon name="clock" size={32} color={colors.primary} />
           </View>
           <View style={styles.etaInfo}>
-            <Text style={styles.etaLabel}>Estimated Arrival</Text>
-            <Text style={styles.etaTime}>{orderData.eta}</Text>
+            <Text style={styles.etaLabel}>{t('orders.estimatedArrival')}</Text>
+            <Text style={styles.etaTime}>
+              {orderData.estimated_delivery_time 
+                ? new Date(orderData.estimated_delivery_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                : '25-30 min'}
+            </Text>
           </View>
         </View>
 
-        {/* Map Section */}
-        <View style={styles.mapSection}>
-          <Image
-            source={require('../../../../assets/map_sample.png')}
-            style={styles.mapImage}
-            resizeMode="cover"
-          />
-          <View style={styles.mapOverlay}>
+        {/* Rider Card - Only show if rider is assigned */}
+        {riderData && (
+          <View style={styles.mapSection}>
             <View style={styles.riderCard}>
               <View style={styles.riderAvatar}>
                 <Icon name="user" size={24} color="#FFFFFF" />
               </View>
               <View style={styles.riderInfo}>
-                <Text style={styles.riderName}>{orderData.rider.name} (Rider)</Text>
-                <View style={styles.riderRating}>
-                  <Icon name="star" size={12} color="#FFB800" />
-                  <Text style={styles.riderRatingText}>{orderData.rider.rating}</Text>
+                <Text style={styles.riderName}>{riderData.full_name} ({t('common.rider')})</Text>
+                <View style={styles.riderDetails}>
+                  <Icon name="truck" size={12} color={colors.textSecondary} />
+                  <Text style={styles.riderVehicle}>{riderData.vehicle_type || 'Vehicle'}</Text>
                 </View>
               </View>
               <TouchableOpacity
@@ -165,7 +267,7 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        )}
 
         {/* Timeline */}
         <View style={styles.timelineSection}>
@@ -493,6 +595,33 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#8B6914',
+  },
+  deliveryCompleteButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FF9500',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.xxxl,
+  },
+  loadingText: {
+    marginTop: SPACING.md,
+    fontSize: FONT_SIZE.md,
+    color: colors.textSecondary,
+  },
+  riderDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  riderVehicle: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textTransform: 'capitalize',
   },
 });
 

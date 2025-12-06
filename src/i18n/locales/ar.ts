@@ -379,4 +379,77 @@ export default {
     km: 'كم',
     mi: 'ميل',
   },
+
+  // Rider Dashboard
+  rider: {
+    // Home Screen
+    availableOrders: 'الطلبات المتاحة',
+    youAreOnline: 'أنت متصل',
+    youAreOffline: 'أنت غير متصل',
+    online: 'متصل',
+    offline: 'غير متصل',
+    goOnline: 'اتصل',
+    acceptOrder: 'قبول الطلب',
+    noOrders: 'لا توجد طلبات متاحة',
+    noOrdersMessage: 'ستظهر الطلبات الجديدة هنا عندما تحتاج المطاعم للتوصيل',
+    offlineTitle: 'أنت غير متصل',
+    offlineMessage: 'اتصل لبدء استقبال طلبات التوصيل',
+    
+    // Order Details
+    pickup: 'الاستلام',
+    delivery: 'التوصيل',
+    distance: 'المسافة',
+    estimatedTime: 'الوقت المقدر',
+    items: 'عناصر',
+    earnings: 'الأرباح',
+    
+    // Active Delivery Screen
+    activeDelivery: 'التوصيل النشط',
+    headingToRestaurant: 'في الطريق إلى المطعم',
+    arrivedAtRestaurant: 'وصلت إلى المطعم',
+    pickedUpOrder: 'تم استلام الطلب',
+    headingToCustomer: 'في الطريق إلى العميل',
+    arrivedAtCustomer: 'وصلت إلى العميل',
+    delivered: 'تم التوصيل',
+    
+    // Action Buttons
+    arrivedAtRestaurantBtn: 'وصلت إلى المطعم',
+    pickupOrderBtn: 'استلمت الطلب',
+    headingToCustomerBtn: 'في الطريق إلى العميل',
+    arrivedAtCustomerBtn: 'وصلت إلى العميل',
+    markAsDelivered: 'تم التوصيل',
+    
+    // Location Cards
+    pickupLocation: 'موقع الاستلام',
+    deliveryLocation: 'موقع التوصيل',
+    call: 'اتصال',
+    navigate: 'التنقل',
+    
+    // Order Information
+    orderInformation: 'معلومات الطلب',
+    deliveryComplete: 'اكتمل التوصيل!',
+    youEarned: 'لقد ربحت',
+    
+    // History Screen
+    deliveryHistory: 'سجل التوصيل',
+    deliveries: 'توصيلات',
+    noDeliveries: 'لا توجد توصيلات بعد',
+    noDeliveriesMessage: 'ستظهر توصيلاتك المكتملة هنا',
+    history: 'السجل',
+    orders: 'الطلبات',
+    
+    // Earnings Screen
+    earnings: 'الأرباح',
+    trackIncome: 'تتبع دخلك',
+    totalEarnings: 'إجمالي الأرباح',
+    thisMonth: 'هذا الشهر',
+    avgScore: 'المتوسط',
+    paymentHistory: 'سجل المدفوعات',
+    noPayments: 'لا توجد مدفوعات بعد',
+    noActiveDelivery: 'لا يوجد توصيل نشط',
+    
+    // Vehicle Types
+    motorcycle: 'دراجة نارية',
+    car: 'سيارة',
+  },
 };

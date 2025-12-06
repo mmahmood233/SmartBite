@@ -47,6 +47,7 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
   const slideAnim = useRef(new Animated.Value(30)).current;
   const [loading, setLoading] = useState(true);
   const [orderData, setOrderData] = useState(null);
+  const [riderData, setRiderData] = useState(null);
 
   useEffect(() => {
     loadOrderDetails();
@@ -64,11 +65,37 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
     ]).start();
   }, []);
 
+  // Real-time subscription for order updates
+  useEffect(() => {
+    if (!orderId) return;
+
+    const orderSubscription = supabase
+      .channel('user-order-details')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${orderId}`,
+        },
+        (payload) => {
+          console.log('Order updated:', payload);
+          loadOrderDetails();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(orderSubscription);
+    };
+  }, [orderId]);
+
   const loadOrderDetails = async () => {
     try {
       setLoading(true);
       
-      // Fetch order with all related data
+      // Fetch order with all related data including rider
       const { data: order, error } = await supabase
         .from('orders')
         .select(`
@@ -82,6 +109,7 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
           delivery_phone,
           delivery_notes,
           created_at,
+          rider_id,
           restaurants (
             name,
             rating
@@ -93,6 +121,12 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
             unit_price,
             subtotal,
             special_request
+          ),
+          riders (
+            id,
+            full_name,
+            phone,
+            vehicle_type
           )
         `)
         .eq('id', orderId)
@@ -100,8 +134,14 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
 
       if (error) throw error;
 
+      // Store rider data separately
+      if (order.riders) {
+        setRiderData(order.riders);
+      }
+
       // Transform data
       const transformed = {
+        riderId: order.rider_id,
         orderNumber: order.order_number,
         status: order.status,
         restaurant: {
@@ -270,6 +310,44 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
             </View>
           </View>
         </View>
+
+        {/* Rider Information - Only show if rider is assigned */}
+        {orderData.riderId && riderData && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('orders.deliveryRider')}</Text>
+            <View style={styles.card}>
+              <View style={styles.riderInfoRow}>
+                <View style={styles.riderAvatar}>
+                  <Icon name="user" size={24} color="#FFFFFF" />
+                </View>
+                <View style={styles.riderDetails}>
+                  <Text style={styles.riderName}>{riderData.full_name}</Text>
+                  <View style={styles.riderMeta}>
+                    <Icon name="truck" size={12} color={colors.textSecondary} />
+                    <Text style={styles.riderVehicle}>{riderData.vehicle_type || 'Vehicle'}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={styles.riderCallButton}
+                  onPress={() => Linking.openURL(`tel:${riderData.phone}`)}
+                  activeOpacity={0.7}
+                >
+                  <Icon name="phone" size={20} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+              {isActive && (
+                <TouchableOpacity
+                  style={styles.trackRiderButton}
+                  onPress={handleTrackOrder}
+                  activeOpacity={0.7}
+                >
+                  <Icon name="navigation" size={16} color={colors.primary} />
+                  <Text style={styles.trackRiderButtonText}>{t('orders.trackRider')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Items Ordered */}
         <View style={styles.section}>

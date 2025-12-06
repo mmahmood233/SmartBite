@@ -48,6 +48,10 @@ import MainTabNavigator from './MainTabNavigator';
 import AuthNavigator from './AuthNavigator';
 import PartnerTabNavigator from './PartnerTabNavigator';
 import AdminTabNavigator from './AdminTabNavigator';
+import RiderTabNavigator from './RiderTabNavigator';
+
+// Rider Portal - Screens
+import RiderActiveDeliveryScreen from '../screens/rider/RiderActiveDeliveryScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -93,6 +97,8 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="PartnerAIChat" component={PartnerAIChatScreen} />
       <Stack.Screen name="AdminPortal" component={AdminTabNavigator} />
       <Stack.Screen name="AddPromotion" component={AddPromotionScreen} />
+      <Stack.Screen name="RiderTabs" component={RiderTabNavigator} />
+      <Stack.Screen name="RiderActiveDelivery" component={RiderActiveDeliveryScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>
   );

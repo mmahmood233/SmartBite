@@ -378,4 +378,77 @@ export default {
     km: 'km',
     mi: 'mi',
   },
+
+  // Rider Dashboard
+  rider: {
+    // Home Screen
+    availableOrders: 'Available Orders',
+    youAreOnline: 'You are online',
+    youAreOffline: 'You are offline',
+    online: 'Online',
+    offline: 'Offline',
+    goOnline: 'Go Online',
+    acceptOrder: 'Accept Order',
+    noOrders: 'No Orders Available',
+    noOrdersMessage: 'New orders will appear here when restaurants need delivery',
+    offlineTitle: "You're Offline",
+    offlineMessage: 'Go online to start receiving delivery requests',
+    
+    // Order Details
+    pickup: 'Pickup',
+    delivery: 'Delivery',
+    distance: 'Distance',
+    estimatedTime: 'Estimated Time',
+    items: 'items',
+    earnings: 'Earnings',
+    
+    // Active Delivery Screen
+    activeDelivery: 'Active Delivery',
+    headingToRestaurant: 'Heading to Restaurant',
+    arrivedAtRestaurant: 'Arrived at Restaurant',
+    pickedUpOrder: 'Order Picked Up',
+    headingToCustomer: 'Heading to Customer',
+    arrivedAtCustomer: 'Arrived at Customer',
+    delivered: 'Delivered',
+    
+    // Action Buttons
+    arrivedAtRestaurantBtn: 'Arrived at Restaurant',
+    pickupOrderBtn: 'Picked Up Order',
+    headingToCustomerBtn: 'Heading to Customer',
+    arrivedAtCustomerBtn: 'Arrived at Customer',
+    markAsDelivered: 'Mark as Delivered',
+    
+    // Location Cards
+    pickupLocation: 'Pickup Location',
+    deliveryLocation: 'Delivery Location',
+    call: 'Call',
+    navigate: 'Navigate',
+    
+    // Order Information
+    orderInformation: 'Order Information',
+    deliveryComplete: 'Delivery Complete!',
+    youEarned: 'You earned',
+    
+    // History Screen
+    deliveryHistory: 'Delivery History',
+    deliveries: 'deliveries',
+    noDeliveries: 'No Deliveries Yet',
+    noDeliveriesMessage: 'Your completed deliveries will appear here',
+    history: 'History',
+    orders: 'Orders',
+    
+    // Earnings Screen
+    earnings: 'Earnings',
+    trackIncome: 'Track your income',
+    totalEarnings: 'Total Earnings',
+    thisMonth: 'This Month',
+    avgScore: 'Average score',
+    paymentHistory: 'Payment History',
+    noPayments: 'No Payments Yet',
+    noActiveDelivery: 'No Active Delivery',
+    
+    // Vehicle Types
+    motorcycle: 'Motorcycle',
+    car: 'Car',
+  },
 };

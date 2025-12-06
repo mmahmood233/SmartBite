@@ -15,6 +15,7 @@ import {
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Feather as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-chart-kit';
@@ -26,6 +27,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 const screenWidth = Dimensions.get('window').width;
 
 const AdminDashboardScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -241,11 +243,15 @@ const AdminDashboardScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.actionsGrid}>
-            <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={styles.actionCard} 
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('UserManagement' as never)}
+            >
               <View style={[styles.actionIcon, { backgroundColor: '#E6F7F4' }]}>
-                <Icon name="plus-circle" size={24} color={PartnerColors.primary} />
+                <Icon name="users" size={24} color={PartnerColors.primary} />
               </View>
-              <Text style={styles.actionText}>Add Restaurant</Text>
+              <Text style={styles.actionText}>Manage Users</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>

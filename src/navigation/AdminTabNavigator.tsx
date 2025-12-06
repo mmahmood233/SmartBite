@@ -9,7 +9,7 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 
 // Admin Screens
-import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
+import AdminDashboardStack from './AdminDashboardStack';
 import RestaurantsManagementScreen from '../screens/admin/RestaurantsManagementScreen';
 import CategoriesManagementScreen from '../screens/admin/CategoriesManagementScreen';
 import PromotionsManagementScreen from '../screens/admin/PromotionsManagementScreen';
@@ -55,7 +55,7 @@ const AdminTabNavigator: React.FC = () => {
     >
       <Tab.Screen
         name="Dashboard"
-        component={AdminDashboardScreen}
+        component={AdminDashboardStack}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Icon name="home" size={size} color={color} />

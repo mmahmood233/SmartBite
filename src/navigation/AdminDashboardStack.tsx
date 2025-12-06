@@ -9,6 +9,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 // Admin Screens
 import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
 import UserManagementScreen from '../screens/admin/UserManagementScreen';
+import AnalyticsDashboardScreen from '../screens/admin/AnalyticsDashboardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +27,10 @@ const AdminDashboardStack: React.FC = () => {
       <Stack.Screen 
         name="UserManagement" 
         component={UserManagementScreen}
+      />
+      <Stack.Screen 
+        name="AnalyticsDashboard" 
+        component={AnalyticsDashboardScreen}
       />
     </Stack.Navigator>
   );

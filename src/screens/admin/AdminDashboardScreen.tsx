@@ -254,25 +254,15 @@ const AdminDashboardScreen: React.FC = () => {
               <Text style={styles.actionText}>Manage Users</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
-              <View style={[styles.actionIcon, { backgroundColor: '#FFF4E6' }]}>
-                <Icon name="grid" size={24} color="#FF9500" />
+            <TouchableOpacity 
+              style={styles.actionCard} 
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('AnalyticsDashboard' as never)}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: '#EEF2FF' }]}>
+                <Icon name="bar-chart-2" size={24} color="#6366F1" />
               </View>
-              <Text style={styles.actionText}>Manage Categories</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
-              <View style={[styles.actionIcon, { backgroundColor: '#F0F4FF' }]}>
-                <Icon name="tag" size={24} color="#007AFF" />
-              </View>
-              <Text style={styles.actionText}>Create Promotion</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.actionCard} activeOpacity={0.7}>
-              <View style={[styles.actionIcon, { backgroundColor: '#ECFDF5' }]}>
-                <Icon name="bar-chart-2" size={24} color="#10B981" />
-              </View>
-              <Text style={styles.actionText}>View Analytics</Text>
+              <Text style={styles.actionText}>Analytics Dashboard</Text>
             </TouchableOpacity>
           </View>
         </View>

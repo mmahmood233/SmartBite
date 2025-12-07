@@ -40,7 +40,6 @@ const strings = getStrings('en');
 // Using Dish interface from service
 
 const MenuManagementScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { t } = useLanguage();
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('All');

@@ -152,11 +152,35 @@ const PaymentScreen: React.FC<Props> = ({ route, navigation }) => {
       return;
     }
 
+    // If cash payment, skip payment processing and create order directly
+    if (selectedMethod === 'cash') {
+      setLoading(true);
+      try {
+        const cashPaymentResult = {
+          success: true,
+          paymentId: `CASH-${Date.now()}`,
+          method: 'cash',
+        };
+        
+        await createOrderInDB(cashPaymentResult);
+        Alert.alert(
+          'Order Confirmed!',
+          'Your order has been placed. Pay with cash when delivered.'
+        );
+      } catch (error) {
+        console.error('Order creation error:', error);
+        Alert.alert('Error', 'Failed to create order. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (!validateForm()) return;
 
     setLoading(true);
     try {
-      // Process payment
+      // Process payment for card/benefit
       const result = await processPayment(amount, selectedMethod, {
         cardNumber,
         cardHolder,

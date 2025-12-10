@@ -25,6 +25,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 import { supabase } from '../../../lib/supabase';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { getCurrentLocation, geocodeAddress, Coordinates } from '../../../services/location.service';
+import { getUserAddresses, UserAddress, formatAddress } from '../../../services/user-addresses.service';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -48,14 +49,18 @@ const CheckoutScreen: React.FC = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showAddressModal, setShowAddressModal] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<UserAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState('');
   const [newPhone, setNewPhone] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [deliveryCoords, setDeliveryCoords] = useState<Coordinates | null>(null);
 
-  // Fetch user profile
+  // Fetch user profile and saved addresses
   useEffect(() => {
     loadUserProfile();
+    loadSavedAddresses();
   }, []);
 
   const loadUserProfile = async () => {
@@ -91,6 +96,15 @@ const CheckoutScreen: React.FC = () => {
     }
   };
 
+  const loadSavedAddresses = async () => {
+    try {
+      const addresses = await getUserAddresses();
+      setSavedAddresses(addresses);
+    } catch (error) {
+      console.error('Error loading saved addresses:', error);
+    }
+  };
+
   const deliveryAddress = {
     name: userProfile?.full_name || 'User',
     address: userProfile?.address || 'No address set',
@@ -102,6 +116,35 @@ const CheckoutScreen: React.FC = () => {
     type: 'card',
     last4: '8834',
     brand: 'Mastercard',
+  };
+
+  const handleSelectAddress = async (address: UserAddress) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Update user profile with selected address
+        const fullAddress = formatAddress(address);
+        const { error } = await supabase
+          .from('users')
+          .update({
+            address: fullAddress,
+            phone: address.phone || userProfile?.phone,
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+
+        // Reload profile
+        await loadUserProfile();
+        setShowAddressModal(false);
+        setSelectedAddressId(null);
+        setShowNewAddressForm(false);
+      }
+    } catch (error) {
+      console.error('Error selecting address:', error);
+      Alert.alert('Error', 'Failed to select address');
+    }
   };
 
   const handleSaveAddress = async () => {
@@ -129,6 +172,7 @@ const CheckoutScreen: React.FC = () => {
         // Reload profile
         await loadUserProfile();
         setShowAddressModal(false);
+        setShowNewAddressForm(false);
         Alert.alert('Success', 'Address and phone number saved!');
       }
     } catch (error) {
@@ -151,9 +195,10 @@ const CheckoutScreen: React.FC = () => {
     if (!userProfile?.phone) missingFields.push('phone number');
 
     if (missingFields.length > 0) {
-      // Pre-fill existing data
-      setNewAddress(userProfile?.address || '');
-      setNewPhone(userProfile?.phone || '');
+      // Show address selection modal
+      setShowNewAddressForm(false);
+      setSelectedAddressId(null);
+      await loadSavedAddresses();
       setShowAddressModal(true);
       return;
     }
@@ -248,7 +293,16 @@ const CheckoutScreen: React.FC = () => {
               </View>
             )}
             
-            <TouchableOpacity style={styles.changeButtonFilled} activeOpacity={0.8}>
+            <TouchableOpacity 
+              style={styles.changeButtonFilled} 
+              activeOpacity={0.8}
+              onPress={() => {
+                setShowNewAddressForm(false);
+                setSelectedAddressId(null);
+                loadSavedAddresses();
+                setShowAddressModal(true);
+              }}
+            >
               <Text style={styles.changeButtonFilledText}>Change Address</Text>
             </TouchableOpacity>
           </View>
@@ -384,61 +438,137 @@ const CheckoutScreen: React.FC = () => {
         visible={showAddressModal}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setShowAddressModal(false)}
+        onRequestClose={() => {
+          setShowAddressModal(false);
+          setShowNewAddressForm(false);
+        }}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add Delivery Information</Text>
+            <Text style={styles.modalTitle}>
+              {showNewAddressForm ? 'Add Delivery Information' : 'Select Delivery Address'}
+            </Text>
             <Text style={styles.modalSubtitle}>
-              Please provide your address and phone number to continue
+              {showNewAddressForm 
+                ? 'Please provide your address and phone number to continue'
+                : 'Choose from your saved addresses'}
             </Text>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Phone Number</Text>
-              <TextInput
-                style={styles.modalInput}
-                placeholder="+973 XXXX XXXX"
-                value={newPhone}
-                onChangeText={setNewPhone}
-                keyboardType="phone-pad"
-              />
-            </View>
+            {!showNewAddressForm ? (
+              <>
+                {/* Saved Addresses List */}
+                <ScrollView style={styles.addressList} showsVerticalScrollIndicator={false}>
+                  {savedAddresses.length > 0 ? (
+                    savedAddresses.map((address) => (
+                      <TouchableOpacity
+                        key={address.id}
+                        style={[
+                          styles.addressOption,
+                          selectedAddressId === address.id && styles.addressOptionSelected
+                        ]}
+                        onPress={() => handleSelectAddress(address)}
+                      >
+                        <View style={styles.addressOptionHeader}>
+                          <Icon 
+                            name={address.is_default ? "home" : "map-pin"} 
+                            size={18} 
+                            color={colors.primary} 
+                          />
+                          <Text style={styles.addressLabel}>{address.label}</Text>
+                          {address.is_default && (
+                            <View style={styles.defaultBadge}>
+                              <Text style={styles.defaultBadgeText}>Default</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={styles.addressOptionText}>{formatAddress(address)}</Text>
+                        {address.phone && (
+                          <Text style={styles.addressOptionPhone}>📞 {address.phone}</Text>
+                        )}
+                      </TouchableOpacity>
+                    ))
+                  ) : (
+                    <View style={styles.emptyAddresses}>
+                      <Icon name="map-pin" size={48} color="#CCC" />
+                      <Text style={styles.emptyAddressesText}>No saved addresses yet</Text>
+                    </View>
+                  )}
+                </ScrollView>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Delivery Address</Text>
-              <TextInput
-                style={[styles.modalInput, styles.addressInput]}
-                placeholder="Building, Road, Block, Area"
-                value={newAddress}
-                onChangeText={setNewAddress}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-              />
-              <Text style={styles.inputHint}>
-                📍 Location picker coming soon
-              </Text>
-            </View>
+                {/* Add New Address Button */}
+                <TouchableOpacity
+                  style={styles.addNewAddressButton}
+                  onPress={() => {
+                    setNewAddress(userProfile?.address || '');
+                    setNewPhone(userProfile?.phone || '');
+                    setShowNewAddressForm(true);
+                  }}
+                >
+                  <Icon name="plus-circle" size={20} color={colors.primary} />
+                  <Text style={styles.addNewAddressText}>Add New Address</Text>
+                </TouchableOpacity>
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={() => setShowAddressModal(false)}
-              >
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalSaveButton}
-                onPress={handleSaveAddress}
-                disabled={savingProfile}
-              >
-                {savingProfile ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.modalSaveText}>Save & Continue</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  style={styles.modalCancelButtonFull}
+                  onPress={() => {
+                    setShowAddressModal(false);
+                    setShowNewAddressForm(false);
+                  }}
+                >
+                  <Text style={styles.modalCancelText}>Cancel</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                {/* New Address Form */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Phone Number</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="+973 XXXX XXXX"
+                    value={newPhone}
+                    onChangeText={setNewPhone}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Delivery Address</Text>
+                  <TextInput
+                    style={[styles.modalInput, styles.addressInput]}
+                    placeholder="Road 111, Block 111, House 111"
+                    value={newAddress}
+                    onChangeText={setNewAddress}
+                    multiline
+                    numberOfLines={3}
+                    textAlignVertical="top"
+                  />
+                  <Text style={styles.inputHint}>
+                    📍 Location picker coming soon
+                  </Text>
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={styles.modalCancelButton}
+                    onPress={() => setShowNewAddressForm(false)}
+                  >
+                    <Text style={styles.modalCancelText}>Back</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalSaveButton}
+                    onPress={handleSaveAddress}
+                    disabled={savingProfile}
+                  >
+                    {savingProfile ? (
+                      <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.modalSaveText}>Save & Continue</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         </View>
       </Modal>
@@ -987,6 +1117,90 @@ const styles = StyleSheet.create({
   paymentInfoSubtitle: {
     fontSize: 13,
     color: '#666666',
+  },
+  addressList: {
+    maxHeight: 300,
+    marginVertical: 16,
+  },
+  addressOption: {
+    padding: 16,
+    backgroundColor: '#F9F9F9',
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  addressOptionSelected: {
+    borderColor: colors.primary,
+    backgroundColor: '#F0F9F8',
+  },
+  addressOptionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  addressLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    flex: 1,
+  },
+  defaultBadge: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  defaultBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  addressOptionText: {
+    fontSize: 14,
+    color: '#666666',
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  addressOptionPhone: {
+    fontSize: 13,
+    color: '#999999',
+  },
+  emptyAddresses: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  emptyAddressesText: {
+    fontSize: 15,
+    color: '#999999',
+    marginTop: 12,
+  },
+  addNewAddressButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+    marginBottom: 12,
+  },
+  addNewAddressText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  modalCancelButtonFull: {
+    width: '100%',
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
   },
 });
 

@@ -307,6 +307,20 @@ const AdminSettingsScreen: React.FC = () => {
           
           <TouchableOpacity
             style={styles.menuItem}
+            onPress={() => navigation.navigate('LogViewer' as never)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
+                <Icon name="file-text" size={20} color="#F59E0B" />
+              </View>
+              <Text style={styles.menuItemText}>View Logs</Text>
+            </View>
+            <Icon name="chevron-right" size={20} color={PartnerColors.light.text.tertiary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
             onPress={() => showSnackbar('Platform settings coming soon', 'info')}
             activeOpacity={0.7}
           >

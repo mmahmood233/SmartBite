@@ -19,6 +19,7 @@
     "@stripe/stripe-react-native": "^0.57.0",
     "@supabase/supabase-js": "^2.80.0",
     "expo": "~54.0.16",
+    "expo-file-system": "~19.0.20",
     "expo-image-picker": "~17.0.8",
     "expo-linear-gradient": "~15.0.7",
     "expo-localization": "^17.0.7",

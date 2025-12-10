@@ -39,7 +39,7 @@ interface OrderItem {
 const CheckoutScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { t } = useLanguage();
-  const { items, clearCart, getTotalPrice } = useCart();
+  const { cart, clearCart } = useCart();
   
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [selectedPayment, setSelectedPayment] = useState<'apple' | 'paypal' | 'card' | 'cash'>('card');

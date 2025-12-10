@@ -1,0 +1,155 @@
+@startuml Wajba Deployment Diagram
+!theme plain
+
+title Wajba - System Deployment Diagram
+
+' Client Devices - All iOS
+node "Customer iPhone/iPad" as CustomerDevice {
+  component "Wajba Mobile App\n(React Native - iOS)" as CustomerApp
+}
+
+node "Partner iPhone/iPad" as PartnerDevice {
+  component "Wajba Mobile App\n(Partner Dashboard)\n(React Native - iOS)" as PartnerApp
+}
+
+node "Rider iPhone/iPad" as RiderDevice {
+  component "Wajba Mobile App\n(Rider Dashboard)\n(React Native - iOS)" as RiderApp
+}
+
+node "Admin iPhone/iPad" as AdminDevice {
+  component "Wajba Mobile App\n(Admin Dashboard)\n(React Native - iOS)" as AdminApp
+}
+
+' Cloud Infrastructure
+cloud "Expo Cloud" as ExpoCloud {
+  component "Expo Application Services" as EAS
+  component "OTA Updates" as OTA
+}
+
+cloud "Supabase Cloud" as SupabaseCloud {
+  node "Supabase Platform" as Supabase {
+    database "PostgreSQL Database" as DB {
+      component "Users Table"
+      component "Restaurants Table"
+      component "Orders Table"
+      component "Menu Items Table"
+      component "Riders Table"
+      component "Promotions Table"
+    }
+    
+    component "Authentication Service" as Auth {
+      component "JWT Tokens"
+      component "Row Level Security (RLS)"
+    }
+    
+    component "Storage Service" as Storage {
+      component "Restaurant Images"
+      component "Menu Images"
+      component "Profile Pictures"
+    }
+    
+    component "Realtime Service" as Realtime {
+      component "Order Updates"
+      component "Location Tracking"
+    }
+  }
+}
+
+cloud "Stripe Cloud" as StripeCloud {
+  component "Payment Gateway" as Stripe {
+    component "Card Processing"
+    component "Payment Webhooks"
+  }
+}
+
+cloud "OpenAI Cloud" as OpenAICloud {
+  component "OpenAI API" as OpenAI {
+    component "GPT-4 Model"
+    component "Chat Completions"
+  }
+}
+
+' Connections - Customer App
+CustomerApp --> EAS : "App Distribution"
+CustomerApp --> OTA : "Updates"
+CustomerApp --> Auth : "HTTPS/REST\nAuthentication"
+CustomerApp --> DB : "HTTPS/REST\nData Operations"
+CustomerApp --> Storage : "HTTPS\nImage Upload/Download"
+CustomerApp --> Realtime : "WebSocket\nOrder Updates"
+CustomerApp --> Stripe : "HTTPS\nPayment Processing"
+CustomerApp --> OpenAI : "HTTPS\nAI Chat"
+
+' Connections - Partner App
+PartnerApp --> EAS : "App Distribution"
+PartnerApp --> OTA : "Updates"
+PartnerApp --> Auth : "HTTPS/REST\nAuthentication"
+PartnerApp --> DB : "HTTPS/REST\nData Operations"
+PartnerApp --> Storage : "HTTPS\nImage Upload"
+PartnerApp --> Realtime : "WebSocket\nOrder Updates"
+PartnerApp --> OpenAI : "HTTPS\nAI Chat"
+
+' Connections - Rider App
+RiderApp --> EAS : "App Distribution"
+RiderApp --> OTA : "Updates"
+RiderApp --> Auth : "HTTPS/REST\nAuthentication"
+RiderApp --> DB : "HTTPS/REST\nData Operations"
+RiderApp --> Realtime : "WebSocket\nOrder & Location Updates"
+
+' Connections - Admin App
+AdminApp --> EAS : "App Distribution"
+AdminApp --> OTA : "Updates"
+AdminApp --> Auth : "HTTPS/REST\nAuthentication"
+AdminApp --> DB : "HTTPS/REST\nData Operations"
+AdminApp --> Storage : "HTTPS\nImage Management"
+
+' Notes
+note right of CustomerDevice
+  Platform: iOS
+  Framework: React Native
+  State: Redux/Context
+  Role-based UI
+end note
+
+note right of PartnerDevice
+  Platform: iOS
+  Framework: React Native
+  Same App - Partner Dashboard
+  Role: Partner
+end note
+
+note right of RiderDevice
+  Platform: iOS
+  Framework: React Native
+  Same App - Rider Dashboard
+  GPS Enabled
+  Role: Rider
+end note
+
+note right of AdminDevice
+  Platform: iOS
+  Framework: React Native
+  Same App - Admin Dashboard
+  Role: Admin
+end note
+
+note bottom of SupabaseCloud
+  Backend as a Service (BaaS)
+  PostgreSQL Database
+  Real-time Subscriptions
+  Row Level Security
+  Auto-generated REST API
+end note
+
+note bottom of StripeCloud
+  Payment Processing
+  PCI Compliant
+  Card & Digital Wallets
+end note
+
+note bottom of OpenAICloud
+  AI Chat Assistant
+  Natural Language Processing
+  Business Insights
+end note
+
+@enduml

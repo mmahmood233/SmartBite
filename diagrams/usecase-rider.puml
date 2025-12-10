@@ -1,0 +1,97 @@
+@startuml Rider Use Case Diagram
+!theme plain
+skinparam actorStyle awesome
+
+title Wajba - Rider Use Case Diagram
+
+left to right direction
+
+actor Rider as R
+
+rectangle "Wajba System" {
+  ' Authentication
+  usecase "Login" as UC1
+  
+  ' Dashboard
+  usecase "View Dashboard" as UC2
+  usecase "View Statistics" as UC2A
+  usecase "View Today's Earnings" as UC2B
+  usecase "View Delivery Count" as UC2C
+  
+  ' Order Management
+  usecase "View Available Orders" as UC3
+  usecase "Filter by Distance" as UC3A
+  usecase "View Order Details" as UC3B
+  usecase "Accept Delivery Request" as UC4
+  usecase "View Active Deliveries" as UC5
+  usecase "View Pickup Location" as UC5A
+  usecase "View Delivery Location" as UC5B
+  usecase "View Customer Info" as UC5C
+  
+  ' Delivery Status
+  usecase "Update Delivery Status" as UC6
+  usecase "Mark as Picked Up" as UC7
+  usecase "Mark as Delivered" as UC8
+  usecase "View Navigation" as UC6A
+  
+  ' History & Earnings
+  usecase "View Delivery History" as UC9
+  usecase "Filter by Date" as UC9A
+  usecase "View Earnings" as UC10
+  usecase "View Total Earnings" as UC10A
+  usecase "View Earnings Breakdown" as UC10B
+  
+  ' Availability Management
+  usecase "Manage Availability Status" as UC11
+  usecase "Set Online" as UC11A
+  usecase "Set Offline" as UC11B
+  usecase "Set Busy" as UC11C
+  
+  ' Location
+  usecase "Update Location" as UC12
+}
+
+' Rider relationships
+R --> UC1
+R --> UC2
+R --> UC3
+R --> UC4
+R --> UC5
+R --> UC6
+R --> UC9
+R --> UC10
+R --> UC11
+R --> UC12
+
+' Dashboard includes
+UC2 ..> UC2A : <<include>>
+UC2 ..> UC2B : <<include>>
+UC2 ..> UC2C : <<include>>
+
+' Available Orders includes
+UC3 ..> UC3A : <<extend>>
+UC3 ..> UC3B : <<include>>
+
+' Active Deliveries includes
+UC5 ..> UC5A : <<include>>
+UC5 ..> UC5B : <<include>>
+UC5 ..> UC5C : <<include>>
+
+' Delivery Status includes
+UC6 ..> UC7 : <<extend>>
+UC6 ..> UC8 : <<extend>>
+UC6 ..> UC6A : <<extend>>
+
+' History includes
+UC9 ..> UC9A : <<extend>>
+
+' Earnings includes
+UC10 ..> UC10A : <<include>>
+UC10 ..> UC10B : <<include>>
+
+' Availability includes
+UC11 ..> UC11A : <<extend>>
+UC11 ..> UC11B : <<extend>>
+UC11 ..> UC11C : <<extend>>
+
+@enduml

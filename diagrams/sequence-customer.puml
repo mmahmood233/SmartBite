@@ -1,0 +1,99 @@
+@startuml Customer Sequence Diagram - Place Order
+!theme plain
+
+title Wajba - Customer Place Order Sequence Diagram
+
+actor Customer
+participant "Mobile App" as App
+participant "Auth Service" as Auth
+participant "Restaurant Service" as Restaurant
+participant "Menu Service" as Menu
+participant "AI Service" as AI
+participant "Cart Service" as Cart
+participant "Order Service" as Order
+participant "Payment Gateway" as Payment
+database "Database" as DB
+
+Customer -> App: Open App
+App -> Auth: Check Login Status
+
+alt Not Logged In
+    App -> Customer: Show Login Screen
+    Customer -> App: Enter Credentials
+    App -> Auth: Login Request
+    Auth -> DB: Validate Credentials
+    DB --> Auth: User Data
+    Auth --> App: Login Success
+else Already Logged In
+    App --> Customer: Show Home Screen
+end
+
+Customer -> App: Browse Restaurants
+App -> Restaurant: Get Restaurant List
+Restaurant -> DB: Fetch Restaurants
+DB --> Restaurant: Restaurant Data
+Restaurant --> App: Restaurant List
+App --> Customer: Display Restaurants
+
+Customer -> App: Select Restaurant
+App -> Menu: Get Menu Items
+Menu -> DB: Fetch Menu
+DB --> Menu: Menu Data
+Menu --> App: Menu Items
+App --> Customer: Display Menu
+
+opt Use AI Assistant
+    Customer -> App: Open AI Chat
+    App -> AI: Send Question
+    AI -> AI: Process Query
+    AI --> App: AI Response
+    App --> Customer: Show Recommendations
+end
+
+Customer -> App: Add Item to Cart
+App -> Cart: Add Item
+Cart -> DB: Update Cart
+DB --> Cart: Cart Updated
+Cart --> App: Success
+App --> Customer: Item Added
+
+Customer -> App: View Cart
+App -> Cart: Get Cart Items
+Cart -> DB: Fetch Cart
+DB --> Cart: Cart Data
+Cart --> App: Cart Items
+App --> Customer: Display Cart
+
+Customer -> App: Proceed to Checkout
+App --> Customer: Show Checkout Screen
+
+Customer -> App: Enter Delivery Address
+App -> Order: Set Delivery Info
+
+Customer -> App: Select Payment Method
+
+alt Pay with Card
+    Customer -> App: Enter Card Details
+    App -> Payment: Process Payment
+    Payment -> Payment: Validate Card
+    Payment --> App: Payment Success
+else Cash on Delivery
+    App -> Order: Set Cash Payment
+end
+
+Customer -> App: Place Order
+App -> Order: Create Order
+Order -> DB: Save Order
+DB --> Order: Order Saved
+Order -> Restaurant: Notify Restaurant
+Order --> App: Order Confirmed
+App --> Customer: Show Confirmation
+
+Customer -> App: Track Order
+App -> Order: Get Order Status
+Order -> DB: Fetch Status
+DB --> Order: Order Status
+Order --> App: Status Data
+App --> Customer: Show Order Status
+
+@enduml

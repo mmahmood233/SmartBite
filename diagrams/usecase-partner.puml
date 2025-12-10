@@ -1,0 +1,94 @@
+@startuml Restaurant Partner Use Case Diagram
+!theme plain
+skinparam actorStyle awesome
+
+title Wajba - Restaurant Partner Use Case Diagram
+
+left to right direction
+
+actor "Restaurant Partner" as P
+actor "AI Service" as AI
+
+rectangle "Wajba System" {
+  ' Authentication
+  usecase "Login" as UC1
+  
+  ' Dashboard
+  usecase "View Dashboard" as UC2
+  usecase "View Statistics" as UC2A
+  usecase "View Recent Orders" as UC2B
+  
+  ' Menu Management
+  usecase "Manage Menu Items" as UC3
+  usecase "Add Dish" as UC4
+  usecase "Upload Dish Image" as UC4A
+  usecase "Set Dish Price" as UC4B
+  usecase "Edit Dish" as UC5
+  usecase "Update Dish Details" as UC5A
+  usecase "Delete Dish" as UC6
+  usecase "Toggle Dish Availability" as UC7
+  
+  ' Category Management
+  usecase "Manage Categories" as UC8
+  usecase "Add Category" as UC9
+  usecase "Delete Category" as UC10
+  
+  ' Order Management
+  usecase "View Orders" as UC11
+  usecase "Filter Orders by Status" as UC11A
+  usecase "Update Order Status" as UC12
+  usecase "Accept Order" as UC12A
+  usecase "Reject Order" as UC12B
+  usecase "Mark as Ready" as UC12C
+  
+  ' AI Assistant
+  usecase "Use AI Chat Assistant" as UC13
+  usecase "Ask Menu Questions" as UC13A
+  usecase "Get Business Insights" as UC13B
+  
+  ' Restaurant Info
+  usecase "View Restaurant Info" as UC14
+}
+
+' Partner relationships
+P --> UC1
+P --> UC2
+P --> UC3
+P --> UC8
+P --> UC11
+P --> UC12
+P --> UC13
+P --> UC14
+
+' Dashboard includes
+UC2 ..> UC2A : <<include>>
+UC2 ..> UC2B : <<include>>
+
+' Menu Management includes
+UC3 ..> UC4 : <<include>>
+UC3 ..> UC5 : <<include>>
+UC3 ..> UC6 : <<include>>
+UC3 ..> UC7 : <<include>>
+
+UC4 ..> UC4A : <<extend>>
+UC4 ..> UC4B : <<include>>
+UC5 ..> UC5A : <<include>>
+
+' Category Management includes
+UC8 ..> UC9 : <<include>>
+UC8 ..> UC10 : <<include>>
+
+' Order Management includes
+UC11 ..> UC11A : <<extend>>
+UC12 ..> UC12A : <<extend>>
+UC12 ..> UC12B : <<extend>>
+UC12 ..> UC12C : <<extend>>
+
+' AI Assistant includes
+UC13 ..> UC13A : <<extend>>
+UC13 ..> UC13B : <<extend>>
+
+' External actor relationships
+UC13 --> AI : <<uses>>
+
+@enduml

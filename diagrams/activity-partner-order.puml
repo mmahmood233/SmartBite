@@ -1,0 +1,84 @@
+@startuml Partner Activity Diagram - Manage Orders
+!theme plain
+
+title Wajba - Restaurant Partner Manage Orders Activity Diagram
+
+start
+
+:Login to Partner Portal;
+
+:View Dashboard;
+
+:Navigate to Orders;
+
+:View Incoming Orders;
+
+if (New Order Received?) then (no)
+  :Wait for Orders;
+  stop
+else (yes)
+endif
+
+:View Order Details;
+
+:Check Order Items;
+
+:Check Delivery Address;
+
+if (Can Fulfill Order?) then (no)
+  :Select Reject Order;
+  :Enter Rejection Reason;
+  :Confirm Rejection;
+  :Notify Customer;
+  :Order Rejected;
+  stop
+else (yes)
+endif
+
+:Accept Order;
+
+:Order Status: Accepted;
+
+:Notify Customer;
+
+:Notify Rider System;
+
+:Start Preparing Food;
+
+:Update Order Status to "Preparing";
+
+:Prepare Order Items;
+
+if (Order Ready?) then (no)
+  :Continue Preparing;
+else (yes)
+endif
+
+:Update Order Status to "Ready for Pickup";
+
+:Notify Rider;
+
+:Wait for Rider Arrival;
+
+if (Rider Arrived?) then (no)
+  :Wait;
+else (yes)
+endif
+
+:Verify Rider;
+
+:Hand Over Order to Rider;
+
+:Update Order Status to "Picked Up";
+
+:Order Completed;
+
+if (More Orders?) then (yes)
+  :View Next Order;
+else (no)
+  :View Order History;
+  :View Statistics;
+  stop
+endif
+
+@enduml

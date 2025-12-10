@@ -1,0 +1,96 @@
+@startuml Rider Sequence Diagram - Deliver Order
+!theme plain
+
+title Wajba - Rider Deliver Order Sequence Diagram
+
+actor Rider
+participant "Rider App" as App
+participant "Auth Service" as Auth
+participant "Order Service" as Order
+participant "Location Service" as Location
+participant "Notification Service" as Notify
+database "Database" as DB
+
+Rider -> App: Login
+App -> Auth: Authenticate
+Auth -> DB: Validate Credentials
+DB --> Auth: Rider Data
+Auth --> App: Login Success
+App --> Rider: Show Dashboard
+
+Rider -> App: Set Status to Online
+App -> Order: Update Rider Status
+Order -> DB: Save Status
+DB --> Order: Status Updated
+Order --> App: Status Online
+App --> Rider: Show Online Status
+
+Rider -> App: Update Location
+App -> Location: Send GPS Coordinates
+Location -> DB: Save Location
+DB --> Location: Location Saved
+
+App -> Order: Get Available Orders
+Order -> DB: Fetch Available Orders
+DB --> Order: Orders List
+Order --> App: Available Orders
+App --> Rider: Display Orders
+
+Rider -> App: View Order Details
+App -> Order: Get Order Details
+Order -> DB: Fetch Order Info
+DB --> Order: Order Data
+Order --> App: Order Details
+App --> Rider: Show Details
+
+Rider -> App: Accept Delivery
+App -> Order: Accept Order
+Order -> DB: Assign Rider to Order
+DB --> Order: Order Assigned
+Order -> Notify: Notify Restaurant
+Order -> Notify: Notify Customer
+Order --> App: Order Accepted
+App --> Rider: Show Pickup Location
+
+Rider -> App: Navigate to Restaurant
+App -> Location: Update Location
+Location -> DB: Save Location
+DB --> Location: Location Updated
+
+Rider -> App: Arrived at Restaurant
+App --> Rider: Confirm Pickup
+
+Rider -> App: Mark as Picked Up
+App -> Order: Update Status to "Picked Up"
+Order -> DB: Save Status
+DB --> Order: Status Updated
+Order -> Notify: Notify Customer
+Order --> App: Pickup Confirmed
+App --> Rider: Show Delivery Location
+
+Rider -> App: Navigate to Customer
+App -> Location: Update Location
+Location -> DB: Save Location
+DB --> Location: Location Updated
+
+Rider -> App: Arrived at Delivery
+App --> Rider: Confirm Delivery
+
+Rider -> App: Mark as Delivered
+App -> Order: Update Status to "Delivered"
+Order -> DB: Save Status
+DB --> Order: Status Updated
+Order -> DB: Update Rider Earnings
+DB --> Order: Earnings Updated
+Order -> Notify: Notify Customer
+Order --> App: Delivery Confirmed
+App --> Rider: Show Earnings Updated
+
+Rider -> App: View Earnings
+App -> Order: Get Earnings Data
+Order -> DB: Fetch Earnings
+DB --> Order: Earnings Data
+Order --> App: Earnings Info
+App --> Rider: Display Earnings
+
+@enduml

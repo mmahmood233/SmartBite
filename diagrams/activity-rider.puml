@@ -1,0 +1,83 @@
+@startuml Rider Activity Diagram - Deliver Order
+!theme plain
+
+title Wajba - Rider Deliver Order Activity Diagram
+
+start
+
+:Login to Rider App;
+
+:View Dashboard;
+
+:Set Status to Online;
+
+:Update Current Location;
+
+:View Available Orders;
+
+if (Orders Available?) then (no)
+  :Wait for New Orders;
+  stop
+else (yes)
+endif
+
+:Browse Available Orders;
+
+:View Order Details;
+
+if (Accept Order?) then (no)
+  :Decline Order;
+  stop
+else (yes)
+endif
+
+:Accept Delivery Request;
+
+:View Pickup Location;
+
+:Navigate to Restaurant;
+
+:Update Location (En Route);
+
+:Arrive at Restaurant;
+
+:Mark as "Picked Up";
+
+:Confirm Pickup;
+
+:View Delivery Location;
+
+:View Customer Info;
+
+:Navigate to Customer;
+
+:Update Location (Delivering);
+
+:Arrive at Delivery Location;
+
+if (Customer Available?) then (no)
+  :Contact Customer;
+  :Wait for Customer;
+else (yes)
+endif
+
+:Hand Over Order;
+
+:Mark as "Delivered";
+
+:Confirm Delivery;
+
+:Update Earnings;
+
+:View Updated Statistics;
+
+if (Continue Deliveries?) then (yes)
+  :Set Status to Online;
+  :View Available Orders;
+else (no)
+  :Set Status to Offline;
+  :View Earnings Summary;
+  stop
+endif
+
+@enduml

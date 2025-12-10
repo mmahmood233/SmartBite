@@ -1,0 +1,139 @@
+@startuml Admin Use Case Diagram
+!theme plain
+skinparam actorStyle awesome
+
+title Wajba - Admin Use Case Diagram
+
+left to right direction
+
+actor Admin as A
+
+rectangle "Wajba System" {
+  ' Authentication
+  usecase "Login" as UC1
+  
+  ' Dashboard
+  usecase "View Dashboard" as UC2
+  usecase "View Platform Overview" as UC2A
+  usecase "View Recent Activity" as UC2B
+  
+  ' User Management
+  usecase "Manage Users" as UC3
+  usecase "View All Users" as UC4
+  usecase "Filter Users by Role" as UC5
+  usecase "Filter by Customer" as UC5A
+  usecase "Filter by Partner" as UC5B
+  usecase "Filter by Rider" as UC5C
+  usecase "Filter by Admin" as UC5D
+  usecase "Search Users" as UC6
+  usecase "Search by Name" as UC6A
+  usecase "Search by Email" as UC6B
+  usecase "Search by Phone" as UC6C
+  usecase "Delete User" as UC8
+  
+  ' Promotions Management
+  usecase "Manage Promotions" as UC18
+  usecase "View All Promotions" as UC18A
+  usecase "Create Promotion" as UC18B
+  usecase "Edit Promotion" as UC18C
+  usecase "Delete Promotion" as UC18D
+  usecase "Toggle Promotion Status" as UC18E
+  
+  ' Analytics Dashboard
+  usecase "View Analytics Dashboard" as UC9
+  usecase "Select Time Period" as UC9A
+  usecase "View Week Data" as UC9A1
+  usecase "View Month Data" as UC9A2
+  usecase "View Year Data" as UC9A3
+  usecase "View Revenue Statistics" as UC10
+  usecase "View Total Revenue" as UC10A
+  usecase "View Revenue Growth" as UC10B
+  usecase "View Order Statistics" as UC11
+  usecase "View Total Orders" as UC11A
+  usecase "View Orders Growth" as UC11B
+  usecase "View User Statistics" as UC12
+  usecase "View Total Users" as UC12A
+  usecase "View Restaurant Statistics" as UC13
+  usecase "View Total Restaurants" as UC13A
+  usecase "View Rider Statistics" as UC14
+  usecase "View Active Riders" as UC14A
+  usecase "View Revenue Trends" as UC15
+  usecase "View Revenue Chart" as UC15A
+  usecase "View Order Trends" as UC16
+  usecase "View Orders Chart" as UC16A
+  usecase "Refresh Analytics" as UC17
+}
+
+' Admin relationships
+A --> UC1
+A --> UC2
+A --> UC3
+A --> UC18
+A --> UC9
+
+' Dashboard includes
+UC2 ..> UC2A : <<include>>
+UC2 ..> UC2B : <<include>>
+
+' User Management includes
+UC3 ..> UC4 : <<include>>
+UC3 ..> UC5 : <<include>>
+UC3 ..> UC6 : <<include>>
+UC3 ..> UC8 : <<extend>>
+
+' Filter includes
+UC5 ..> UC5A : <<extend>>
+UC5 ..> UC5B : <<extend>>
+UC5 ..> UC5C : <<extend>>
+UC5 ..> UC5D : <<extend>>
+
+' Search includes
+UC6 ..> UC6A : <<extend>>
+UC6 ..> UC6B : <<extend>>
+UC6 ..> UC6C : <<extend>>
+
+' Promotions Management includes
+UC18 ..> UC18A : <<include>>
+UC18 ..> UC18B : <<extend>>
+UC18 ..> UC18C : <<extend>>
+UC18 ..> UC18D : <<extend>>
+UC18 ..> UC18E : <<extend>>
+
+' Analytics includes
+UC9 ..> UC9A : <<include>>
+UC9 ..> UC10 : <<include>>
+UC9 ..> UC11 : <<include>>
+UC9 ..> UC12 : <<include>>
+UC9 ..> UC13 : <<include>>
+UC9 ..> UC14 : <<include>>
+UC9 ..> UC15 : <<include>>
+UC9 ..> UC16 : <<include>>
+UC9 ..> UC17 : <<extend>>
+
+' Time period includes
+UC9A ..> UC9A1 : <<extend>>
+UC9A ..> UC9A2 : <<extend>>
+UC9A ..> UC9A3 : <<extend>>
+
+' Revenue stats includes
+UC10 ..> UC10A : <<include>>
+UC10 ..> UC10B : <<include>>
+
+' Order stats includes
+UC11 ..> UC11A : <<include>>
+UC11 ..> UC11B : <<include>>
+
+' User stats includes
+UC12 ..> UC12A : <<include>>
+
+' Restaurant stats includes
+UC13 ..> UC13A : <<include>>
+
+' Rider stats includes
+UC14 ..> UC14A : <<include>>
+
+' Trend includes
+UC15 ..> UC15A : <<include>>
+UC16 ..> UC16A : <<include>>
+
+@enduml

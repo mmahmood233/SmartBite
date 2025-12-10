@@ -1,0 +1,100 @@
+@startuml Customer Activity Diagram - Place Order
+!theme plain
+
+title Wajba - Customer Place Order Activity Diagram
+
+start
+
+:Open App;
+
+if (Logged In?) then (no)
+  :Navigate to Login;
+  :Enter Email & Password;
+  :Submit Login;
+  if (Valid Credentials?) then (no)
+    :Show Error Message;
+    stop
+  else (yes)
+    :Login Successful;
+  endif
+else (yes)
+endif
+
+:View Restaurant List;
+
+:Browse Restaurants;
+
+if (Found Restaurant?) then (no)
+  :Use Search/Filter;
+  :Search by Name or Category;
+else (yes)
+endif
+
+:Select Restaurant;
+
+:View Menu;
+
+:Browse Menu Items;
+
+if (Need Help?) then (yes)
+  :Open AI Chat Assistant;
+  :Ask Questions about Menu;
+  :Get AI Recommendations;
+  :Receive Answers;
+else (no)
+endif
+
+repeat
+  :Select Dish;
+  :Choose Quantity;
+  :Add to Cart;
+  
+  if (Add More Items?) then (yes)
+  else (no)
+  endif
+repeat while (Add More Items?) is (yes)
+
+:View Cart;
+
+if (Cart OK?) then (no)
+  :Update/Remove Items;
+else (yes)
+endif
+
+:Proceed to Checkout;
+
+:Select Delivery Address;
+
+if (Add Instructions?) then (yes)
+  :Enter Delivery Instructions;
+else (no)
+endif
+
+:Choose Payment Method;
+
+if (Payment Method?) then (Card)
+  :Enter Card Details;
+  :Process Payment via Gateway;
+  
+  if (Payment Successful?) then (no)
+    :Show Payment Error;
+    stop
+  else (yes)
+  endif
+else (Cash)
+  :Select Cash on Delivery;
+endif
+
+:Place Order;
+
+:Show Order Confirmation;
+
+:Track Order Status;
+
+:Receive Order;
+
+:Order Complete;
+
+stop
+
+@enduml

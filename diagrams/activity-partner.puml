@@ -1,0 +1,101 @@
+@startuml Partner Activity Diagram - Manage Menu
+!theme plain
+
+title Wajba - Restaurant Partner Manage Menu Activity Diagram
+
+start
+
+:Login to Partner Portal;
+
+:View Dashboard;
+
+:Navigate to Menu Management;
+
+:View Current Menu Items;
+
+if (Need AI Assistance?) then (yes)
+  :Open AI Chat Assistant;
+  :Ask Menu Questions;
+  :Get Business Insights;
+  :Receive AI Recommendations;
+else (no)
+endif
+
+if (Action?) then (Add New Dish)
+  :Click Add Dish;
+  :Enter Dish Name;
+  :Enter Description;
+  :Set Price;
+  :Select Category;
+  
+  if (Upload Image?) then (yes)
+    :Select Image from Gallery;
+    :Upload Image;
+  else (no)
+  endif
+  
+  :Set Availability Status;
+  :Save Dish;
+  
+  if (Save Successful?) then (no)
+    :Show Error Message;
+    stop
+  else (yes)
+    :Show Success Message;
+    :Refresh Menu List;
+  endif
+  
+elseif (Action?) then (Edit Dish)
+  :Select Dish to Edit;
+  :Load Dish Details;
+  :Update Information;
+  
+  if (Update Image?) then (yes)
+    :Upload New Image;
+  else (no)
+  endif
+  
+  :Save Changes;
+  :Show Success Message;
+  :Refresh Menu List;
+  
+elseif (Action?) then (Delete Dish)
+  :Select Dish to Delete;
+  :Confirm Deletion;
+  
+  if (Confirmed?) then (no)
+    :Cancel;
+  else (yes)
+    :Delete Dish;
+    :Show Success Message;
+    :Refresh Menu List;
+  endif
+  
+elseif (Action?) then (Toggle Availability)
+  :Select Dish;
+  :Toggle Available/Unavailable;
+  :Update Status;
+  :Show Success Message;
+  :Refresh Menu List;
+  
+else (Manage Categories)
+  :View Categories;
+  
+  if (Category Action?) then (Add)
+    :Enter Category Name;
+    :Save Category;
+  else (Delete)
+    :Select Category;
+    :Confirm Deletion;
+    :Delete Category;
+  endif
+  
+  :Show Success Message;
+  :Refresh Categories;
+endif
+
+:Menu Updated;
+
+stop
+
+@enduml

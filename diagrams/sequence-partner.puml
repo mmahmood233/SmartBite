@@ -1,0 +1,79 @@
+@startuml Partner Sequence Diagram - Manage Orders
+!theme plain
+
+title Wajba - Restaurant Partner Manage Orders Sequence Diagram
+
+actor Partner
+participant "Partner Portal" as Portal
+participant "Auth Service" as Auth
+participant "Order Service" as Order
+participant "Notification Service" as Notify
+participant "Rider Service" as Rider
+database "Database" as DB
+
+Partner -> Portal: Login
+Portal -> Auth: Authenticate
+Auth -> DB: Validate Credentials
+DB --> Auth: Partner Data
+Auth --> Portal: Login Success
+Portal --> Partner: Show Dashboard
+
+Partner -> Portal: Navigate to Orders
+Portal -> Order: Get Incoming Orders
+Order -> DB: Fetch Orders
+DB --> Order: Order List
+Order --> Portal: Orders Data
+Portal --> Partner: Display Orders
+
+Partner -> Portal: View Order Details
+Portal -> Order: Get Order Details
+Order -> DB: Fetch Order Info
+DB --> Order: Order Data
+Order --> Portal: Order Details
+Portal --> Partner: Show Order Details
+
+alt Accept Order
+    Partner -> Portal: Accept Order
+    Portal -> Order: Update Status to "Accepted"
+    Order -> DB: Save Status
+    DB --> Order: Status Updated
+    Order -> Notify: Notify Customer
+    Notify -> Notify: Send Notification
+    Order -> Rider: Notify Rider System
+    Order --> Portal: Order Accepted
+    Portal --> Partner: Show Success
+    
+    Partner -> Portal: Start Preparing
+    Portal -> Order: Update Status to "Preparing"
+    Order -> DB: Save Status
+    DB --> Order: Status Updated
+    
+    Partner -> Portal: Mark as Ready
+    Portal -> Order: Update Status to "Ready"
+    Order -> DB: Save Status
+    DB --> Order: Status Updated
+    Order -> Notify: Notify Rider
+    Order --> Portal: Ready for Pickup
+    Portal --> Partner: Show Success
+    
+    Partner -> Portal: Hand Over to Rider
+    Portal -> Order: Update Status to "Picked Up"
+    Order -> DB: Save Status
+    DB --> Order: Status Updated
+    Order --> Portal: Order Completed
+    Portal --> Partner: Show Success
+    
+else Reject Order
+    Partner -> Portal: Reject Order
+    Portal --> Partner: Enter Rejection Reason
+    Partner -> Portal: Submit Reason
+    Portal -> Order: Update Status to "Rejected"
+    Order -> DB: Save Status
+    DB --> Order: Status Updated
+    Order -> Notify: Notify Customer
+    Notify -> Notify: Send Notification
+    Order --> Portal: Order Rejected
+    Portal --> Partner: Show Confirmation
+end
+
+@enduml

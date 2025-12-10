@@ -1,0 +1,101 @@
+@startuml Customer Use Case Diagram
+!theme plain
+skinparam actorStyle awesome
+
+title Wajba - Customer Use Case Diagram
+
+left to right direction
+
+actor Customer as C
+actor "Payment Gateway" as PG
+
+rectangle "Wajba System" {
+  ' Authentication
+  usecase "Login/Register" as UC1
+  usecase "Login with Email" as UC1A
+  usecase "Register Account" as UC1B
+  usecase "Verify Email" as UC1C
+  
+  ' Browse & Search
+  usecase "Browse Restaurants" as UC2
+  usecase "Filter by Category" as UC2A
+  usecase "Filter by Rating" as UC2B
+  usecase "Search Food Items" as UC3
+  usecase "View Menu & Prices" as UC4
+  usecase "View Restaurant Details" as UC4A
+  
+  ' Cart & Ordering
+  usecase "Add Items to Cart" as UC5
+  usecase "Update Cart Quantity" as UC5A
+  usecase "Remove from Cart" as UC5B
+  usecase "View Cart" as UC5C
+  usecase "Place Order" as UC6
+  usecase "Select Delivery Address" as UC6A
+  usecase "Add Delivery Instructions" as UC6B
+  usecase "Make Payment" as UC7
+  usecase "Pay with Card" as UC7A
+  usecase "Pay with Cash" as UC7B
+  
+  ' Order Tracking
+  usecase "Track Order Status" as UC8
+  usecase "View Order History" as UC9
+  usecase "Reorder Previous Order" as UC9A
+  
+  ' Profile Management
+  usecase "Manage Profile" as UC10
+  usecase "Update Profile Picture" as UC10A
+  usecase "Edit Personal Info" as UC10B
+  usecase "Update Address" as UC10C
+  usecase "Change Password" as UC10D
+}
+
+' Customer relationships
+C --> UC1
+C --> UC2
+C --> UC3
+C --> UC4
+C --> UC5
+C --> UC6
+C --> UC7
+C --> UC8
+C --> UC9
+C --> UC10
+
+' Authentication includes
+UC1 ..> UC1A : <<include>>
+UC1 ..> UC1B : <<include>>
+UC1B ..> UC1C : <<extend>>
+
+' Browse includes
+UC2 ..> UC2A : <<extend>>
+UC2 ..> UC2B : <<extend>>
+UC4 ..> UC4A : <<include>>
+
+' Cart includes
+UC5 ..> UC5A : <<extend>>
+UC5 ..> UC5B : <<extend>>
+UC5 ..> UC5C : <<include>>
+
+' Order includes
+UC6 ..> UC6A : <<include>>
+UC6 ..> UC6B : <<extend>>
+UC6 ..> UC7 : <<include>>
+
+' Payment includes
+UC7 ..> UC7A : <<extend>>
+UC7 ..> UC7B : <<extend>>
+
+
+' History includes
+UC9 ..> UC9A : <<extend>>
+
+' Profile includes
+UC10 ..> UC10A : <<extend>>
+UC10 ..> UC10B : <<extend>>
+UC10 ..> UC10C : <<extend>>
+UC10 ..> UC10D : <<extend>>
+
+' External actor relationships
+UC7 --> PG : <<uses>>
+
+@enduml

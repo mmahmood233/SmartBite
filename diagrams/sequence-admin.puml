@@ -1,0 +1,130 @@
+@startuml Admin Sequence Diagram - Manage Platform
+!theme plain
+
+title Wajba - Admin Manage Platform Sequence Diagram
+
+actor Admin
+participant "Admin Portal" as Portal
+participant "Auth Service" as Auth
+participant "User Service" as User
+participant "Analytics Service" as Analytics
+participant "Promotion Service" as Promo
+database "Database" as DB
+
+Admin -> Portal: Login
+Portal -> Auth: Authenticate
+Auth -> DB: Validate Admin Credentials
+DB --> Auth: Admin Data
+Auth --> Portal: Login Success
+Portal --> Admin: Show Dashboard
+
+== User Management ==
+
+Admin -> Portal: Navigate to User Management
+Portal -> User: Get All Users
+User -> DB: Fetch Users
+DB --> User: Users List
+User --> Portal: Users Data
+Portal --> Admin: Display Users
+
+alt Filter Users
+    Admin -> Portal: Select Role Filter
+    Portal -> User: Filter by Role
+    User -> DB: Query Users by Role
+    DB --> User: Filtered Users
+    User --> Portal: Filtered Data
+    Portal --> Admin: Display Filtered Users
+    
+else Search Users
+    Admin -> Portal: Enter Search Query
+    Portal -> User: Search Users
+    User -> DB: Search by Name/Email/Phone
+    DB --> User: Search Results
+    User --> Portal: Results Data
+    Portal --> Admin: Display Results
+    
+else Delete User
+    Admin -> Portal: Select User to Delete
+    Portal --> Admin: Show Confirmation
+    Admin -> Portal: Confirm Deletion
+    Portal -> User: Delete User
+    User -> DB: Remove User
+    DB --> User: User Deleted
+    User --> Portal: Success
+    Portal --> Admin: Show Success Message
+end
+
+== Analytics Dashboard ==
+
+Admin -> Portal: Navigate to Analytics
+Portal -> Analytics: Get Analytics Data
+Analytics -> DB: Fetch Revenue Data
+Analytics -> DB: Fetch Order Data
+Analytics -> DB: Fetch User Stats
+Analytics -> DB: Fetch Restaurant Stats
+Analytics -> DB: Fetch Rider Stats
+DB --> Analytics: All Statistics
+Analytics -> Analytics: Calculate Trends
+Analytics --> Portal: Analytics Data
+Portal --> Admin: Display Dashboard
+
+Admin -> Portal: Select Time Period
+Portal -> Analytics: Get Period Data
+Analytics -> DB: Fetch Period Statistics
+DB --> Analytics: Period Data
+Analytics --> Portal: Period Statistics
+Portal --> Admin: Update Charts
+
+== Promotions Management ==
+
+Admin -> Portal: Navigate to Promotions
+Portal -> Promo: Get All Promotions
+Promo -> DB: Fetch Promotions
+DB --> Promo: Promotions List
+Promo --> Portal: Promotions Data
+Portal --> Admin: Display Promotions
+
+alt Create Promotion
+    Admin -> Portal: Create New Promotion
+    Portal --> Admin: Show Promotion Form
+    Admin -> Portal: Enter Promotion Details
+    Portal -> Promo: Create Promotion
+    Promo -> DB: Save Promotion
+    DB --> Promo: Promotion Saved
+    Promo --> Portal: Success
+    Portal --> Admin: Show Success Message
+    
+else Edit Promotion
+    Admin -> Portal: Select Promotion
+    Portal -> Promo: Get Promotion Details
+    Promo -> DB: Fetch Promotion
+    DB --> Promo: Promotion Data
+    Promo --> Portal: Promotion Details
+    Portal --> Admin: Show Edit Form
+    Admin -> Portal: Update Details
+    Portal -> Promo: Update Promotion
+    Promo -> DB: Save Changes
+    DB --> Promo: Updated
+    Promo --> Portal: Success
+    Portal --> Admin: Show Success Message
+    
+else Delete Promotion
+    Admin -> Portal: Delete Promotion
+    Portal --> Admin: Show Confirmation
+    Admin -> Portal: Confirm Deletion
+    Portal -> Promo: Delete Promotion
+    Promo -> DB: Remove Promotion
+    DB --> Promo: Deleted
+    Promo --> Portal: Success
+    Portal --> Admin: Show Success Message
+    
+else Toggle Status
+    Admin -> Portal: Toggle Promotion Status
+    Portal -> Promo: Update Status
+    Promo -> DB: Save Status
+    DB --> Promo: Status Updated
+    Promo --> Portal: Success
+    Portal --> Admin: Show Success Message
+end
+
+@enduml

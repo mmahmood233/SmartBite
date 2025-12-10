@@ -157,6 +157,13 @@ export const toggleDishAvailability = async (dishId: string, isAvailable: boolea
 };
 
 /**
+ * Toggle dish popular status
+ */
+export const toggleDishPopular = async (dishId: string, isPopular: boolean): Promise<Dish> => {
+  return updateDish(dishId, { is_popular: isPopular });
+};
+
+/**
  * Create a new category
  */
 export const createCategory = async (categoryData: {

@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AnimatedLogo } from '../../../components';
 import { colors } from '../../../theme/colors';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { tokens } from '../../../theme/theme';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
 import { RootStackParamList } from '../../../types';
+import { supabase } from '../../../lib/supabase';
 
 type SplashScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -17,10 +19,12 @@ interface SplashScreenProps {
   navigation: SplashScreenNavigationProp;
 }
 
+const ONBOARDING_KEY = '@wajba_has_seen_onboarding';
+
 /**
  * Wajba Splash Screen
  * Shows logo with pulsing animation and brand tagline
- * Duration: 2.5s before transitioning to onboarding
+ * Checks auth state and onboarding status before navigation
  */
 const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
   const { t } = useLanguage();
@@ -35,12 +39,51 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
       useNativeDriver: true,
     }).start();
 
-    // Navigate to onboarding after 2.5s
-    const timer = setTimeout(() => {
-      navigation.replace('Onboarding');
-    }, 2500);
+    // Check auth and onboarding status
+    const checkAuthAndNavigate = async () => {
+      try {
+        // Check if user has seen onboarding
+        const hasSeenOnboarding = await AsyncStorage.getItem(ONBOARDING_KEY);
+        
+        // Check if user is logged in
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        // Wait for minimum splash duration (2.5s)
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        
+        if (session) {
+          // User is logged in - check their role and navigate to appropriate portal
+          const { data: user } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (user?.role === 'partner') {
+            navigation.replace('PartnerPortal');
+          } else if (user?.role === 'rider') {
+            navigation.replace('RiderTabs');
+          } else if (user?.role === 'admin') {
+            navigation.replace('AdminPortal');
+          } else {
+            // Default to customer portal
+            navigation.replace('MainTabs');
+          }
+        } else if (hasSeenOnboarding === 'true') {
+          // User has seen onboarding but not logged in - go to auth
+          navigation.replace('Auth');
+        } else {
+          // New user - show onboarding
+          navigation.replace('Onboarding');
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        // On error, default to onboarding
+        navigation.replace('Onboarding');
+      }
+    };
 
-    return () => clearTimeout(timer);
+    checkAuthAndNavigate();
   }, [navigation, fadeAnim]);
 
   return (
@@ -70,6 +113,12 @@ const styles = StyleSheet.create({
   taglineContainer: {
     marginTop: tokens.spacing.xxxl,
     alignItems: 'center',
+  },
+  brandName: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: 8,
   },
   tagline: {
     fontSize: 16,

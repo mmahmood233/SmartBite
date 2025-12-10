@@ -189,17 +189,24 @@ const CheckoutScreen: React.FC = () => {
       return;
     }
 
-    // Check if user has address and phone
-    const missingFields = [];
-    if (!userProfile?.address) missingFields.push('address');
-    if (!userProfile?.phone) missingFields.push('phone number');
-
-    if (missingFields.length > 0) {
-      // Show address selection modal
-      setShowNewAddressForm(false);
-      setSelectedAddressId(null);
-      await loadSavedAddresses();
-      setShowAddressModal(true);
+    // Check if user has address and phone - REQUIRED
+    if (!userProfile?.address || !userProfile?.phone) {
+      Alert.alert(
+        'Address Required',
+        'Please add a delivery address before placing your order.',
+        [
+          {
+            text: 'Add Address',
+            onPress: async () => {
+              setShowNewAddressForm(false);
+              setSelectedAddressId(null);
+              await loadSavedAddresses();
+              setShowAddressModal(true);
+            }
+          },
+          { text: 'Cancel', style: 'cancel' }
+        ]
+      );
       return;
     }
 
@@ -240,20 +247,37 @@ const CheckoutScreen: React.FC = () => {
         {/* Delivery Details */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('checkout.deliveryAddress')}</Text>
-          <View style={styles.card}>
+          
+          {/* Warning Banner if no address */}
+          {(!userProfile?.address || !userProfile?.phone) && (
+            <View style={styles.warningBanner}>
+              <Icon name="alert-circle" size={20} color="#E53935" />
+              <Text style={styles.warningText}>
+                You must add a delivery address to place an order
+              </Text>
+            </View>
+          )}
+          
+          <View style={[styles.card, (!userProfile?.address || !userProfile?.phone) && styles.cardWarning]}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardLabel}>Delivering to:</Text>
             </View>
             <View style={styles.addressRow}>
-              <Icon name="home" size={18} color={colors.primary} />
+              <Icon name="home" size={18} color={(!userProfile?.address || !userProfile?.phone) ? "#E53935" : colors.primary} />
               <View style={styles.addressInfo}>
-                <Text style={styles.addressName}>{deliveryAddress.name}</Text>
-                <Text style={styles.addressText}>{deliveryAddress.address}</Text>
+                <Text style={[styles.addressName, (!userProfile?.address || !userProfile?.phone) && styles.textMuted]}>
+                  {deliveryAddress.name}
+                </Text>
+                <Text style={[styles.addressText, (!userProfile?.address || !userProfile?.phone) && styles.textMuted]}>
+                  {deliveryAddress.address}
+                </Text>
               </View>
             </View>
             <View style={styles.addressRow}>
-              <Icon name="phone" size={18} color={colors.primary} />
-              <Text style={styles.addressDetail}>{deliveryAddress.phone}</Text>
+              <Icon name="phone" size={18} color={(!userProfile?.address || !userProfile?.phone) ? "#E53935" : colors.primary} />
+              <Text style={[styles.addressDetail, (!userProfile?.address || !userProfile?.phone) && styles.textMuted]}>
+                {deliveryAddress.phone}
+              </Text>
             </View>
             <View style={styles.addressRow}>
               <Icon name="clock" size={18} color={colors.primary} />
@@ -414,21 +438,35 @@ const CheckoutScreen: React.FC = () => {
         <View style={styles.footerLeft}>
           <Text style={styles.footerLabel}>Total</Text>
           <Text style={styles.footerTotalEnhanced}>BD {cart.total.toFixed(2)}</Text>
-          <Text style={styles.footerSubtextEnhanced}>Includes delivery</Text>
+          <Text style={styles.footerSubtextEnhanced}>
+            {(!userProfile?.address || !userProfile?.phone) 
+              ? 'Add address to continue' 
+              : 'Includes delivery'}
+          </Text>
         </View>
         <TouchableOpacity
-          style={styles.placeOrderButton}
+          style={[
+            styles.placeOrderButton,
+            (!userProfile?.address || !userProfile?.phone) && styles.placeOrderButtonDisabled
+          ]}
           onPress={handlePlaceOrder}
           activeOpacity={0.9}
+          disabled={!userProfile?.address || !userProfile?.phone}
         >
           <LinearGradient
-            colors={['#00897B', '#26A69A']}
+            colors={(!userProfile?.address || !userProfile?.phone) 
+              ? ['#CCCCCC', '#AAAAAA'] 
+              : ['#00897B', '#26A69A']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.placeOrderGradient}
           >
-            <Text style={styles.placeOrderText}>Place Order</Text>
-            <Icon name="arrow-right" size={18} color="#FFFFFF" />
+            <Text style={styles.placeOrderText}>
+              {(!userProfile?.address || !userProfile?.phone) 
+                ? 'Add Address First' 
+                : 'Place Order'}
+            </Text>
+            <Icon name={(!userProfile?.address || !userProfile?.phone) ? "alert-circle" : "arrow-right"} size={18} color="#FFFFFF" />
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -624,13 +662,38 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.05,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
+  },
+  cardWarning: {
+    borderWidth: 2,
+    borderColor: '#E53935',
+    backgroundColor: '#FFF5F5',
+  },
+  warningBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFEBEE',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: '#E53935',
+  },
+  warningText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#C62828',
+    fontWeight: '600',
+  },
+  textMuted: {
+    color: '#999999',
   },
   cardHeader: {
     marginBottom: 12,
@@ -986,6 +1049,9 @@ const styles = StyleSheet.create({
   placeOrderButton: {
     flex: 1,
     marginLeft: 16,
+  },
+  placeOrderButtonDisabled: {
+    opacity: 0.6,
   },
   placeOrderGradient: {
     flexDirection: 'row',

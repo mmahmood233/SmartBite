@@ -10,6 +10,7 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GradientButton } from '../../../components';
 import { colors } from '../../../theme/colors';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -83,14 +84,19 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     }
   ).current;
 
-  const handleNext = (): void => {
+  const handleNext = async (): Promise<void> => {
     if (currentIndex < slidesData.length - 1) {
       flatListRef.current?.scrollToIndex({
         index: currentIndex + 1,
         animated: true,
       });
     } else {
-      // Last slide - navigate to signup
+      // Last slide - mark onboarding as seen and navigate to auth
+      try {
+        await AsyncStorage.setItem('@wajba_has_seen_onboarding', 'true');
+      } catch (error) {
+        console.error('Error saving onboarding status:', error);
+      }
       navigation.replace('Auth');
     }
   };

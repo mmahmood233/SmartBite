@@ -29,6 +29,7 @@ import {
   updateDish,
   deleteDish,
   toggleDishAvailability,
+  toggleDishPopular,
   createCategory,
   deleteCategory,
   Dish,
@@ -226,6 +227,26 @@ const MenuManagementScreen: React.FC = () => {
       await fetchData();
     } catch (error: any) {
       showSnackbar(error.message || 'Failed to update availability', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const togglePopularStatus = async (id: string) => {
+    const item = dishes.find(d => d.id === id);
+    if (!item) return;
+
+    setIsLoading(true);
+    setLoadingMessage('Updating popular status...');
+    try {
+      await toggleDishPopular(id, !item.is_popular);
+      showSnackbar(
+        item.is_popular ? `${item.name} removed from popular` : `${item.name} marked as popular! 🌟`,
+        'success'
+      );
+      await fetchData();
+    } catch (error: any) {
+      showSnackbar(error.message || 'Failed to update popular status', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -622,6 +643,29 @@ const MenuManagementScreen: React.FC = () => {
                     >
                       <Icon name="edit-2" size={14} color="#00A896" />
                       <Text style={styles.editButtonText}>Edit</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.popularButton,
+                        item.is_popular && styles.popularButtonActive,
+                      ]}
+                      onPress={() => togglePopularStatus(item.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Icon 
+                        name="star" 
+                        size={14} 
+                        color={item.is_popular ? "#FFB703" : "#999"} 
+                      />
+                      <Text
+                        style={[
+                          styles.popularButtonText,
+                          item.is_popular && styles.popularButtonTextActive,
+                        ]}
+                      >
+                        {item.is_popular ? 'Popular' : 'Mark Popular'}
+                      </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -1209,6 +1253,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#00A896',
+  },
+  popularButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DDD',
+    gap: 4,
+  },
+  popularButtonActive: {
+    borderColor: '#FFB703',
+    backgroundColor: '#FFF9E6',
+  },
+  popularButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#999',
+  },
+  popularButtonTextActive: {
+    color: '#FFB703',
   },
   toggleButton: {
     paddingHorizontal: 12,

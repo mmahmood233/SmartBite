@@ -30,17 +30,19 @@ export const useRiderOrders = () => {
       setError(null);
       const data = await getAvailableOrders();
       
+      console.log('Fetched available orders:', data.length);
+      
       // Transform data to match UI format
       const formattedOrders: AvailableOrder[] = data.map((order: any) => ({
-        id: order.id,
-        restaurant_id: order.restaurant_id,
-        restaurant_name: order.restaurants?.name || 'Unknown Restaurant',
-        restaurant_address: order.restaurants?.address || 'Unknown Address',
+        id: order.order_id,
+        restaurant_id: order.restaurant_id || '',
+        restaurant_name: order.restaurant_name || 'Unknown Restaurant',
+        restaurant_address: order.restaurant_address || 'Unknown Address',
         delivery_address: order.delivery_address || 'Unknown Address',
-        total: order.total || 0,
-        items: order.items || [],
-        distance: 0, // TODO: Calculate based on rider location
-        estimated_earnings: order.total * 0.15, // 15% of order total
+        total: order.estimated_earnings / 0.15, // Reverse calculate from earnings
+        items: [], // Items count is in items_count
+        distance: order.distance || 0,
+        estimated_earnings: order.estimated_earnings || 0,
         estimated_time: '15-20 min',
         created_at: order.created_at,
       }));

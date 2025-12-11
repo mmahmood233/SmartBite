@@ -35,6 +35,18 @@ export default {
     default: 'افتراضي',
     termsConditions: 'الشروط والأحكام',
     privacyPolicy: 'سياسة الخصوصية',
+    call: 'اتصال',
+    navigate: 'التنقل',
+    customer: 'العميل',
+    items: 'عناصر',
+    total: 'المجموع',
+    all: 'الكل',
+    today: 'اليوم',
+    thisWeek: 'هذا الأسبوع',
+    thisMonth: 'هذا الشهر',
+    rating: 'التقييم',
+    continue: 'متابعة',
+    goBack: 'العودة',
   },
 
   // Authentication
@@ -407,10 +419,12 @@ export default {
     activeDelivery: 'التوصيل النشط',
     headingToRestaurant: 'في الطريق إلى المطعم',
     arrivedAtRestaurant: 'وصلت إلى المطعم',
-    pickedUpOrder: 'تم استلام الطلب',
+    pickedUpOrder: 'استلمت الطلب',
+    orderPickedUp: 'تم استلام الطلب',
     headingToCustomer: 'في الطريق إلى العميل',
     arrivedAtCustomer: 'وصلت إلى العميل',
     delivered: 'تم التوصيل',
+    noActiveDelivery: 'لا يوجد توصيل نشط',
     
     // Action Buttons
     arrivedAtRestaurantBtn: 'وصلت إلى المطعم',

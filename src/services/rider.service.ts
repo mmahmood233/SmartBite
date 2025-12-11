@@ -73,15 +73,24 @@ export const updateRiderStatus = async (
   status: 'online' | 'offline' | 'busy'
 ): Promise<boolean> => {
   try {
+    if (!riderId) {
+      console.warn('Cannot update rider status: riderId is null or undefined');
+      return false;
+    }
+
     const { error } = await supabase
       .from('riders')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', riderId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error updating rider status:', error);
+      throw error;
+    }
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating rider status:', error);
+    // Don't throw, just return false to prevent crashes
     return false;
   }
 };

@@ -33,11 +33,103 @@ export interface AvailableOrder {
  */
 export const getAvailableOrders = async (): Promise<AvailableOrder[]> => {
   try {
+    // Check current user
+    const { data: { user } } = await supabase.auth.getUser();
+    console.log('=== DEBUG: Current user ===');
+    console.log('User ID:', user?.id);
+    console.log('User email:', user?.email);
+    console.log('User role:', user?.user_metadata?.role);
+    
+    // First, let's see ALL orders without filters
+    const { data: allOrders, error: allOrdersError } = await supabase
+      .from('orders')
+      .select('id, status, rider_id, delivery_address, delivery_address_id');
+    
+    console.log('=== DEBUG: All orders in DB ===');
+    console.log('Total orders:', allOrders?.length || 0);
+    console.log('Orders error:', allOrdersError);
+    console.log('Orders without rider:', allOrders?.filter(o => !o.rider_id).length || 0);
+    console.log('Orders with delivery_address:', allOrders?.filter(o => o.delivery_address).length || 0);
+    console.log('Sample order:', allOrders?.[0]);
+    
     const { data, error } = await supabase
-      .rpc('get_available_orders_for_riders');
+      .from('orders')
+      .select(`
+        id,
+        order_number,
+        total_amount,
+        created_at,
+        delivery_address_id,
+        delivery_address,
+        restaurants (
+          name,
+          address
+        ),
+        order_items (
+          id
+        )
+      `)
+      .is('rider_id', null)
+      .in('status', ['confirmed', 'preparing'])  // Only show after restaurant accepts
+      .not('delivery_address', 'is', null)  // Check text field instead
+      .order('created_at', { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    
+    console.log('=== DEBUG: Filtered orders ===');
+    console.log('Orders after filters:', data?.length || 0);
+
+    // Get addresses separately for each order (if using address_id)
+    const ordersWithAddresses = await Promise.all(
+      (data || []).map(async (order: any) => {
+        let address = 'Unknown Address';
+        
+        // If there's an address_id, fetch from user_addresses table
+        if (order.delivery_address_id) {
+          try {
+            const { data: addressData, error: addressError } = await supabase
+              .from('user_addresses')
+              .select('full_address, area, building, road, block, city')
+              .eq('id', order.delivery_address_id)
+              .single();
+            
+            if (!addressError && addressData) {
+              // Build a proper address string
+              const parts = [
+                addressData.building && `Building ${addressData.building}`,
+                addressData.road && `Road ${addressData.road}`,
+                addressData.block && `Block ${addressData.block}`,
+                addressData.area,
+                addressData.city,
+              ].filter(Boolean);
+              
+              address = parts.length > 0 ? parts.join(', ') : (addressData.full_address || 'Unknown Address');
+            }
+          } catch (err) {
+            console.warn('Failed to fetch address for order:', order.id);
+          }
+        } else if (order.delivery_address) {
+          // Fallback to text field if no address_id
+          address = order.delivery_address;
+        }
+        
+        return { ...order, delivery_address: address };
+      })
+    );
+
+    // Transform data to match AvailableOrder interface
+    const availableOrders: AvailableOrder[] = ordersWithAddresses.map(order => ({
+      order_id: order.id,
+      restaurant_name: order.restaurants?.name || 'Unknown Restaurant',
+      restaurant_address: order.restaurants?.address || 'Unknown Address',
+      delivery_address: order.delivery_address,
+      distance: 0, // Calculate if you have coordinates
+      estimated_earnings: order.total_amount * 0.15, // 15% of order total
+      items_count: order.order_items?.length || 0,
+      created_at: order.created_at,
+    }));
+
+    return availableOrders;
   } catch (error) {
     console.error('Error fetching available orders:', error);
     return [];
@@ -53,8 +145,14 @@ export const acceptOrder = async (
   earnings: number
 ): Promise<boolean> => {
   try {
-    // Start a transaction
-    // 1. Update order with rider_id
+    // 1. Check if delivery already exists for this order
+    const { data: existingDelivery } = await supabase
+      .from('deliveries')
+      .select('id')
+      .eq('order_id', orderId)
+      .single();
+
+    // 2. Update order with rider_id
     const { error: orderError } = await supabase
       .from('orders')
       .update({
@@ -67,19 +165,34 @@ export const acceptOrder = async (
 
     if (orderError) throw orderError;
 
-    // 2. Create delivery record
-    const { error: deliveryError } = await supabase
-      .from('deliveries')
-      .insert([{
-        order_id: orderId,
-        rider_id: riderId,
-        status: 'assigned',
-        earnings,
-      }]);
+    // 3. Create or update delivery record
+    if (existingDelivery) {
+      // Update existing delivery
+      const { error: deliveryError } = await supabase
+        .from('deliveries')
+        .update({
+          rider_id: riderId,
+          status: 'assigned',
+          earnings,
+        })
+        .eq('order_id', orderId);
 
-    if (deliveryError) throw deliveryError;
+      if (deliveryError) throw deliveryError;
+    } else {
+      // Create new delivery record
+      const { error: deliveryError } = await supabase
+        .from('deliveries')
+        .insert([{
+          order_id: orderId,
+          rider_id: riderId,
+          status: 'assigned',
+          earnings,
+        }]);
 
-    // 3. Update rider status to busy
+      if (deliveryError) throw deliveryError;
+    }
+
+    // 4. Update rider status to busy
     const { error: riderError } = await supabase
       .from('riders')
       .update({ status: 'busy' })
@@ -156,13 +269,16 @@ export const getActiveDelivery = async (riderId: string): Promise<any | null> =>
         orders (
           id,
           order_number,
-          delivery_address,
-          total,
-          items,
+          total_amount,
+          delivery_address_id,
           restaurants (
             name,
             address,
             phone
+          ),
+          order_items (
+            dish_name,
+            quantity
           )
         )
       `)
@@ -173,6 +289,20 @@ export const getActiveDelivery = async (riderId: string): Promise<any | null> =>
       .single();
 
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
+    
+    // Get delivery address if data exists
+    if (data && data.orders && data.orders.delivery_address_id) {
+      const { data: addressData } = await supabase
+        .from('user_addresses')
+        .select('full_address')
+        .eq('id', data.orders.delivery_address_id)
+        .single();
+      
+      if (addressData) {
+        data.orders.delivery_address = addressData.full_address;
+      }
+    }
+    
     return data;
   } catch (error) {
     console.error('Error fetching active delivery:', error);
@@ -196,7 +326,7 @@ export const getDeliveryHistory = async (
           id,
           order_number,
           delivery_address,
-          total,
+          total_amount,
           restaurants (
             name,
             address

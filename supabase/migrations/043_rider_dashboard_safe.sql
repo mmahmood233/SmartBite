@@ -369,7 +369,7 @@ BEGIN
         r.address as restaurant_address,
         o.delivery_address,
         0.0::DECIMAL as distance,
-        (o.total * 0.15)::DECIMAL as estimated_earnings,
+        (o.total_amount * 0.15)::DECIMAL as estimated_earnings,
         (SELECT COUNT(*) FROM jsonb_array_elements(o.items))::INTEGER as items_count,
         o.created_at
     FROM public.orders o

@@ -32,6 +32,18 @@ export default {
     default: 'Default',
     termsConditions: 'Terms & Conditions',
     privacyPolicy: 'Privacy Policy',
+    call: 'Call',
+    navigate: 'Navigate',
+    customer: 'Customer',
+    items: 'Items',
+    total: 'Total',
+    all: 'All',
+    today: 'Today',
+    thisWeek: 'This Week',
+    thisMonth: 'This Month',
+    rating: 'Rating',
+    continue: 'Continue',
+    goBack: 'Go Back',
   },
 
   // Authentication
@@ -406,10 +418,12 @@ export default {
     activeDelivery: 'Active Delivery',
     headingToRestaurant: 'Heading to Restaurant',
     arrivedAtRestaurant: 'Arrived at Restaurant',
-    pickedUpOrder: 'Order Picked Up',
+    pickedUpOrder: 'Picked Up Order',
+    orderPickedUp: 'Order Picked Up',
     headingToCustomer: 'Heading to Customer',
     arrivedAtCustomer: 'Arrived at Customer',
     delivered: 'Delivered',
+    noActiveDelivery: 'No Active Delivery',
     
     // Action Buttons
     arrivedAtRestaurantBtn: 'Arrived at Restaurant',

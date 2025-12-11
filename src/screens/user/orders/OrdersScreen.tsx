@@ -54,6 +54,43 @@ const OrdersScreen: React.FC = () => {
     loadOrders();
   }, []);
 
+  // Real-time subscription for order updates
+  useEffect(() => {
+    let ordersSubscription: any;
+
+    const setupSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      ordersSubscription = supabase
+        .channel('user-orders')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'orders',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('Order update detected:', payload);
+            // Refresh orders when any change happens
+            loadOrders();
+          }
+        )
+        .subscribe();
+    };
+
+    setupSubscription();
+
+    return () => {
+      if (ordersSubscription) {
+        supabase.removeChannel(ordersSubscription);
+      }
+    };
+  }, []);
+
   const loadOrders = async () => {
     try {
       setLoading(true);
@@ -252,7 +289,7 @@ const OrdersScreen: React.FC = () => {
                   </>
                 )}
                 <Text style={styles.orderDateCompact}>
-                  Delivered {formatDate(order.createdAt)}
+                  {order.status === 'cancelled' ? 'Cancelled' : 'Delivered'} {formatDate(order.createdAt)}
                 </Text>
               </View>
             </View>

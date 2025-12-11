@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import RootNavigator from './src/navigation/RootNavigator';
 import { WajbaLightTheme } from './src/theme/theme';
 import { CartProvider } from './src/contexts/CartContext';
 import { LanguageProvider } from './src/contexts/LanguageContext';
+import { startOrderTimeoutMonitoring, stopOrderTimeoutMonitoring } from './src/services/order-timeout.service';
 import './src/i18n'; // Initialize i18n
 
 /**
@@ -17,6 +18,15 @@ import './src/i18n'; // Initialize i18n
  */
 
 const App: React.FC = () => {
+  // Start order timeout monitoring when app loads
+  useEffect(() => {
+    const intervalId = startOrderTimeoutMonitoring();
+    
+    return () => {
+      stopOrderTimeoutMonitoring(intervalId);
+    };
+  }, []);
+
   return (
     <SafeAreaProvider>
       <LanguageProvider>

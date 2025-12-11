@@ -21,7 +21,7 @@ import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../constants';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useRiderOrders } from '../../hooks/useRiderOrders';
 import { getRiderProfile, updateRiderStatus } from '../../services/rider.service';
-import { acceptOrder } from '../../services/delivery.service';
+import { acceptOrder, getActiveDelivery } from '../../services/delivery.service';
 import { supabase } from '../../lib/supabase';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -34,6 +34,7 @@ const RiderHomeScreen: React.FC = () => {
   const [riderId, setRiderId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  const [activeDelivery, setActiveDelivery] = useState<any>(null);
 
   // Load rider profile and status
   useEffect(() => {
@@ -49,6 +50,10 @@ const RiderHomeScreen: React.FC = () => {
       if (rider) {
         setRiderId(rider.id);
         setIsOnline(rider.status === 'online');
+        
+        // Check for active delivery
+        const delivery = await getActiveDelivery(rider.id);
+        setActiveDelivery(delivery);
       }
     } catch (err) {
       console.error('Error loading rider profile:', err);
@@ -56,12 +61,19 @@ const RiderHomeScreen: React.FC = () => {
   };
 
   const toggleOnlineStatus = async () => {
-    if (!riderId) return;
+    if (!riderId) {
+      Alert.alert('Error', 'Rider profile not found. Please contact support.');
+      return;
+    }
 
     try {
       const newStatus = isOnline ? 'offline' : 'online';
-      await updateRiderStatus(riderId, newStatus);
-      setIsOnline(!isOnline);
+      const success = await updateRiderStatus(riderId, newStatus);
+      if (success) {
+        setIsOnline(!isOnline);
+      } else {
+        Alert.alert('Error', 'Failed to update status. Please try again.');
+      }
     } catch (err) {
       console.error('Error updating status:', err);
       Alert.alert('Error', 'Failed to update status');
@@ -80,6 +92,25 @@ const RiderHomeScreen: React.FC = () => {
       return;
     }
 
+    // Check if rider already has an active delivery
+    if (activeDelivery) {
+      Alert.alert(
+        'Active Delivery in Progress',
+        'You can only handle one delivery at a time. Please complete your current delivery before accepting a new order.',
+        [
+          {
+            text: 'View Current Delivery',
+            onPress: () => navigation.navigate('RiderActiveDelivery', { orderId: activeDelivery.order_id }),
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+        ]
+      );
+      return;
+    }
+
     try {
       setAccepting(true);
       // Find the order to get earnings
@@ -89,6 +120,9 @@ const RiderHomeScreen: React.FC = () => {
       const success = await acceptOrder(orderId, riderId, earnings);
       
       if (success) {
+        // Refresh to get the new active delivery
+        await loadRiderProfile();
+        
         Alert.alert(
           t('common.success'),
           'Order accepted successfully!',
@@ -162,18 +196,24 @@ const RiderHomeScreen: React.FC = () => {
       </View>
 
       <TouchableOpacity
-        style={styles.acceptButton}
+        style={[styles.acceptButton, activeDelivery && styles.acceptButtonDisabled]}
         onPress={() => handleAcceptOrder(order.id)}
         activeOpacity={0.8}
+        disabled={!!activeDelivery}
       >
         <LinearGradient
-          colors={[colors.gradientStart, colors.gradientMid, colors.gradientEnd]}
+          colors={activeDelivery 
+            ? [colors.textDisabled, colors.textDisabled] 
+            : [colors.gradientStart, colors.gradientMid, colors.gradientEnd]
+          }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.acceptButtonGradient}
         >
-          <Text style={styles.acceptButtonText}>Accept Order</Text>
-          <Icon name="arrow-right" size={18} color="#FFFFFF" />
+          <Text style={styles.acceptButtonText}>
+            {activeDelivery ? 'Busy with Delivery' : 'Accept Order'}
+          </Text>
+          <Icon name={activeDelivery ? 'lock' : 'arrow-right'} size={18} color="#FFFFFF" />
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -204,6 +244,35 @@ const RiderHomeScreen: React.FC = () => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Active Delivery Banner */}
+      {activeDelivery && (
+        <TouchableOpacity
+          style={styles.activeDeliveryBanner}
+          onPress={() => navigation.navigate('RiderActiveDelivery', { orderId: activeDelivery.order_id })}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#00A896', '#02C39A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.activeDeliveryGradient}
+          >
+            <View style={styles.activeDeliveryContent}>
+              <View style={styles.activeDeliveryIcon}>
+                <Icon name="truck" size={24} color="#FFFFFF" />
+              </View>
+              <View style={styles.activeDeliveryText}>
+                <Text style={styles.activeDeliveryTitle}>Active Delivery</Text>
+                <Text style={styles.activeDeliverySubtitle}>
+                  Order #{activeDelivery.orders?.order_number || 'N/A'}
+                </Text>
+              </View>
+            </View>
+            <Icon name="chevron-right" size={24} color="#FFFFFF" />
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
 
       <ScrollView
         style={styles.scrollView}
@@ -285,6 +354,49 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceLight,
     borderRadius: BORDER_RADIUS.lg,
     gap: SPACING.sm,
+  },
+  activeDeliveryBanner: {
+    marginHorizontal: SPACING.xl,
+    marginTop: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  activeDeliveryGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: SPACING.lg,
+  },
+  activeDeliveryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  activeDeliveryIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeDeliveryText: {
+    flex: 1,
+  },
+  activeDeliveryTitle: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  activeDeliverySubtitle: {
+    fontSize: FONT_SIZE.sm,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 2,
   },
   statusToggleOnline: {
     backgroundColor: colors.primary,
@@ -396,6 +508,9 @@ const styles = StyleSheet.create({
   acceptButton: {
     borderRadius: BORDER_RADIUS.lg,
     overflow: 'hidden',
+  },
+  acceptButtonDisabled: {
+    opacity: 0.6,
   },
   acceptButtonGradient: {
     flexDirection: 'row',

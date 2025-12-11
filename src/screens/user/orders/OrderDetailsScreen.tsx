@@ -230,7 +230,7 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
           <Text style={styles.headerTitle}>{t('orders.orderDetails')}</Text>
           <Text style={styles.headerSubtitle}>{t('orders.orderNumber')} #{orderData.orderNumber}</Text>
           <Text style={styles.headerMeta}>
-            {orderData.items.length} {t('orders.items')} • BD {orderData.total.toFixed(2)} • {isActive ? t('orders.inProgress') : `${t('orders.delivered')} ${orderData.deliveryDate}`}
+            {orderData.items.length} {t('orders.items')} • BD {orderData.total.toFixed(2)} • {isActive ? t('orders.inProgress') : `${orderData.status === 'cancelled' ? t('orders.cancelled') : t('orders.delivered')} ${orderData.deliveryDate}`}
           </Text>
         </View>
         <View style={{ width: 40 }} />
@@ -251,7 +251,7 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
                 <Text style={styles.restaurantName}>{orderData.restaurant.name}</Text>
                 <View style={styles.restaurantMeta}>
                   <Text style={styles.statusText}>
-                    {isActive ? t('orders.inProgress') : t('orders.delivered')}
+                    {isActive ? t('orders.inProgress') : (orderData.status === 'cancelled' ? t('orders.cancelled') : t('orders.delivered'))}
                   </Text>
                   <Text style={styles.metaDot}>•</Text>
                   <Text style={styles.metaText}>{orderData.deliveryDate}</Text>

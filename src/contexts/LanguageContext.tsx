@@ -39,21 +39,6 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const handleChangeLanguage = async (lang: 'en' | 'ar') => {
     try {
       await changeI18nLanguage(lang);
-      
-      // Show alert that app needs restart for full RTL effect
-      if (lang === 'ar' && !isRTL) {
-        Alert.alert(
-          t('settings.languageChanged'),
-          t('settings.restartForRTL'),
-          [{ text: t('common.confirm') }]
-        );
-      } else if (lang === 'en' && isRTL) {
-        Alert.alert(
-          'Language Changed',
-          'Please restart the app for full effect',
-          [{ text: 'OK' }]
-        );
-      }
     } catch (error) {
       console.error('Error changing language:', error);
     }

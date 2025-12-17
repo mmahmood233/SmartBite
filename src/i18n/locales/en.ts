@@ -370,6 +370,7 @@ export default {
     english: 'English',
     arabic: 'العربية',
     languageChanged: 'Language changed successfully',
+    restartForRTL: 'Please restart the app for full effect',
   },
 
   // Navigation
@@ -724,5 +725,16 @@ export default {
     // Vehicle Types
     motorcycle: 'Motorcycle',
     car: 'Car',
+    
+    // Profile
+    profile: 'Profile',
+    available: 'Available',
+    busy: 'Busy',
+    totalDeliveries: 'Total Deliveries',
+    
+    // Additional translations
+    oneDeliveryAtTime: 'You can only handle one delivery at a time. Please complete your current delivery before accepting a new order.',
+    viewCurrentDelivery: 'View Current Delivery',
+    profileNotFound: 'Profile not found',
   },
 };

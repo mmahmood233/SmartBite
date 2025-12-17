@@ -141,8 +141,7 @@ export const getAvailableOrders = async (): Promise<AvailableOrder[]> => {
  */
 export const acceptOrder = async (
   orderId: string,
-  riderId: string,
-  earnings: number
+  riderId: string
 ): Promise<boolean> => {
   try {
     // 1. Check if delivery already exists for this order
@@ -158,7 +157,6 @@ export const acceptOrder = async (
       .update({
         rider_id: riderId,
         rider_assigned_at: new Date().toISOString(),
-        rider_earnings: earnings,
         delivery_status: 'rider_assigned',
       })
       .eq('id', orderId);
@@ -173,7 +171,6 @@ export const acceptOrder = async (
         .update({
           rider_id: riderId,
           status: 'assigned',
-          earnings,
         })
         .eq('order_id', orderId);
 
@@ -186,7 +183,6 @@ export const acceptOrder = async (
           order_id: orderId,
           rider_id: riderId,
           status: 'assigned',
-          earnings,
         }]);
 
       if (deliveryError) throw deliveryError;

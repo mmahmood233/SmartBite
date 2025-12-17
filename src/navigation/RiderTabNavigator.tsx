@@ -5,7 +5,7 @@ import { colors } from '../theme/colors';
 import { useLanguage } from '../contexts/LanguageContext';
 import RiderHomeScreen from '../screens/rider/RiderHomeScreen';
 import RiderHistoryScreen from '../screens/rider/RiderHistoryScreen';
-import RiderEarningsScreen from '../screens/rider/RiderEarningsScreen';
+import RiderProfileScreen from '../screens/rider/RiderProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -53,12 +53,12 @@ const RiderTabNavigator: React.FC = () => {
         }}
       />
       <Tab.Screen
-        name="RiderEarnings"
-        component={RiderEarningsScreen}
+        name="RiderProfile"
+        component={RiderProfileScreen}
         options={{
-          tabBarLabel: t('rider.earnings'),
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="dollar-sign" size={size} color={color} />
+          tabBarLabel: t('rider.profile'),
+          tabBarIcon: ({ color, size}) => (
+            <Icon name="user" size={size} color={color} />
           ),
         }}
       />

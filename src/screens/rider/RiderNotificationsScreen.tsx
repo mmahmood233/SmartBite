@@ -20,6 +20,7 @@ import { colors } from '../../theme/colors';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../constants';
 import { getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../../services/notification.service';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface Notification {
   id: string;
@@ -35,6 +36,7 @@ interface Notification {
 
 const RiderNotificationsScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -135,7 +137,7 @@ const RiderNotificationsScreen: React.FC = () => {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading notifications...</Text>
+        <Text style={styles.loadingText}>{t('notifications.title')}...</Text>
       </View>
     );
   }
@@ -150,7 +152,7 @@ const RiderNotificationsScreen: React.FC = () => {
           <Icon name="arrow-left" size={24} color="#1F2937" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Notifications</Text>
+          <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
           {unreadCount > 0 && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
@@ -159,7 +161,7 @@ const RiderNotificationsScreen: React.FC = () => {
         </View>
         {unreadCount > 0 && (
           <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.markAllButton}>
-            <Text style={styles.markAllText}>Mark all</Text>
+            <Text style={styles.markAllText}>{t('notifications.markAll')}</Text>
           </TouchableOpacity>
         )}
         {unreadCount === 0 && <View style={{ width: 60 }} />}
@@ -169,8 +171,8 @@ const RiderNotificationsScreen: React.FC = () => {
         {notifications.length === 0 ? (
           <View style={styles.emptyState}>
             <Icon name="bell-off" size={64} color="#D1D5DB" />
-            <Text style={styles.emptyTitle}>No Notifications</Text>
-            <Text style={styles.emptyText}>You're all caught up!</Text>
+            <Text style={styles.emptyTitle}>{t('notifications.noNotifications')}</Text>
+            <Text style={styles.emptyText}>{t('notifications.noNotificationsDesc')}</Text>
           </View>
         ) : (
           <View style={styles.notificationsList}>

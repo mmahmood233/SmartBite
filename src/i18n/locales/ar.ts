@@ -362,7 +362,7 @@ export default {
   settings: {
     title: 'الإعدادات',
     language: 'اللغة',
-    languageChanged: 'تم تغيير اللغة',
+    languageChanged: 'تم تغيير اللغة بنجاح',
     restartForRTL: 'يرجى إعادة تشغيل التطبيق للحصول على التأثير الكامل',
     darkMode: 'الوضع الداكن',
     notifications: 'الإشعارات',
@@ -725,5 +725,16 @@ export default {
     // Vehicle Types
     motorcycle: 'دراجة نارية',
     car: 'سيارة',
+    
+    // Profile
+    profile: 'الملف الشخصي',
+    available: 'متاح',
+    busy: 'مشغول',
+    totalDeliveries: 'إجمالي التوصيلات',
+    
+    // Additional translations
+    oneDeliveryAtTime: 'يمكنك التعامل مع توصيل واحد فقط في كل مرة. يرجى إكمال التوصيل الحالي قبل قبول طلب جديد.',
+    viewCurrentDelivery: 'عرض التوصيل الحالي',
+    profileNotFound: 'الملف الشخصي غير موجود',
   },
 };

@@ -90,7 +90,7 @@ const RiderActiveDeliveryScreen: React.FC = () => {
         setTimeout(() => {
           Alert.alert(
             t('common.success'),
-            `${t('rider.deliveryComplete')}! You earned BD ${delivery.earnings.toFixed(2)}`
+            t('rider.deliveryComplete')
           );
         }, 300);
       } else {
@@ -303,10 +303,6 @@ const RiderActiveDeliveryScreen: React.FC = () => {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>{t('common.total')}</Text>
             <Text style={styles.infoValue}>BD {delivery.total.toFixed(2)}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{t('rider.earnings')}</Text>
-            <Text style={[styles.infoValue, styles.earningsValue]}>BD {delivery.earnings.toFixed(2)}</Text>
           </View>
         </View>
 

@@ -107,18 +107,18 @@ const RiderHomeScreen: React.FC = () => {
 
   const handleAcceptOrder = async (orderId: string) => {
     if (!riderId) {
-      Alert.alert('Error', 'Rider profile not found');
+      Alert.alert(t('common.error'), t('rider.profileNotFound'));
       return;
     }
 
     // Check if rider already has an active delivery
     if (activeDelivery) {
       Alert.alert(
-        'Active Delivery in Progress',
-        'You can only handle one delivery at a time. Please complete your current delivery before accepting a new order.',
+        t('rider.activeDelivery'),
+        t('rider.oneDeliveryAtTime'),
         [
           {
-            text: 'View Current Delivery',
+            text: t('rider.viewCurrentDelivery'),
             onPress: () => navigation.navigate('RiderActiveDelivery', { orderId: activeDelivery.order_id }),
           },
           {
@@ -132,11 +132,7 @@ const RiderHomeScreen: React.FC = () => {
 
     try {
       setAccepting(true);
-      // Find the order to get earnings
-      const order = orders.find(o => o.id === orderId);
-      const earnings = order?.estimated_earnings || 0;
-      
-      const success = await acceptOrder(orderId, riderId, earnings);
+      const success = await acceptOrder(orderId, riderId);
       
       if (success) {
         // Refresh to get the new active delivery
@@ -169,9 +165,6 @@ const RiderHomeScreen: React.FC = () => {
         <View>
           <Text style={styles.orderNumber}>Order #{order.id.slice(0, 8)}</Text>
           <Text style={styles.restaurantName}>{order.restaurant_name}</Text>
-        </View>
-        <View style={styles.earningsBadge}>
-          <Text style={styles.earningsText}>BD {order.earnings}</Text>
         </View>
       </View>
 
@@ -243,9 +236,9 @@ const RiderHomeScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.headerTitle}>Available Orders</Text>
+          <Text style={styles.headerTitle}>{t('rider.availableOrders')}</Text>
           <Text style={styles.headerSubtitle}>
-            {isOnline ? 'You are online' : 'You are offline'}
+            {isOnline ? t('rider.youAreOnline') : t('rider.youAreOffline')}
           </Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -267,7 +260,7 @@ const RiderHomeScreen: React.FC = () => {
               color={isOnline ? '#FFFFFF' : colors.textSecondary}
             />
             <Text style={[styles.statusText, isOnline && styles.statusTextOnline]}>
-              {isOnline ? 'Online' : 'Offline'}
+              {isOnline ? t('rider.online') : t('rider.offline')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -291,7 +284,7 @@ const RiderHomeScreen: React.FC = () => {
                 <Icon name="truck" size={24} color="#FFFFFF" />
               </View>
               <View style={styles.activeDeliveryText}>
-                <Text style={styles.activeDeliveryTitle}>Active Delivery</Text>
+                <Text style={styles.activeDeliveryTitle}>{t('rider.activeDelivery')}</Text>
                 <Text style={styles.activeDeliverySubtitle}>
                   Order #{activeDelivery.orders?.order_number || 'N/A'}
                 </Text>
@@ -312,21 +305,21 @@ const RiderHomeScreen: React.FC = () => {
         {!isOnline ? (
           <View style={styles.offlineState}>
             <Icon name="zap-off" size={64} color={colors.textDisabled} />
-            <Text style={styles.offlineTitle}>You're Offline</Text>
+            <Text style={styles.offlineTitle}>{t('rider.offlineTitle')}</Text>
             <Text style={styles.offlineText}>
-              Go online to start receiving delivery requests
+              {t('rider.offlineMessage')}
             </Text>
             <TouchableOpacity
               style={styles.goOnlineButton}
               onPress={toggleOnlineStatus}
             >
-              <Text style={styles.goOnlineButtonText}>Go Online</Text>
+              <Text style={styles.goOnlineButtonText}>{t('rider.goOnline')}</Text>
             </TouchableOpacity>
           </View>
         ) : loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={styles.loadingText}>Loading orders...</Text>
+            <Text style={styles.loadingText}>{t('rider.availableOrders')}...</Text>
           </View>
         ) : orders.length === 0 ? (
           <View style={styles.emptyState}>

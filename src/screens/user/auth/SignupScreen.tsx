@@ -71,7 +71,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const handleSignUp = async (): Promise<void> => {
     // Validate inputs
     if (!fullName.trim()) {
-      setError('Please enter your full name');
+      setError(t('auth.pleaseEnterFullName'));
       return;
     }
     if (!validateEmail(email)) {
@@ -177,7 +177,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
         <View style={styles.formSection}>
           {/* Full Name Input */}
           <Input
-            label="Full Name"
+            label={t('auth.fullName')}
             value={fullName}
             onChangeText={setFullName}
             autoCapitalize="words"
@@ -194,7 +194,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
 
           {/* Phone Input */}
           <Input
-            label="Phone Number (Optional)"
+            label={t('auth.phoneNumberOptional')}
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
@@ -252,7 +252,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
 
           {/* Confirm Password Input */}
           <Input
-            label="Confirm Password"
+            label={t('auth.confirmPassword')}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry={!showConfirmPassword}
@@ -266,15 +266,18 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
 
           {/* Terms and Conditions */}
           <View style={styles.checkboxContainer}>
-            <Checkbox
-              status={agreeToTerms ? 'checked' : 'unchecked'}
-              onPress={() => setAgreeToTerms(!agreeToTerms)}
-              color={colors.primary}
-            />
+            <View style={styles.checkboxWrapper}>
+              <Checkbox
+                status={agreeToTerms ? 'checked' : 'unchecked'}
+                onPress={() => setAgreeToTerms(!agreeToTerms)}
+                color={colors.primary}
+                uncheckedColor="#6B7280"
+              />
+            </View>
             <Text style={styles.checkboxText}>
-              I agree to the{' '}
-              <Text style={styles.linkText}>Terms & Conditions</Text> and{' '}
-              <Text style={styles.linkText}>Privacy Policy</Text>
+              {t('auth.agreeToThe')}{' '}
+              <Text style={styles.linkText}>{t('auth.termsConditions')}</Text> {t('auth.and')}{' '}
+              <Text style={styles.linkText}>{t('auth.privacyPolicy')}</Text>
             </Text>
           </View>
 
@@ -287,7 +290,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
 
           {/* Sign Up Button */}
           <GradientButton
-            title={loading ? "Creating Account..." : "Create Account"}
+            title={loading ? t('auth.creatingAccount') : t('auth.createAccount')}
             onPress={handleSignUp}
             disabled={!isFormValid || loading}
             loading={loading}
@@ -297,7 +300,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
           {/* Divider */}
           <View style={styles.dividerContainer}>
             <View style={styles.divider} />
-            <Text style={styles.dividerText}>or sign up with</Text>
+            <Text style={styles.dividerText}>{t('auth.orSignUpWith')}</Text>
             <View style={styles.divider} />
           </View>
 
@@ -372,12 +375,18 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     marginTop: 8,
   },
+  checkboxWrapper: {
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+  },
   checkboxText: {
     ...typography.body,
     fontSize: 14,
     color: colors.textSecondary,
     flex: 1,
-    marginLeft: 8,
+    marginHorizontal: 8,
   },
   linkText: {
     color: colors.primary,

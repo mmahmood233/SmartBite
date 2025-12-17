@@ -50,12 +50,6 @@ interface EditBusinessInfoModalProps {
 
 // Categories now loaded from database
 
-const STATUS_OPTIONS = [
-  { id: 'open', label: 'Open', icon: 'check-circle' as const, color: '#10B981' },
-  { id: 'closed', label: 'Closed', icon: 'x-circle' as const, color: '#EF4444' },
-  { id: 'busy', label: 'Busy', icon: 'alert-circle' as const, color: '#F59E0B' },
-];
-
 const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
   visible,
   onClose,
@@ -64,6 +58,14 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
   onSave,
 }) => {
   const { t } = useLanguage();
+  
+  // Status options with translated labels
+  const STATUS_OPTIONS = [
+    { id: 'open', label: t('partner.open'), icon: 'check-circle' as const, color: '#10B981' },
+    { id: 'closed', label: t('partner.closed'), icon: 'x-circle' as const, color: '#EF4444' },
+    { id: 'busy', label: t('partner.busy'), icon: 'alert-circle' as const, color: '#F59E0B' },
+  ];
+  
   const [name, setName] = useState(businessData.name);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     businessData.category.split(' • ')
@@ -182,11 +184,11 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
           .getPublicUrl(filePath);
 
         setLogoUri(publicUrl);
-        showSnackbar('Logo uploaded successfully!', 'success');
+        showSnackbar(t('partner.logoUploadedSuccess'), 'success');
       }
     } catch (error) {
       console.error('Error uploading logo:', error);
-      showSnackbar('Failed to upload logo', 'error');
+      showSnackbar(t('partner.failedToUploadLogo'), 'error');
     } finally {
       setUploadingLogo(false);
     }
@@ -194,11 +196,11 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      showSnackbar('Restaurant name is required', 'error');
+      showSnackbar(t('partner.restaurantNameRequired'), 'error');
       return;
     }
     if (selectedCategories.length === 0) {
-      showSnackbar('Please select at least one category', 'error');
+      showSnackbar(t('partner.selectAtLeastOneCategory'), 'error');
       return;
     }
     if (!contactNumber.trim()) {
@@ -269,13 +271,13 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
       };
 
       onSave(updatedData);
-      showSnackbar('Business information updated successfully!', 'success');
+      showSnackbar(t('partner.changesSavedSuccess'), 'success');
       setTimeout(() => {
         onClose();
       }, 1500);
     } catch (error: any) {
       console.error('Error saving business info:', error);
-      showSnackbar(error.message || 'Failed to save changes', 'error');
+      showSnackbar(error.message || t('partner.failedToSaveChanges'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -293,7 +295,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
             <Icon name="arrow-left" size={24} color={PartnerColors.light.text.primary} />
           </TouchableOpacity>
-          <Text style={styles.title}>Edit Business Info</Text>
+          <Text style={styles.title}>{t('partner.editBusinessInfo')}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -302,22 +304,22 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Icon name="info" size={18} color={PartnerColors.light.text.secondary} />
-                <Text style={styles.sectionTitle}>BASIC INFORMATION</Text>
+                <Text style={styles.sectionTitle}>{t('partner.basicInformation')}</Text>
               </View>
 
               {/* Restaurant Name - Read Only */}
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Restaurant Name</Text>
+                <Text style={styles.label}>{t('partner.restaurantName')}</Text>
                 <View style={[styles.inputContainer, styles.readOnlyContainer]}>
                   <Icon name="home" size={18} color={PartnerColors.light.text.secondary} style={styles.inputIcon} />
                   <Text style={styles.readOnlyText}>{name}</Text>
                 </View>
-                <Text style={styles.helperText}>Restaurant name cannot be changed</Text>
+                <Text style={styles.helperText}>{t('partner.restaurantNameCannotChange')}</Text>
               </View>
 
               {/* Category - Multi-select */}
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Categories (Select multiple)</Text>
+                <Text style={styles.label}>{t('partner.categoriesSelectMultiple')}</Text>
                 <TouchableOpacity
                   style={styles.dropdownContainer}
                   onPress={() => setShowCategoryPicker(true)}
@@ -326,7 +328,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
                   <Text style={styles.dropdownText}>
                     {selectedCategories.length > 0 
                       ? selectedCategories.join(' • ') 
-                      : 'Select categories'}
+                      : t('partner.selectCategories')}
                   </Text>
                   <Icon name="chevron-down" size={18} color="#94A3B8" />
                 </TouchableOpacity>
@@ -334,14 +336,14 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
 
               {/* Description */}
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Description</Text>
+                <Text style={styles.label}>{t('partner.descriptionLabel')}</Text>
                 <View style={[styles.inputContainer, styles.textAreaContainer]}>
                   <Icon name="file-text" size={18} color={PartnerColors.light.text.secondary} style={[styles.inputIcon, styles.textAreaIcon]} />
                   <TextInput
                     style={[styles.input, styles.textArea]}
                     value={description}
                     onChangeText={setDescription}
-                    placeholder="Describe your restaurant..."
+                    placeholder={t('partner.descriptionPlaceholder')}
                     placeholderTextColor="#94A3B8"
                     multiline
                     numberOfLines={4}
@@ -351,7 +353,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
 
               {/* Logo Upload */}
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Logo / Banner</Text>
+                <Text style={styles.label}>{t('partner.logoBanner')}</Text>
                 <TouchableOpacity 
                   style={styles.uploadContainer} 
                   onPress={pickLogo}
@@ -362,7 +364,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
                   ) : (
                     <View style={styles.logoPlaceholder}>
                       <Icon name="image" size={40} color={PartnerColors.light.text.tertiary} />
-                      <Text style={styles.placeholderText}>No logo uploaded</Text>
+                      <Text style={styles.placeholderText}>{t('partner.noLogoUploaded')}</Text>
                     </View>
                   )}
                   <View style={styles.uploadOverlay}>
@@ -371,7 +373,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
                     ) : (
                       <>
                         <Icon name="camera" size={24} color="#FFFFFF" />
-                        <Text style={styles.uploadText}>{logoUri ? 'Change Image' : 'Upload Logo'}</Text>
+                        <Text style={styles.uploadText}>{logoUri ? t('partner.changeImage') : t('partner.uploadLogo')}</Text>
                       </>
                     )}
                   </View>
@@ -383,12 +385,12 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Icon name="clock" size={18} color={PartnerColors.light.text.secondary} />
-                <Text style={styles.sectionTitle}>OPERATING DETAILS</Text>
+                <Text style={styles.sectionTitle}>{t('partner.operatingDetails')}</Text>
               </View>
 
               {/* Status Options */}
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Status</Text>
+                <Text style={styles.label}>{t('partner.status')}</Text>
                 <View style={styles.statusOptionsContainer}>
                   {STATUS_OPTIONS.map((option) => {
                     const isSelected = status === option.id;
@@ -424,7 +426,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
 
               {/* Contact Number */}
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Contact Number</Text>
+                <Text style={styles.label}>{t('partner.contactNumber')}</Text>
                 <View style={styles.inputContainer}>
                   <Icon name="phone" size={18} color={PartnerColors.light.text.secondary} style={styles.inputIcon} />
                   <TextInput
@@ -440,7 +442,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
 
               {/* Address */}
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Address</Text>
+                <Text style={styles.label}>{t('partner.address')}</Text>
                 <View style={styles.inputContainer}>
                   <Icon name="map-pin" size={18} color={PartnerColors.light.text.secondary} style={styles.inputIcon} />
                   <TextInput
@@ -455,10 +457,10 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
 
               {/* Operating Hours */}
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Operating Hours</Text>
+                <Text style={styles.label}>{t('partner.operatingHours')}</Text>
                 <View style={{ flexDirection: 'row', gap: 12 }}>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.label, { fontSize: 12, marginBottom: 6 }]}>Opening Time</Text>
+                    <Text style={[styles.label, { fontSize: 12, marginBottom: 6 }]}>{t('partner.openingTime')}</Text>
                     <View style={styles.inputContainer}>
                       <Icon name="clock" size={18} color={PartnerColors.light.text.secondary} style={styles.inputIcon} />
                       <TextInput
@@ -471,7 +473,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
                     </View>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.label, { fontSize: 12, marginBottom: 6 }]}>Closing Time</Text>
+                    <Text style={[styles.label, { fontSize: 12, marginBottom: 6 }]}>{t('partner.closingTime')}</Text>
                     <View style={styles.inputContainer}>
                       <Icon name="clock" size={18} color={PartnerColors.light.text.secondary} style={styles.inputIcon} />
                       <TextInput
@@ -490,8 +492,8 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
               <View style={styles.fieldGroup}>
                 <View style={styles.toggleRow}>
                   <View>
-                    <Text style={styles.label}>Auto Status Updates</Text>
-                    <Text style={styles.helperText}>Automatically open/close based on hours</Text>
+                    <Text style={styles.label}>{t('partner.autoStatusUpdates')}</Text>
+                    <Text style={styles.helperText}>{t('partner.autoStatusDesc')}</Text>
                   </View>
                   <Switch
                     value={autoStatusUpdate}
@@ -517,7 +519,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
               style={styles.saveButton}
             >
               <Icon name="check-circle" size={20} color="#FFFFFF" />
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+              <Text style={styles.saveButtonText}>{t('partner.saveChanges')}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -536,7 +538,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
           >
             <View style={styles.pickerContainer}>
               <View style={styles.pickerHeader}>
-                <Text style={styles.pickerTitle}>Select Categories</Text>
+                <Text style={styles.pickerTitle}>{t('partner.selectCategoriesTitle')}</Text>
                 <TouchableOpacity onPress={() => setShowCategoryPicker(false)}>
                   <Text style={styles.pickerDone}>Done</Text>
                 </TouchableOpacity>

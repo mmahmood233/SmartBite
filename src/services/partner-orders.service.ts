@@ -205,20 +205,17 @@ export const rejectOrder = async (orderId: string, reason?: string) => {
 
 /**
  * Update order status
+ * Restaurant can only update to: preparing, ready_for_pickup
+ * NOT delivered - only rider can mark as delivered
  */
 export const updateOrderStatus = async (
   orderId: string,
-  status: 'preparing' | 'ready_for_pickup' | 'out_for_delivery' | 'delivered'
+  status: 'preparing' | 'ready_for_pickup'
 ) => {
   const updates: any = {
     status,
     updated_at: new Date().toISOString(),
   };
-
-  // If marking as delivered, set actual delivery time
-  if (status === 'delivered') {
-    updates.actual_delivery_time = new Date().toISOString();
-  }
 
   const { data, error } = await supabase
     .from('orders')

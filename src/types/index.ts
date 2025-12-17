@@ -6,7 +6,7 @@ export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
   Auth: undefined;
-  MainTabs: undefined;
+  MainTabs: { screen?: 'HomeTab' | 'AIChatTab' | 'CartTab' | 'OrdersTab' | 'ProfileTab' } | undefined;
   Home: undefined;
   AIChat: undefined;
   AllRestaurants: undefined;
@@ -63,12 +63,18 @@ export type RootStackParamList = {
   AddPaymentMethod: undefined;
   Offers: undefined;
   HelpSupport: undefined;
+  FAQ: undefined;
+  Terms: undefined;
+  Privacy: undefined;
+  Notifications: undefined;
   ChangePassword: undefined;
   PartnerPortal: undefined;
+  PartnerNotifications: undefined;
   PartnerOrderDetails: {
     orderId: string;
   };
   AdminPortal: undefined;
+  AdminNotifications: undefined;
   AddPromotion: {
     promotion?: {
       id: string;
@@ -85,6 +91,7 @@ export type RootStackParamList = {
   };
   RiderTabs: undefined;
   RiderHome: undefined;
+  RiderNotifications: undefined;
   RiderActiveDelivery: {
     orderId: string;
   };

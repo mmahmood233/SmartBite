@@ -6,14 +6,12 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
-  Linking,
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../types';
-import { Feather as Icon } from '@expo/vector-icons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Feather as Icon, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '../../../theme/colors';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { SPACING, BORDER_RADIUS, FONT_SIZE } from '../../../constants';
@@ -38,63 +36,36 @@ const HelpSupportScreen: React.FC = () => {
   };
 
   const handleViewOrders = () => {
-    navigation.navigate('Orders');
+    // Navigate to MainTabs and then to OrdersTab
+    navigation.navigate('MainTabs', { screen: 'OrdersTab' });
   };
 
-  const handleChatSupport = () => {
+  const handleCallSupport = () => {
     Alert.alert(
-      'Chat Support',
-      'Chat support will be implemented here',
+      'Call Support',
+      'Calling +973 3356 0803...\n\nThis is a simulation. In production, this would open your phone dialer.',
       [{ text: 'OK' }]
     );
   };
 
-  const handleCallSupport = async () => {
-    const phoneNumber = '+97333560803';
-    const url = `tel:${phoneNumber}`;
-    
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert('Error', 'Unable to make phone call');
-    }
-  };
-
-  const handleEmailSupport = async () => {
-    const email = 'support@wajba.bh';
-    const url = `mailto:${email}`;
-    
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert('Error', 'Unable to open email client');
-    }
+  const handleEmailSupport = () => {
+    Alert.alert(
+      'Email Support',
+      'Opening email to support@wajba.bh...\n\nThis is a simulation. In production, this would open your email app.',
+      [{ text: 'OK' }]
+    );
   };
 
   const handleFAQ = () => {
-    Alert.alert(
-      'FAQs',
-      'Frequently Asked Questions page will be implemented here',
-      [{ text: 'OK' }]
-    );
+    navigation.navigate('FAQ');
   };
 
   const handleTerms = () => {
-    Alert.alert(
-      'Terms & Conditions',
-      'Terms & Conditions page will be implemented here',
-      [{ text: 'OK' }]
-    );
+    navigation.navigate('Terms');
   };
 
   const handlePrivacy = () => {
-    Alert.alert(
-      'Privacy Policy',
-      'Privacy Policy page will be implemented here',
-      [{ text: 'OK' }]
-    );
+    navigation.navigate('Privacy');
   };
 
   const supportOptions: SupportOption[] = [
@@ -108,14 +79,6 @@ const HelpSupportScreen: React.FC = () => {
     },
     {
       id: '2',
-      icon: 'message-circle',
-      iconType: 'feather',
-      title: t('help.chatWithSupport'),
-      subtitle: t('help.chatMessage'),
-      action: handleChatSupport,
-    },
-    {
-      id: '3',
       icon: 'phone',
       iconType: 'feather',
       title: t('help.callUs'),

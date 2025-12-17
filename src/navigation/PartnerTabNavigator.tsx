@@ -7,6 +7,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext';
 import OverviewDashboard from '../screens/partner/OverviewDashboard';
 import LiveOrdersScreen from '../screens/partner/LiveOrdersScreen';
 import MenuManagementScreen from '../screens/partner/MenuManagementScreen';
@@ -15,6 +16,8 @@ import PartnerMoreScreen from '../screens/partner/PartnerMoreScreen';
 const Tab = createBottomTabNavigator();
 
 const PartnerTabNavigator: React.FC = () => {
+  const { t } = useLanguage();
+  
   return (
     <Tab.Navigator
       screenOptions={{
@@ -44,7 +47,7 @@ const PartnerTabNavigator: React.FC = () => {
         name="LiveOrders"
         component={LiveOrdersScreen}
         options={{
-          tabBarLabel: 'Orders',
+          tabBarLabel: t('partner.orders'),
           tabBarIcon: ({ color, size }) => (
             <Icon name="file-text" size={size} color={color} />
           ),
@@ -54,7 +57,7 @@ const PartnerTabNavigator: React.FC = () => {
         name="Overview"
         component={OverviewDashboard}
         options={{
-          tabBarLabel: 'Overview',
+          tabBarLabel: t('partner.overview'),
           tabBarIcon: ({ color, size }) => (
             <Icon name="bar-chart-2" size={size} color={color} />
           ),
@@ -64,7 +67,7 @@ const PartnerTabNavigator: React.FC = () => {
         name="Menu"
         component={MenuManagementScreen}
         options={{
-          tabBarLabel: 'Menu',
+          tabBarLabel: t('partner.menu'),
           tabBarIcon: ({ color, size }) => (
             <Icon name="book-open" size={size} color={color} />
           ),
@@ -74,7 +77,7 @@ const PartnerTabNavigator: React.FC = () => {
         name="More"
         component={PartnerMoreScreen}
         options={{
-          tabBarLabel: 'Profile',
+          tabBarLabel: t('partner.profile'),
           tabBarIcon: ({ color, size }) => (
             <Icon name="user" size={size} color={color} />
           ),

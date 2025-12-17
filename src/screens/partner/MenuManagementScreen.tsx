@@ -480,7 +480,7 @@ const MenuManagementScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <PartnerTopNav
-        title={strings.nav.menu}
+        title={t('partner.menuTitle')}
         showBranding={true}
         showDropdown={false}
         showNotification={true}
@@ -509,7 +509,7 @@ const MenuManagementScreen: React.FC = () => {
               selectedCategory === 'All' && styles.categoryChipTextActive,
             ]}
           >
-            All
+            {t('partner.all')}
           </Text>
         </TouchableOpacity>
 
@@ -529,7 +529,7 @@ const MenuManagementScreen: React.FC = () => {
                 selectedCategory === category.id && styles.categoryChipTextActive,
               ]}
             >
-              {category.name}
+              {t(`partner.${category.name}`) || category.name}
             </Text>
           </TouchableOpacity>
         ))}
@@ -541,7 +541,7 @@ const MenuManagementScreen: React.FC = () => {
           activeOpacity={0.7}
         >
           <Icon name="plus" size={14} color="#00A896" />
-          <Text style={styles.addCategoryText}>Category</Text>
+          <Text style={styles.addCategoryText}>{t('partner.category')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -550,7 +550,7 @@ const MenuManagementScreen: React.FC = () => {
           <Icon name="search" size={18} color="#999" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder={strings.menu.search}
+            placeholder={t('partner.searchMenuItems')}
             placeholderTextColor={PartnerColors.light.text.placeholder}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -586,7 +586,7 @@ const MenuManagementScreen: React.FC = () => {
                 style={styles.emptyStateButtonGradient}
               >
                 <Icon name="plus" size={18} color="#FFFFFF" />
-                <Text style={styles.emptyStateButtonText}>Add Item</Text>
+                <Text style={styles.emptyStateButtonText}>{t('partner.addItem')}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -606,7 +606,7 @@ const MenuManagementScreen: React.FC = () => {
 
                 <View style={styles.menuItemDetails}>
                   <View style={styles.menuItemHeader}>
-                    <Text style={styles.menuItemName}>{item.name}</Text>
+                    <Text style={styles.menuItemName}>{t(`partner.${item.name}`) || item.name}</Text>
                     <View style={styles.statusDot}>
                       <View
                         style={[
@@ -618,20 +618,20 @@ const MenuManagementScreen: React.FC = () => {
                   </View>
 
                   <View style={styles.menuItemMeta}>
-                    <Text style={styles.menuItemPrice}>BD {item.price.toFixed(3)}</Text>
+                    <Text style={styles.menuItemPrice}>{t('units.currencySymbol')} {item.price.toFixed(3)}</Text>
                     <Text style={styles.menuItemMetaDot}>•</Text>
-                    <Text style={styles.menuItemCategory}>{item.menu_categories?.name || 'Uncategorized'}</Text>
+                    <Text style={styles.menuItemCategory}>{item.menu_categories?.name ? (t(`partner.${item.menu_categories.name}`) || item.menu_categories.name) : t('partner.uncategorized')}</Text>
                     {item.is_popular && (
                       <>
                         <Text style={styles.menuItemMetaDot}>•</Text>
                         <View style={styles.popularBadge}>
-                          <Text style={styles.popularBadgeText}>Popular 🟡</Text>
+                          <Text style={styles.popularBadgeText}>{t('partner.popular')} 🟡</Text>
                         </View>
                       </>
                     )}
                     <Text style={styles.menuItemMetaDot}>•</Text>
                     <Text style={styles.statusText}>
-                      {item.is_available ? 'Active 🟢' : 'Inactive ⚪'}
+                      {item.is_available ? t('partner.active') + ' 🟢' : t('partner.inactive') + ' ⚪'}
                     </Text>
                   </View>
 
@@ -642,7 +642,7 @@ const MenuManagementScreen: React.FC = () => {
                       activeOpacity={0.7}
                     >
                       <Icon name="edit-2" size={14} color="#00A896" />
-                      <Text style={styles.editButtonText}>Edit</Text>
+                      <Text style={styles.editButtonText}>{t('partner.edit')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -664,7 +664,7 @@ const MenuManagementScreen: React.FC = () => {
                           item.is_popular && styles.popularButtonTextActive,
                         ]}
                       >
-                        {item.is_popular ? 'Popular' : 'Mark Popular'}
+                        {t('partner.popular')}
                       </Text>
                     </TouchableOpacity>
 
@@ -682,7 +682,7 @@ const MenuManagementScreen: React.FC = () => {
                           !item.is_available && styles.toggleButtonTextActive,
                         ]}
                       >
-                        {item.is_available ? 'Mark Unavailable' : 'Activate'}
+                        {item.is_available ? t('partner.markUnavailable') : t('partner.markAvailable')}
                       </Text>
                     </TouchableOpacity>
 
@@ -729,7 +729,7 @@ const MenuManagementScreen: React.FC = () => {
             style={styles.addItemButtonGradient}
           >
             <Icon name="plus" size={18} color="#FFFFFF" />
-            <Text style={styles.addItemButtonText}>{strings.menu.actions.addItem}</Text>
+            <Text style={styles.addItemButtonText}>{t('partner.addItem')}</Text>
           </LinearGradient>
         </TouchableOpacity>
 
@@ -739,7 +739,7 @@ const MenuManagementScreen: React.FC = () => {
           activeOpacity={0.7}
         >
           <Icon name="folder" size={18} color="#00A896" />
-          <Text style={styles.manageCategoriesButtonText}>{strings.menu.actions.manageCategories}</Text>
+          <Text style={styles.manageCategoriesButtonText}>{t('partner.manageCategories')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -806,7 +806,7 @@ const MenuManagementScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Manage Categories</Text>
+              <Text style={styles.modalTitle}>{t('partner.manageCategories')}</Text>
               <TouchableOpacity onPress={() => setShowManageCategoriesModal(false)}>
                 <Icon name="x" size={24} color="#666" />
               </TouchableOpacity>
@@ -815,7 +815,7 @@ const MenuManagementScreen: React.FC = () => {
             <ScrollView style={styles.categoryList} showsVerticalScrollIndicator={false}>
               {categories.map((category) => (
                 <View key={category.id} style={styles.categoryListItem}>
-                  <Text style={styles.categoryListItemText}>{category.name}</Text>
+                  <Text style={styles.categoryListItemText}>{t(`partner.${category.name}`) || category.name}</Text>
                   <TouchableOpacity
                     style={styles.deleteCategoryButton}
                     onPress={() => handleDeleteCategory(category.id, category.name)}
@@ -841,7 +841,7 @@ const MenuManagementScreen: React.FC = () => {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
+                {editingItem ? t('partner.editMenuItem') : t('partner.addNewMenuItem')}
               </Text>
               <TouchableOpacity onPress={() => setShowAddModal(false)}>
                 <Icon name="x" size={24} color="#666" />
@@ -860,7 +860,7 @@ const MenuManagementScreen: React.FC = () => {
                 ) : (
                   <>
                     <Icon name="camera" size={32} color="#999" />
-                    <Text style={styles.photoUploadText}>Upload Photo</Text>
+                    <Text style={styles.photoUploadText}>{t('partner.uploadPhoto')}</Text>
                   </>
                 )}
                 {uploadingImage && (
@@ -871,20 +871,20 @@ const MenuManagementScreen: React.FC = () => {
               </TouchableOpacity>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Item Name *</Text>
+                <Text style={styles.formLabel}>{t('partner.itemName')} *</Text>
                 <TextInput
                   style={styles.formInput}
-                  placeholder="e.g. Chicken Burger"
+                  placeholder={t('partner.itemNamePlaceholder')}
                   value={formData.name}
                   onChangeText={(text) => setFormData({ ...formData, name: text })}
                 />
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Description</Text>
+                <Text style={styles.formLabel}>{t('partner.description')}</Text>
                 <TextInput
                   style={[styles.formInput, styles.formTextArea]}
-                  placeholder="Brief description..."
+                  placeholder={t('partner.descriptionPlaceholder')}
                   multiline
                   numberOfLines={3}
                   value={formData.description}
@@ -893,7 +893,7 @@ const MenuManagementScreen: React.FC = () => {
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Category *</Text>
+                <Text style={styles.formLabel}>{t('partner.category')} *</Text>
                 <View style={styles.categoryPicker}>
                   {categories.map((cat) => (
                     <TouchableOpacity
@@ -911,7 +911,7 @@ const MenuManagementScreen: React.FC = () => {
                           formData.category_id === cat.id && styles.categoryOptionTextActive,
                         ]}
                       >
-                        {cat.name}
+                        {t(`partner.${cat.name}`) || cat.name}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -919,7 +919,7 @@ const MenuManagementScreen: React.FC = () => {
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Price (BD) *</Text>
+                <Text style={styles.formLabel}>{t('partner.priceBD')} *</Text>
                 <TextInput
                   style={styles.formInput}
                   placeholder="0.000"
@@ -931,7 +931,7 @@ const MenuManagementScreen: React.FC = () => {
 
               <View style={styles.formGroup}>
                 <View style={styles.toggleRow}>
-                  <Text style={styles.formLabel}>Available</Text>
+                  <Text style={styles.formLabel}>{t('partner.available')}</Text>
                   <TouchableOpacity
                     style={[
                       styles.switch,
@@ -959,7 +959,7 @@ const MenuManagementScreen: React.FC = () => {
                 onPress={() => setShowAddModal(false)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>{t('partner.cancel')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -974,7 +974,7 @@ const MenuManagementScreen: React.FC = () => {
                   style={styles.saveButtonGradient}
                 >
                   <Text style={styles.saveButtonText}>
-                    {editingItem ? 'Update' : 'Save'}
+                    {t('partner.save')}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>

@@ -130,13 +130,13 @@ const OrderDetailsScreen: React.FC = () => {
     }
   };
 
-  const handleMarkReady = async () => {
+  const handleStartPreparing = async () => {
     if (!orderDetails) return;
     setIsLoading(true);
-    setLoadingMessage('Updating status...');
+    setLoadingMessage('Starting preparation...');
     try {
-      await updateOrderStatus(orderDetails.id, 'ready_for_pickup');
-      showSnackbar('Order marked as ready!', 'success');
+      await updateOrderStatus(orderDetails.id, 'preparing');
+      showSnackbar('Order preparation started!', 'success');
       // Refresh order details
       const updatedOrder = await getOrderDetails(orderId);
       setOrderDetails(updatedOrder);
@@ -147,19 +147,27 @@ const OrderDetailsScreen: React.FC = () => {
     }
   };
 
-  const handleMarkCompleted = async () => {
+  const handleMarkReady = async () => {
     if (!orderDetails) return;
     setIsLoading(true);
-    setLoadingMessage('Completing order...');
+    setLoadingMessage('Updating status...');
     try {
-      await updateOrderStatus(orderDetails.id, 'delivered');
-      showSnackbar('Order completed!', 'success');
-      setTimeout(() => navigation.goBack(), 1500);
+      await updateOrderStatus(orderDetails.id, 'ready_for_pickup');
+      showSnackbar('Order marked as ready for pickup!', 'success');
+      // Refresh order details
+      const updatedOrder = await getOrderDetails(orderId);
+      setOrderDetails(updatedOrder);
     } catch (error: any) {
-      showSnackbar(error.message || 'Failed to complete order', 'error');
+      showSnackbar(error.message || 'Failed to update status', 'error');
+    } finally {
       setIsLoading(false);
     }
   };
+
+  // Removed - Restaurant cannot mark as delivered, only rider can
+  // const handleMarkCompleted = async () => {
+  //   Restaurant can only mark as ready_for_pickup
+  // };
 
   const handleCallCustomer = () => {
     showSnackbar('Calling customer...', 'info');
@@ -396,34 +404,21 @@ const OrderDetailsScreen: React.FC = () => {
       </ScrollView>
 
       {/* Action Buttons */}
-      {orderDetails.status === 'preparing' && (
+      {orderDetails.status === 'confirmed' && (
         <View style={styles.footer}>
           <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handleMarkReady}
-            activeOpacity={0.8}
-          >
-            <Icon name="check" size={20} color="#FFFFFF" />
-            <Text style={styles.primaryButtonText}>Mark Ready</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {orderDetails.status === 'ready_for_pickup' && (
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.acceptButtonWrapper}
-            onPress={handleAcceptOrder}
+            style={styles.singleActionButtonWrapper}
+            onPress={handleStartPreparing}
             activeOpacity={0.8}
           >
             <LinearGradient
               colors={[PartnerColors.primary, PartnerColors.primaryDark]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={styles.acceptButton}
+              style={styles.singleActionButton}
             >
-              <Icon name="check" size={20} color="#FFFFFF" />
-              <Text style={styles.acceptButtonText}>Accept Order</Text>
+              <Icon name="play-circle" size={20} color="#FFFFFF" />
+              <Text style={styles.singleActionButtonText}>Start Preparing</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -443,29 +438,21 @@ const OrderDetailsScreen: React.FC = () => {
               style={styles.singleActionButton}
             >
               <Icon name="check-circle" size={20} color="#FFFFFF" />
-              <Text style={styles.singleActionButtonText}>Mark as Ready</Text>
+              <Text style={styles.singleActionButtonText}>Mark as Ready for Pickup</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
       )}
 
-      {orderDetails.status === 'ready' && (
+      {/* Removed - Only rider can mark as delivered */}
+      {orderDetails.status === 'ready_for_pickup' && (
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.singleActionButtonWrapper}
-            onPress={handleMarkCompleted}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#10B981', '#059669']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.singleActionButton}
-            >
-              <Icon name="check" size={20} color="#FFFFFF" />
-              <Text style={styles.singleActionButtonText}>Mark as Completed</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+          <View style={styles.infoBox}>
+            <Icon name="info" size={20} color="#007AFF" />
+            <Text style={styles.infoText}>
+              Waiting for rider to pick up and deliver
+            </Text>
+          </View>
         </View>
       )}
 

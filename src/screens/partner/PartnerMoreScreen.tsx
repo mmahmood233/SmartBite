@@ -21,10 +21,15 @@ const strings = getStrings('en');
 
 const PartnerMoreScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { t } = useLanguage();
+  const { t, language, changeLanguage } = useLanguage();
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('English');
+  const [currentLanguage, setCurrentLanguage] = useState(language === 'ar' ? 'العربية' : 'English');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
+
+  // Update currentLanguage when language context changes
+  useEffect(() => {
+    setCurrentLanguage(language === 'ar' ? 'العربية' : 'English');
+  }, [language]);
   const [editBusinessModalVisible, setEditBusinessModalVisible] = useState(false);
   
   // Snackbar state
@@ -151,15 +156,15 @@ const PartnerMoreScreen: React.FC = () => {
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      t('partner.logoutTitle'),
+      t('partner.logoutConfirm'),
       [
         {
-          text: 'Cancel',
+          text: t('partner.cancel'),
           style: 'cancel',
         },
         {
-          text: 'Logout',
+          text: t('partner.logout'),
           style: 'destructive',
           onPress: async () => {
             setLoading(true);
@@ -190,11 +195,12 @@ const PartnerMoreScreen: React.FC = () => {
     // TODO: Apply dark mode theme
   };
 
-  const handleLanguageSelect = (language: string) => {
-    setCurrentLanguage(language);
+  const handleLanguageSelect = async (lang: string) => {
+    const langCode = lang === 'العربية' ? 'ar' : 'en';
+    await changeLanguage(langCode);
+    setCurrentLanguage(lang);
     setLanguageModalVisible(false);
-    showSnackbar(`Language changed to ${language}`, 'success');
-    // TODO: Apply language change
+    showSnackbar(`Language changed to ${lang}`, 'success');
   };
 
   const handleMenuPress = (label: string) => {
@@ -213,6 +219,19 @@ const PartnerMoreScreen: React.FC = () => {
         break;
       case 'Edit Business Info':
         setEditBusinessModalVisible(true);
+        break;
+      case 'Contact Support':
+        Alert.alert(
+          t('partner.contactSupportTitle'),
+          `${t('partner.email')}: support@wajba.bh\n${t('partner.phone')}: +973 3356 0803\n\n${t('partner.supportAvailable')}`,
+          [{ text: t('partner.ok') }]
+        );
+        break;
+      case 'Terms & Conditions':
+        navigation.navigate('Terms' as never);
+        break;
+      case 'Privacy Policy':
+        navigation.navigate('Privacy' as never);
         break;
       default:
         console.log(`Pressed: ${label}`);
@@ -233,7 +252,7 @@ const PartnerMoreScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
       <PartnerTopNav
-        title={strings.nav.more}
+        title={t('partner.profile')}
         showBranding={true}
         showDropdown={false}
         showNotification={true}
@@ -276,24 +295,24 @@ const PartnerMoreScreen: React.FC = () => {
             activeOpacity={0.8}
           >
             <Icon name="settings" size={16} color={PartnerColors.primary} />
-            <Text style={styles.manageButtonText}>Manage</Text>
+            <Text style={styles.manageButtonText}>{t('partner.manage')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Management Section */}
-        <Text style={styles.sectionTitle}>Management</Text>
-        <ProfileMenuItem icon="book-open" label="Edit Menu" onPress={() => handleMenuPress('Edit Menu')} color={PartnerColors.primary} />
-        <ProfileMenuItem icon="file-text" label="Manage Orders" onPress={() => handleMenuPress('Manage Orders')} color={PartnerColors.primary} />
-        <ProfileMenuItem icon="bar-chart-2" label="View Earnings" onPress={() => handleMenuPress('View Earnings')} color={PartnerColors.primary} />
+        <Text style={styles.sectionTitle}>{t('partner.management')}</Text>
+        <ProfileMenuItem icon="book-open" label={t('partner.editMenu')} onPress={() => handleMenuPress('Edit Menu')} color={PartnerColors.primary} />
+        <ProfileMenuItem icon="file-text" label={t('partner.manageOrders')} onPress={() => handleMenuPress('Manage Orders')} color={PartnerColors.primary} />
+        <ProfileMenuItem icon="bar-chart-2" label={t('partner.viewEarnings')} onPress={() => handleMenuPress('View Earnings')} color={PartnerColors.primary} />
 
         {/* App Preferences Section */}
-        <Text style={styles.sectionTitle}>App Preferences</Text>
+        <Text style={styles.sectionTitle}>{t('partner.appPreferences')}</Text>
         
         {/* Dark Mode Toggle */}
         <View style={styles.preferenceCard}>
           <View style={styles.menuLeft}>
             <Icon name="moon" size={20} color={PartnerColors.primary} />
-            <Text style={styles.menuText}>Dark Mode</Text>
+            <Text style={styles.menuText}>{t('partner.darkMode')}</Text>
           </View>
           <Switch
             value={isDarkMode}
@@ -312,7 +331,7 @@ const PartnerMoreScreen: React.FC = () => {
         >
           <View style={styles.menuLeft}>
             <Icon name="globe" size={20} color={PartnerColors.primary} />
-            <Text style={styles.menuText}>Language</Text>
+            <Text style={styles.menuText}>{t('partner.language')}</Text>
           </View>
           <View style={styles.languageSelector}>
             <Text style={styles.languageText}>{currentLanguage}</Text>
@@ -320,16 +339,24 @@ const PartnerMoreScreen: React.FC = () => {
           </View>
         </TouchableOpacity>
 
+        {/* Notifications */}
+        <ProfileMenuItem 
+          icon="bell" 
+          label={t('partner.notifications')} 
+          onPress={() => navigation.navigate('PartnerNotifications' as never)} 
+          color={PartnerColors.primary} 
+        />
+
         {/* Security & Account Section */}
-        <Text style={styles.sectionTitle}>Security & Account</Text>
-        <ProfileMenuItem icon="lock" label="Change Password" onPress={() => handleMenuPress('Change Password')} color={PartnerColors.primary} />
-        <ProfileMenuItem icon="log-out" label="Logout" onPress={handleLogout} color={PartnerColors.primary} showChevron={false} />
+        <Text style={styles.sectionTitle}>{t('partner.securityAccount')}</Text>
+        <ProfileMenuItem icon="lock" label={t('partner.changePassword')} onPress={() => handleMenuPress('Change Password')} color={PartnerColors.primary} />
+        <ProfileMenuItem icon="log-out" label={t('partner.logout')} onPress={handleLogout} color={PartnerColors.primary} showChevron={false} />
 
         {/* Support Section */}
-        <Text style={styles.sectionTitle}>Support</Text>
-        <ProfileMenuItem icon="headphones" label="Contact Support" onPress={() => handleMenuPress('Contact Support')} color={PartnerColors.primary} />
-        <ProfileMenuItem icon="file-text" label="Terms & Conditions" onPress={() => handleMenuPress('Terms & Conditions')} color={PartnerColors.primary} />
-        <ProfileMenuItem icon="shield" label="Privacy Policy" onPress={() => handleMenuPress('Privacy Policy')} color={PartnerColors.primary} />
+        <Text style={styles.sectionTitle}>{t('partner.support')}</Text>
+        <ProfileMenuItem icon="headphones" label={t('partner.contactSupport')} onPress={() => handleMenuPress('Contact Support')} color={PartnerColors.primary} />
+        <ProfileMenuItem icon="file-text" label={t('partner.termsConditions')} onPress={() => handleMenuPress('Terms & Conditions')} color={PartnerColors.primary} />
+        <ProfileMenuItem icon="shield" label={t('partner.privacyPolicy')} onPress={() => handleMenuPress('Privacy Policy')} color={PartnerColors.primary} />
 
         <View style={{ height: 40 }} />
       </ScrollView>

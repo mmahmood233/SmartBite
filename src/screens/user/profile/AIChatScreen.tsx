@@ -15,6 +15,7 @@ import {
   Platform,
   Image,
   Animated,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -27,6 +28,7 @@ import { sendAIMessage, extractDishRecommendations } from '../../../services/ai.
 import { supabase } from '../../../lib/supabase';
 import DishDetailModal from '../restaurant/DishDetailModal';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { useCart } from '../../../contexts/CartContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -42,17 +44,20 @@ interface DishRecommendation {
   id: string;
   name: string;
   restaurant: string;
+  restaurantId?: string;
   price: number;
   image: string;
   rating: number;
   eta: string;
   spicyLevel?: number;
-  icon: 'zap';
+  icon?: 'zap';
+  isRestaurant?: boolean;
 }
 
 const AIChatScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { t } = useLanguage();
+  const { addToCart: addToCartContext } = useCart();
   
   const QUICK_PROMPTS = [
     { id: '1', text: t('ai.quickPrompt1'), icon: 'flame' },
@@ -225,12 +230,16 @@ const AIChatScreen: React.FC = () => {
       }
 
       // Create AI response message
+      // Combine recommendations from both sources (old extraction + new JSON format)
+      const allRecommendations = [...dishRecommendations, ...aiResult.recommendations];
+      console.log(`💳 Total recommendations to display: ${allRecommendations.length}`);
+      
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
         text: aiResult.text,
         timestamp: new Date(),
-        recommendations: dishRecommendations,
+        recommendations: allRecommendations,
       };
 
       setMessages((prev) => [...prev, aiResponse]);
@@ -283,9 +292,32 @@ const AIChatScreen: React.FC = () => {
     handleQuickPrompt(title);
   };
 
-  const handleAddToCart = (dish: DishRecommendation) => {
-    // TODO: Add to cart logic
-    console.log('Adding to cart:', dish);
+  const handleAddToCart = async (dish: DishRecommendation) => {
+    try {
+      console.log('Adding to cart:', dish);
+      
+      if (!dish.restaurantId) {
+        Alert.alert('Error', 'Restaurant information is missing');
+        return;
+      }
+      
+      await addToCartContext(
+        dish.id,
+        dish.restaurantId,
+        dish.restaurant,
+        dish.name,
+        dish.price,
+        1, // quantity
+        [], // addOns
+        undefined, // specialRequest
+        dish.image
+      );
+      
+      Alert.alert('Success', `${dish.name} added to cart!`);
+    } catch (error: any) {
+      console.error('Error adding to cart:', error);
+      Alert.alert('Error', error.message || 'Failed to add to cart');
+    }
   };
 
   const handleDishFromChatPress = async (dishName: string, restaurantName?: string) => {
@@ -363,7 +395,52 @@ const AIChatScreen: React.FC = () => {
       );
     }
 
-    const parsedOptions = extractOptions(msg.text);
+    // Try to parse JSON if the text looks like JSON
+    let displayText = msg.text;
+    let jsonRecommendations: DishRecommendation[] = [];
+    
+    if (msg.text.trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(msg.text);
+        if (parsed.message) {
+          displayText = parsed.message;
+          
+          // Convert restaurants to recommendations
+          if (parsed.restaurants && Array.isArray(parsed.restaurants)) {
+            jsonRecommendations = parsed.restaurants.map((restaurant: any) => ({
+              id: restaurant.id,
+              name: restaurant.name,
+              restaurant: restaurant.name,
+              restaurantId: restaurant.id,
+              price: restaurant.minimum_order || 0,
+              image: restaurant.image_url || '',
+              rating: restaurant.rating || 4.5,
+              eta: restaurant.delivery_time || '30-40 min',
+            }));
+          }
+          
+          // Convert menu_items to recommendations
+          if (parsed.menu_items && Array.isArray(parsed.menu_items)) {
+            jsonRecommendations = parsed.menu_items.map((item: any) => ({
+              id: item.id,
+              name: item.name,
+              restaurant: item.restaurant || 'Restaurant',
+              restaurantId: item.restaurant_id,
+              price: item.price,
+              image: item.image_url || '',
+              rating: 4.5,
+              eta: '20-30 min',
+            }));
+          }
+        }
+      } catch (e) {
+        // If parsing fails, just show the text as is
+        console.log('Failed to parse JSON in message:', e);
+      }
+    }
+
+    const parsedOptions = extractOptions(displayText);
+    const allRecommendations = [...(msg.recommendations || []), ...jsonRecommendations];
 
     return (
       <View key={msg.id} style={styles.aiMessageContainer}>
@@ -377,7 +454,7 @@ const AIChatScreen: React.FC = () => {
         </View>
         <View style={styles.aiContent}>
           <View style={styles.aiBubble}>
-            <Text style={styles.aiText}>{msg.text}</Text>
+            <Text style={styles.aiText}>{displayText}</Text>
           </View>
           {parsedOptions.length > 0 && (
             <View style={styles.optionChipsContainer}>
@@ -393,56 +470,84 @@ const AIChatScreen: React.FC = () => {
               ))}
             </View>
           )}
-          {msg.recommendations && msg.recommendations.length > 0 && (
+          {allRecommendations && allRecommendations.length > 0 && (
             <View style={styles.recommendationsContainer}>
-              {msg.recommendations.map((dish) => (
-                <TouchableOpacity
-                  key={dish.id}
-                  style={styles.dishCard}
-                  activeOpacity={0.8}
-                  onPress={() => handleDishFromChatPress(dish.name, dish.restaurant)}
-                >
-                  {dish.image ? (
-                    <Image
-                      source={{ uri: dish.image }}
-                      style={styles.dishImage}
-                    />
-                  ) : (
-                    <View style={[styles.dishImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
-                      <Icon name="image" size={32} color="#9CA3AF" />
-                    </View>
-                  )}
-                  <View style={styles.dishInfo}>
-                    <Text style={styles.dishName}>{dish.name}</Text>
-                    <Text style={styles.restaurantName}>{dish.restaurant}</Text>
-                    <View style={styles.dishMeta}>
-                      <View style={styles.ratingContainer}>
-                        <Icon name="star" size={14} color="#FFB800" />
-                        <Text style={styles.rating}>{dish.rating}</Text>
+              {allRecommendations.map((dish) => {
+                // Check if this is a restaurant using the isRestaurant flag
+                const isRestaurant = dish.isRestaurant === true;
+                
+                return (
+                  <TouchableOpacity
+                    key={dish.id}
+                    style={styles.dishCard}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      if (isRestaurant && dish.restaurantId) {
+                        // Navigate to restaurant detail
+                        navigation.navigate('RestaurantDetail', {
+                          restaurantId: dish.restaurantId,
+                          restaurantName: dish.name,
+                        });
+                      } else {
+                        // Open dish detail modal
+                        handleDishFromChatPress(dish.name, dish.restaurant);
+                      }
+                    }}
+                  >
+                    {dish.image ? (
+                      <Image
+                        source={{ uri: dish.image }}
+                        style={styles.dishImage}
+                      />
+                    ) : (
+                      <View style={[styles.dishImage, { backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' }]}>
+                        <Icon name="image" size={32} color="#9CA3AF" />
                       </View>
-                      <Text style={styles.eta}>• {dish.eta}</Text>
-                    </View>
-                    <View style={styles.dishFooter}>
-                      <Text style={styles.price}>BD {dish.price.toFixed(2)}</Text>
-                      <TouchableOpacity
-                        style={styles.addButton}
-                        onPress={() => handleAddToCart(dish)}
-                        activeOpacity={0.8}
-                      >
-                        <LinearGradient
-                          colors={[colors.gradientStart, colors.gradientEnd]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 0 }}
-                          style={styles.addButtonGradient}
+                    )}
+                    <View style={styles.dishInfo}>
+                      <Text style={styles.dishName}>{dish.name}</Text>
+                      {!isRestaurant && <Text style={styles.restaurantName}>{dish.restaurant}</Text>}
+                      <View style={styles.dishMeta}>
+                        <View style={styles.ratingContainer}>
+                          <Icon name="star" size={14} color="#FFB800" />
+                          <Text style={styles.rating}>{dish.rating}</Text>
+                        </View>
+                        <Text style={styles.eta}>• {dish.eta}</Text>
+                      </View>
+                      <View style={styles.dishFooter}>
+                        <Text style={styles.price}>
+                          {isRestaurant ? `Min BD ${dish.price.toFixed(2)}` : `BD ${dish.price.toFixed(2)}`}
+                        </Text>
+                        <TouchableOpacity
+                          style={styles.addButton}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            if (isRestaurant && dish.restaurantId) {
+                              navigation.navigate('RestaurantDetail', {
+                                restaurantId: dish.restaurantId,
+                                restaurantName: dish.name,
+                              });
+                            } else {
+                              handleAddToCart(dish);
+                            }
+                          }}
+                          activeOpacity={0.8}
                         >
-                          <Icon name="plus" size={16} color="#FFFFFF" />
-                          <Text style={styles.addButtonText}>Add</Text>
-                        </LinearGradient>
-                      </TouchableOpacity>
+                          <LinearGradient
+                            colors={[colors.gradientStart, colors.gradientEnd]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.addButtonGradient}
+                          >
+                            <Icon name={isRestaurant ? "arrow-right" : "plus"} size={16} color="#FFFFFF" />
+                            <Text style={styles.addButtonText}>{isRestaurant ? "View" : "Add"}</Text>
+                          </LinearGradient>
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
         </View>

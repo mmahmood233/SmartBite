@@ -563,7 +563,7 @@ const RestaurantsManagementScreen: React.FC = () => {
               <View style={styles.actionsRow}>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => handleEdit(restaurant)}
+                  onPress={() => handleEditRestaurant(restaurant)}
                   activeOpacity={0.7}
                 >
                   <Icon name="edit-2" size={16} color={PartnerColors.primary} />

@@ -109,11 +109,18 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
 
       if (error) throw error;
 
+      console.log('📦 ORDER DATA:', {
+        order_number: order.order_number,
+        status: order.status,
+        delivery_status: order.delivery_status,
+        rider_id: order.rider_id
+      });
+
       setOrderData(order);
       setRiderData(order.riders);
       
       // Update step based on delivery status
-      updateStepFromStatus(order.delivery_status || order.status);
+      updateStepFromStatus(order.status, order.delivery_status);
     } catch (error) {
       console.error('Error loading order:', error);
     } finally {
@@ -121,7 +128,29 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
     }
   };
 
-  const updateStepFromStatus = (status: string) => {
+  const updateStepFromStatus = (status: string, deliveryStatus?: string | null) => {
+    console.log('Updating step - Status:', status, 'Delivery Status:', deliveryStatus);
+    
+    // PRIORITY: Use delivery_status if it exists (more accurate for tracking)
+    if (deliveryStatus && deliveryStatus !== null) {
+      const deliveryStatusMap: Record<string, number> = {
+        'assigned': 2,
+        'heading_to_restaurant': 2,
+        'arrived_at_restaurant': 2,
+        'picked_up': 3,
+        'heading_to_customer': 3,
+        'arrived_at_customer': 3,
+        'delivered': 4,
+      };
+      const step = deliveryStatusMap[deliveryStatus];
+      if (step !== undefined) {
+        console.log('Using delivery status, step:', step);
+        setCurrentStep(step);
+        return;
+      }
+    }
+
+    // Fallback to order status
     const statusMap: Record<string, number> = {
       'pending': 0,
       'confirmed': 1,
@@ -132,48 +161,55 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
       'out_for_delivery': 3,
       'delivered': 4,
     };
-    setCurrentStep(statusMap[status] || 0);
+    const step = statusMap[status] || 0;
+    console.log('Using order status, step:', step);
+    setCurrentStep(step);
+  };
+
+  const getSubtitle = (step: number) => {
+    if (step === 2 && orderData?.delivery_status) {
+      if (orderData.delivery_status === 'heading_to_restaurant') return 'Rider heading to restaurant';
+      if (orderData.delivery_status === 'arrived_at_restaurant') return 'Rider at restaurant';
+    }
+    if (step === 3 && orderData?.delivery_status) {
+      if (orderData.delivery_status === 'picked_up') return 'Order picked up';
+      if (orderData.delivery_status === 'heading_to_customer') return 'Rider heading to you';
+      if (orderData.delivery_status === 'arrived_at_customer') return 'Rider has arrived';
+    }
+    return null;
   };
 
   const timelineSteps: TimelineStep[] = [
     {
       id: '1',
       title: 'Order Confirmed',
-      subtitle: 'We received your order',
+      subtitle: 'Restaurant accepted your order',
       icon: 'check-circle',
-      completed: true,
-      active: false,
+      completed: currentStep >= 1,
+      active: currentStep === 1,
     },
     {
       id: '2',
       title: 'Preparing',
-      subtitle: "Chef is preparing your meal",
+      subtitle: getSubtitle(2) || "Chef is preparing your meal",
       icon: 'package',
-      completed: currentStep > 1,
-      active: currentStep === 1,
-    },
-    {
-      id: '3',
-      title: 'Ready for Pickup',
-      subtitle: 'Order is ready',
-      icon: 'shopping-bag',
       completed: currentStep > 2,
       active: currentStep === 2,
     },
     {
-      id: '4',
+      id: '3',
       title: 'Out for Delivery',
-      subtitle: 'Rider is on the way',
+      subtitle: getSubtitle(3) || 'Rider is on the way',
       icon: 'truck',
       completed: currentStep > 3,
       active: currentStep === 3,
     },
     {
-      id: '5',
+      id: '4',
       title: 'Delivered',
       subtitle: 'Enjoy your meal!',
       icon: 'home',
-      completed: currentStep > 4,
+      completed: currentStep >= 4,
       active: currentStep === 4,
     },
   ];

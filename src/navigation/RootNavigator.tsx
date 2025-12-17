@@ -25,9 +25,11 @@ import OrderDetailsScreen from '../screens/user/orders/OrderDetailsScreen';
 // Partner Portal - Screens
 import PartnerOrderDetailsScreen from '../screens/partner/OrderDetailsScreen';
 import PartnerAIChatScreen from '../screens/partner/PartnerAIChatScreen';
+import PartnerNotificationsScreen from '../screens/partner/PartnerNotificationsScreen';
 
 // Admin Portal - Screens
 import AddPromotionScreen from '../screens/admin/AddPromotionScreen';
+import AdminNotificationsScreen from '../screens/admin/AdminNotificationsScreen';
 
 // User Portal - Profile
 import EditProfileScreen from '../screens/user/profile/EditProfileScreen';
@@ -36,6 +38,10 @@ import SavedAddressesScreen from '../screens/user/profile/SavedAddressesScreen';
 import PaymentMethodsScreen from '../screens/user/profile/PaymentMethodsScreen';
 import OffersScreen from '../screens/user/profile/OffersScreen';
 import HelpSupportScreen from '../screens/user/profile/HelpSupportScreen';
+import FAQScreen from '../screens/user/profile/FAQScreen';
+import TermsScreen from '../screens/user/profile/TermsScreen';
+import PrivacyScreen from '../screens/user/profile/PrivacyScreen';
+import NotificationsScreen from '../screens/user/profile/NotificationsScreen';
 import AddAddressScreen from '../screens/user/profile/AddAddressScreen';
 import EditAddressScreen from '../screens/user/profile/EditAddressScreen';
 import PickLocationScreen from '../screens/user/profile/PickLocationScreen';
@@ -49,9 +55,8 @@ import AuthNavigator from './AuthNavigator';
 import PartnerTabNavigator from './PartnerTabNavigator';
 import AdminTabNavigator from './AdminTabNavigator';
 import RiderTabNavigator from './RiderTabNavigator';
-
-// Rider Portal - Screens
 import RiderActiveDeliveryScreen from '../screens/rider/RiderActiveDeliveryScreen';
+import RiderNotificationsScreen from '../screens/rider/RiderNotificationsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -91,13 +96,20 @@ const RootNavigator: React.FC = () => {
       <Stack.Screen name="AddPaymentMethod" component={AddPaymentMethodScreen} />
       <Stack.Screen name="Offers" component={OffersScreen} />
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+      <Stack.Screen name="FAQ" component={FAQScreen} />
+      <Stack.Screen name="Terms" component={TermsScreen} />
+      <Stack.Screen name="Privacy" component={PrivacyScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="PartnerPortal" component={PartnerTabNavigator} />
+      <Stack.Screen name="PartnerNotifications" component={PartnerNotificationsScreen} />
       <Stack.Screen name="PartnerOrderDetails" component={PartnerOrderDetailsScreen} />
       <Stack.Screen name="PartnerAIChat" component={PartnerAIChatScreen} />
       <Stack.Screen name="AdminPortal" component={AdminTabNavigator} />
+      <Stack.Screen name="AdminNotifications" component={AdminNotificationsScreen} />
       <Stack.Screen name="AddPromotion" component={AddPromotionScreen} />
       <Stack.Screen name="RiderTabs" component={RiderTabNavigator} />
+      <Stack.Screen name="RiderNotifications" component={RiderNotificationsScreen} />
       <Stack.Screen name="RiderActiveDelivery" component={RiderActiveDeliveryScreen} />
       <Stack.Screen name="Auth" component={AuthNavigator} />
     </Stack.Navigator>

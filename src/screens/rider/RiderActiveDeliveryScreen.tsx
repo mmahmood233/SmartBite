@@ -82,16 +82,17 @@ const RiderActiveDeliveryScreen: React.FC = () => {
       // Update delivery status
       if (nextStatus === 'delivered') {
         await updateDeliveryStatus(delivery.id, 'delivered' as any);
-        Alert.alert(
-          t('common.success'),
-          `${t('rider.deliveryComplete')}! You earned BD ${delivery.earnings.toFixed(2)}`,
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
+        
+        // Navigate back immediately to clear active delivery
+        navigation.navigate('RiderHome');
+        
+        // Show success message after navigation
+        setTimeout(() => {
+          Alert.alert(
+            t('common.success'),
+            `${t('rider.deliveryComplete')}! You earned BD ${delivery.earnings.toFixed(2)}`
+          );
+        }, 300);
       } else {
         await updateDeliveryStatus(delivery.id, nextStatus as any);
         await refetch();

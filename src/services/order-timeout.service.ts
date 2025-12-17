@@ -63,12 +63,18 @@ export const checkAndCancelExpiredOrders = async (): Promise<number> => {
 export const startOrderTimeoutMonitoring = (): NodeJS.Timeout => {
   console.log('Starting order timeout monitoring...');
   
-  // Check immediately on start
-  checkAndCancelExpiredOrders();
+  // Wait 10 seconds before first check to allow app to initialize
+  setTimeout(() => {
+    checkAndCancelExpiredOrders().catch(err => {
+      console.log('Initial order timeout check skipped:', err.message);
+    });
+  }, 10000);
   
   // Then check every minute
   const intervalId = setInterval(() => {
-    checkAndCancelExpiredOrders();
+    checkAndCancelExpiredOrders().catch(err => {
+      console.log('Order timeout check skipped:', err.message);
+    });
   }, 60000); // Check every 60 seconds
 
   return intervalId;

@@ -150,11 +150,11 @@ const OverviewDashboard: React.FC = () => {
 
   const getTimePeriodLabel = () => {
     switch (selectedTab) {
-      case 'today': return 'Today';
-      case 'yesterday': return 'Yesterday';
-      case '7days': return 'Last 7 Days';
-      case '30days': return 'Last 30 Days';
-      default: return 'Today';
+      case 'today': return t('partner.today');
+      case 'yesterday': return t('partner.yesterday');
+      case '7days': return t('partner.sevenDays');
+      case '30days': return t('partner.thirtyDays');
+      default: return t('partner.today');
     }
   };
 
@@ -164,7 +164,7 @@ const OverviewDashboard: React.FC = () => {
       icon: 'shopping-bag',
       label: `${getTimePeriodLabel()} Orders`,
       value: stats.totalOrders.toString(),
-      subtext: `${stats.completedOrders} completed`,
+      subtext: `${stats.completedOrders} ${t('partner.ordersCompleted')}`,
       color: '#00A896',
       bgColor: '#E6F7F5',
     },
@@ -173,14 +173,14 @@ const OverviewDashboard: React.FC = () => {
       icon: 'dollar-sign',
       label: `Earnings ${getTimePeriodLabel()}`,
       value: `BD ${stats.totalRevenue.toFixed(3)}`,
-      subtext: `${stats.totalOrders} orders`,
+      subtext: `${stats.totalOrders} ${t('partner.ordersCount')}`,
       color: '#FFB703',
       bgColor: '#FFF8E6',
     },
     {
       id: '3',
       icon: 'check-circle',
-      label: 'Completed',
+      label: t('partner.completedLabel'),
       value: stats.completedOrders.toString(),
       subtext: getTimePeriodLabel(),
       color: '#00A896',
@@ -189,7 +189,7 @@ const OverviewDashboard: React.FC = () => {
     {
       id: '4',
       icon: 'x-circle',
-      label: 'Cancelled',
+      label: t('partner.cancelledLabel'),
       value: stats.cancelledOrders.toString(),
       subtext: getTimePeriodLabel(),
       color: '#FF6B6B',
@@ -220,7 +220,7 @@ const OverviewDashboard: React.FC = () => {
       
       {/* Top Navigation */}
       <PartnerTopNav 
-        title="Wajba Partner"
+        title={t('partner.wajbaPartner')}
         showBranding={true}
         showDropdown={true}
         showNotification={true}
@@ -242,8 +242,8 @@ const OverviewDashboard: React.FC = () => {
           <Icon name="cpu" size={24} color="#00A86B" />
         </View>
         <View style={styles.aiTextContainer}>
-          <Text style={styles.aiTitle}>AI Business Assistant</Text>
-          <Text style={styles.aiSubtitle}>Get insights, tips & analytics</Text>
+          <Text style={styles.aiTitle}>{t('partner.aiBusiness')}</Text>
+          <Text style={styles.aiSubtitle}>{t('partner.aiBusinessDesc')}</Text>
         </View>
         <Icon name="chevron-right" size={20} color="#666" />
       </TouchableOpacity>
@@ -262,7 +262,7 @@ const OverviewDashboard: React.FC = () => {
           >
             <Icon name="calendar" size={14} color={selectedTab === 'today' ? '#FFFFFF' : '#9CA3AF'} />
             <Text style={[styles.tabText, selectedTab === 'today' && styles.tabTextActive]}>
-              Today
+              {t('partner.today')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -272,7 +272,7 @@ const OverviewDashboard: React.FC = () => {
           >
             <Icon name="clock" size={14} color={selectedTab === 'yesterday' ? '#FFFFFF' : '#9CA3AF'} />
             <Text style={[styles.tabText, selectedTab === 'yesterday' && styles.tabTextActive]}>
-              Yesterday
+              {t('partner.yesterday')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -282,7 +282,7 @@ const OverviewDashboard: React.FC = () => {
           >
             <Icon name="trending-up" size={14} color={selectedTab === '7days' ? '#FFFFFF' : '#9CA3AF'} />
             <Text style={[styles.tabText, selectedTab === '7days' && styles.tabTextActive]}>
-              7 Days
+              {t('partner.sevenDays')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -292,7 +292,7 @@ const OverviewDashboard: React.FC = () => {
           >
             <Icon name="bar-chart" size={14} color={selectedTab === '30days' ? '#FFFFFF' : '#9CA3AF'} />
             <Text style={[styles.tabText, selectedTab === '30days' && styles.tabTextActive]}>
-              30 Days
+              {t('partner.thirtyDays')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -316,21 +316,21 @@ const OverviewDashboard: React.FC = () => {
         {/* Active Orders Preview */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.headerTitle}>{t('partner.dashboard')}</Text>
+            <Text style={styles.sectionTitle}>{t('partner.dashboard')}</Text>
             <TouchableOpacity 
               activeOpacity={0.7}
               onPress={() => navigation.navigate('LiveOrders' as never)}
             >
-              <Text style={styles.viewAll}>View All →</Text>
+              <Text style={styles.viewAll}>{t('partner.viewAll')} →</Text>
             </TouchableOpacity>
           </View>
           
           {activeOrders.length === 0 ? (
             <View style={styles.emptyState}>
               <Icon name="inbox" size={48} color="#D1D5DB" />
-              <Text style={styles.emptyStateTitle}>No Active Orders</Text>
+              <Text style={styles.emptyStateTitle}>{t('partner.noActiveOrdersTitle')}</Text>
               <Text style={styles.emptyStateText}>
-                When you have orders being prepared or ready for pickup, they'll appear here
+                {t('partner.noActiveOrdersDesc')}
               </Text>
             </View>
           ) : (

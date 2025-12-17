@@ -366,6 +366,19 @@ const ProfileScreen: React.FC = () => {
               <Icon name="chevron-down" size={18} color="#9E9E9E" />
             </View>
           </TouchableOpacity>
+
+          {/* Notifications */}
+          <TouchableOpacity
+            style={styles.preferenceCard}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuLeft}>
+              <Icon name="bell" size={20} color={colors.primary} />
+              <Text style={styles.menuText}>Notifications</Text>
+            </View>
+            <Icon name="chevron-right" size={18} color="#9E9E9E" />
+          </TouchableOpacity>
         </View>
 
         {/* Security & Account Section */}

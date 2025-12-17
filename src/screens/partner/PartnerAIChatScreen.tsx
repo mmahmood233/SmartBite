@@ -33,7 +33,7 @@ interface Message {
 }
 
 export default function PartnerAIChatScreen({ navigation }: Props) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -44,13 +44,7 @@ export default function PartnerAIChatScreen({ navigation }: Props) {
     loadRestaurantData();
     // Add welcome message
     addAIMessage(
-      "👋 Hello! I'm your restaurant business assistant. I can help you with:\n\n" +
-      "📊 Analytics & Statistics\n" +
-      "📈 Marketing Strategies\n" +
-      "💡 Business Improvement Tips\n" +
-      "📋 Menu Optimization\n" +
-      "⭐ Customer Feedback Analysis\n\n" +
-      "What would you like to know about your restaurant?"
+      `${t('partner.aiGreeting')}\n\n${t('partner.analyticsStats')}\n${t('partner.marketingStrategies')}\n${t('partner.businessTips')}\n${t('partner.menuOptimization')}\n${t('partner.customerFeedback')}\n\n${t('partner.aiQuestion')}`
     );
   }, []);
 
@@ -228,7 +222,7 @@ export default function PartnerAIChatScreen({ navigation }: Props) {
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Icon name="cpu" size={24} color="#00A86B" />
-          <Text style={styles.headerTitle}>Business Assistant</Text>
+          <Text style={styles.headerTitle}>{t('partner.businessAssistant')}</Text>
         </View>
         <View style={{ width: 24 }} />
       </View>
@@ -256,7 +250,7 @@ export default function PartnerAIChatScreen({ navigation }: Props) {
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Ask about your restaurant..."
+            placeholder={t('partner.askAboutRestaurant')}
             value={inputText}
             onChangeText={setInputText}
             multiline

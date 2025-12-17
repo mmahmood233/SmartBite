@@ -43,7 +43,7 @@ const strings = getStrings('en');
 const LiveOrdersScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { t } = useLanguage();
-  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [selectedFilter, setSelectedFilter] = useState('pending');
   
   // Refs for scrolling
   const scrollViewRef = useRef<ScrollView>(null);
@@ -69,11 +69,9 @@ const LiveOrdersScreen: React.FC = () => {
 
   // Filter tabs with dynamic badges
   const filterTabs = [
-    { id: 'all', label: 'All', badge: orders.length || null },
-    { id: 'pending', label: 'New', badge: newOrders.length || null },
-    { id: 'active', label: 'Active', badge: activeOrders.length || null },
-    { id: 'delivered', label: 'Completed', badge: orders.filter(o => o.status === 'delivered').length || null },
-    { id: 'cancelled', label: 'Cancelled', badge: orders.filter(o => o.status === 'cancelled').length || null },
+    { id: 'pending', label: t('partner.newOrders'), badge: newOrders.length || null },
+    { id: 'active', label: t('partner.activeOrders'), badge: activeOrders.length || null },
+    { id: 'delivered', label: t('partner.completedOrders'), badge: orders.filter(o => o.status === 'delivered').length || null },
   ];
 
   const showSnackbar = (message: string, type: SnackbarType = 'success') => {
@@ -255,19 +253,10 @@ const LiveOrdersScreen: React.FC = () => {
     }
   };
 
-  const handleMarkCompleted = async (orderId: string) => {
-    setIsLoading(true);
-    setLoadingMessage('Completing order...');
-    try {
-      await updateOrderStatus(orderId, 'delivered');
-      showSnackbar('Order completed', 'success');
-      await fetchOrders(); // Refresh orders
-    } catch (error: any) {
-      showSnackbar(error.message || 'Failed to complete order', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Removed - Restaurant cannot mark as delivered, only rider can
+  // const handleMarkCompleted = async (orderId: string) => {
+  //   Restaurant can only mark as ready_for_pickup
+  // };
 
   const handleStartPreparing = async (orderId: string) => {
     setIsLoading(true);
@@ -305,7 +294,7 @@ const LiveOrdersScreen: React.FC = () => {
           },
           () => {}
         );
-      } else if (filterId === 'all') {
+      } else {
         scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       }
     }, 100);
@@ -317,7 +306,7 @@ const LiveOrdersScreen: React.FC = () => {
       
       {/* Top Navigation Bar */}
       <PartnerTopNav 
-        title={strings.nav.liveOrders}
+        title={t('partner.orders')}
         showBranding={true}
         showDropdown={false}
         showNotification={true}
@@ -361,16 +350,23 @@ const LiveOrdersScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* New Orders Section */}
-        {newOrders.length > 0 && (selectedFilter === 'all' || selectedFilter === 'pending') && (
+        {selectedFilter === 'pending' && (
           <View ref={newOrdersRef} style={styles.section}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionTitleRow}>
                 <Text style={styles.sectionIcon}>🆕</Text>
-                <Text style={styles.sectionTitle}>New Orders</Text>
+                <Text style={styles.sectionTitle}>{t('partner.newOrders')}</Text>
               </View>
             </View>
 
-            {newOrders.map((order) => (
+            {newOrders.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Icon name="inbox" size={48} color="#D1D5DB" />
+                <Text style={styles.emptyStateTitle}>{t('partner.noNewOrders')}</Text>
+                <Text style={styles.emptyStateText}>{t('partner.allCaughtUp')}</Text>
+              </View>
+            ) : (
+              newOrders.map((order) => (
               <TouchableOpacity
                 key={order.id}
                 style={styles.newOrderCard}
@@ -386,7 +382,7 @@ const LiveOrdersScreen: React.FC = () => {
                   </View>
                 </View>
 
-                <Text style={styles.orderCustomer}>{order.users?.full_name || 'Customer'} • {order.order_items?.length || 0} items</Text>
+                <Text style={styles.orderCustomer}>{order.users?.full_name || t('partner.customer')} • {order.order_items?.length || 0} {order.order_items?.length === 1 ? t('partner.item') : t('partner.items')}</Text>
 
                 {order.rider_id && order.riders && (
                   <View style={styles.riderInfo}>
@@ -406,32 +402,40 @@ const LiveOrdersScreen: React.FC = () => {
                     onPress={() => handleAcceptOrder(order.id)}
                     activeOpacity={0.8}
                   >
-                    <Text style={styles.acceptButtonText}>Accept</Text>
+                    <Text style={styles.acceptButtonText}>{t('partner.accept')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.rejectButton}
                     onPress={() => handleRejectOrder(order.id)}
                     activeOpacity={0.8}
                   >
-                    <Text style={styles.rejectButtonText}>Reject</Text>
+                    <Text style={styles.rejectButtonText}>{t('partner.reject')}</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
-            ))}
+              ))
+            )}
           </View>
         )}
 
         {/* Active Orders Section */}
-        {(selectedFilter === 'all' || selectedFilter === 'active') && (
+        {selectedFilter === 'active' && (
         <View ref={activeOrdersRef} style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleRow}>
               <Text style={styles.sectionIcon}>📦</Text>
-              <Text style={styles.sectionTitle}>Active Orders</Text>
+              <Text style={styles.sectionTitle}>{t('partner.activeOrders')}</Text>
             </View>
           </View>
 
-          {activeOrders.map((order) => (
+          {activeOrders.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Icon name="package" size={48} color="#D1D5DB" />
+              <Text style={styles.emptyStateTitle}>{t('partner.noActiveOrders')}</Text>
+              <Text style={styles.emptyStateText}>{t('partner.ordersBeingPrepared')}</Text>
+            </View>
+          ) : (
+            activeOrders.map((order) => (
             <TouchableOpacity
               key={order.id}
               style={styles.activeOrderCard}
@@ -460,37 +464,49 @@ const LiveOrdersScreen: React.FC = () => {
                     {order.status === 'preparing' ? 'Preparing' : order.status === 'ready_for_pickup' ? 'Ready for Pickup' : order.status}
                   </Text>
                 </View>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    order.status === 'preparing' 
-                      ? handleMarkReady(order.id) 
-                      : handleMarkCompleted(order.id);
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.actionButtonText}>
-                    {order.status === 'preparing' ? 'Mark Ready' : 'Mark Completed'}
-                  </Text>
-                </TouchableOpacity>
+                {order.status === 'preparing' && (
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleMarkReady(order.id);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.actionButtonText}>{t('partner.markReady')}</Text>
+                  </TouchableOpacity>
+                )}
+                {order.status === 'ready_for_pickup' && (
+                  <View style={styles.waitingBadge}>
+                    <Icon name="clock" size={14} color="#007AFF" />
+                    <Text style={styles.waitingText}>{t('partner.waitingForRider')}</Text>
+                  </View>
+                )}
               </View>
             </TouchableOpacity>
-          ))}
+            ))
+          )}
         </View>
         )}
 
-        {/* Completed & Cancelled Orders - shown when filtered */}
-        {(selectedFilter === 'delivered' || selectedFilter === 'cancelled') && orders.length > 0 && (
+        {/* Completed Orders - shown when filtered */}
+        {selectedFilter === 'delivered' && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionTitleRow}>
-                <Text style={styles.sectionIcon}>{selectedFilter === 'delivered' ? '✅' : '❌'}</Text>
-                <Text style={styles.sectionTitle}>{selectedFilter === 'delivered' ? 'Completed Orders' : 'Cancelled Orders'}</Text>
+                <Text style={styles.sectionIcon}>✅</Text>
+                <Text style={styles.sectionTitle}>{t('partner.completedOrders')}</Text>
               </View>
             </View>
 
-            {orders.map((order) => (
+            {orders.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Icon name="check-circle" size={48} color="#D1D5DB" />
+                <Text style={styles.emptyStateTitle}>{t('partner.noCompletedOrders')}</Text>
+                <Text style={styles.emptyStateText}>{t('partner.deliveredOrders')}</Text>
+              </View>
+            ) : (
+              orders.map((order) => (
               <TouchableOpacity
                 key={order.id}
                 style={styles.activeOrderCard}
@@ -503,7 +519,7 @@ const LiveOrdersScreen: React.FC = () => {
                   <Text style={styles.orderTotal}>BD {order.total_amount.toFixed(3)}</Text>
                 </View>
 
-                <Text style={styles.orderCustomer}>{order.users?.full_name || 'Customer'} • {order.order_items?.length || 0} items</Text>
+                <Text style={styles.orderCustomer}>{order.users?.full_name || t('partner.customer')} • {order.order_items?.length || 0} {order.order_items?.length === 1 ? t('partner.item') : t('partner.items')}</Text>
 
                 <View style={styles.orderFooter}>
                   <View style={[styles.statusPill, { backgroundColor: selectedFilter === 'delivered' ? '#E8F5E9' : '#FFEBEE' }]}>
@@ -514,7 +530,8 @@ const LiveOrdersScreen: React.FC = () => {
                   </View>
                 </View>
               </TouchableOpacity>
-            ))}
+              ))
+            )}
           </View>
         )}
 
@@ -868,6 +885,25 @@ const styles = StyleSheet.create({
   riderText: {
     fontSize: 12,
     color: '#6B7280',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 32,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 

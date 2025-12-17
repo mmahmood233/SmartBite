@@ -321,7 +321,13 @@ const AdminSettingsScreen: React.FC = () => {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => showSnackbar('Platform settings coming soon', 'info')}
+            onPress={() => {
+              Alert.alert(
+                'Advanced Settings',
+                'Configure advanced platform features:\n\n• Payment Gateway Settings\n• Email & SMS Notifications\n• API Keys & Webhooks\n• Database Backup & Restore\n• System Maintenance Mode\n\nThese features are coming soon!',
+                [{ text: 'OK' }]
+              );
+            }}
             activeOpacity={0.7}
           >
             <View style={styles.menuItemLeft}>
@@ -335,7 +341,13 @@ const AdminSettingsScreen: React.FC = () => {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => showSnackbar('Analytics coming soon', 'info')}
+            onPress={() => {
+              Alert.alert(
+                'Analytics & Reports',
+                'View comprehensive platform analytics:\n\n• Revenue & Sales Reports\n• User Growth & Engagement\n• Restaurant Performance\n• Order Statistics\n• Peak Hours Analysis\n• Customer Insights\n\nDetailed analytics dashboard coming soon!',
+                [{ text: 'OK' }]
+              );
+            }}
             activeOpacity={0.7}
           >
             <View style={styles.menuItemLeft}>
@@ -349,7 +361,7 @@ const AdminSettingsScreen: React.FC = () => {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => showSnackbar('Notifications coming soon', 'info')}
+            onPress={() => navigation.navigate('AdminNotifications' as never)}
             activeOpacity={0.7}
           >
             <View style={styles.menuItemLeft}>
@@ -368,7 +380,7 @@ const AdminSettingsScreen: React.FC = () => {
           
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => showSnackbar('Help center coming soon', 'info')}
+            onPress={() => navigation.navigate('FAQ' as never)}
             activeOpacity={0.7}
           >
             <View style={styles.menuItemLeft}>
@@ -382,7 +394,17 @@ const AdminSettingsScreen: React.FC = () => {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => showSnackbar('About coming soon', 'info')}
+            onPress={() => {
+              Alert.alert(
+                'About Wajba',
+                'Wajba Admin Portal v1.0.0\n\nManage your food delivery platform with ease.\n\n© 2025 Wajba. All rights reserved.',
+                [
+                  { text: 'Terms & Conditions', onPress: () => navigation.navigate('Terms' as never) },
+                  { text: 'Privacy Policy', onPress: () => navigation.navigate('Privacy' as never) },
+                  { text: 'OK', style: 'cancel' },
+                ]
+              );
+            }}
             activeOpacity={0.7}
           >
             <View style={styles.menuItemLeft}>

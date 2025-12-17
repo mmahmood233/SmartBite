@@ -43,6 +43,20 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [createModalVisible, setCreateModalVisible] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: '',
+    password: '',
+    full_name: '',
+    phone: '',
+    role: 'partner' as 'partner' | 'rider' | 'admin',
+    restaurantId: '',
+    createNewRestaurant: true,
+    restaurantName: '',
+  });
+  const [creating, setCreating] = useState(false);
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [loadingRestaurants, setLoadingRestaurants] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -187,6 +201,127 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
     });
   };
 
+  const fetchRestaurants = async () => {
+    setLoadingRestaurants(true);
+    try {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('id, name, partner_id')
+        .order('name');
+
+      if (error) throw error;
+      setRestaurants(data || []);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+    } finally {
+      setLoadingRestaurants(false);
+    }
+  };
+
+  useEffect(() => {
+    if (createModalVisible && newUserData.role === 'partner') {
+      fetchRestaurants();
+    }
+  }, [createModalVisible, newUserData.role]);
+
+  const handleCreateAccount = async () => {
+    // Validation
+    if (!newUserData.email || !newUserData.password || !newUserData.full_name) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    if (newUserData.password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newUserData.email,
+        password: newUserData.password,
+        options: {
+          data: {
+            full_name: newUserData.full_name,
+            role: newUserData.role,
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Create user record
+        const { error: userError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: authData.user.id,
+              email: newUserData.email,
+              full_name: newUserData.full_name,
+              phone: newUserData.phone || null,
+              role: newUserData.role,
+            },
+          ]);
+
+        if (userError) throw userError;
+
+        // If partner, handle restaurant assignment
+        if (newUserData.role === 'partner') {
+          if (newUserData.createNewRestaurant) {
+            // Create new restaurant
+            const restaurantName = newUserData.restaurantName || `${newUserData.full_name}'s Restaurant`;
+            const { error: restaurantError } = await supabase
+              .from('restaurants')
+              .insert([
+                {
+                  partner_id: authData.user.id,
+                  name: restaurantName,
+                  email: newUserData.email,
+                  phone: newUserData.phone || '',
+                  address: '',
+                  is_active: true,
+                  status: 'closed',
+                },
+              ]);
+
+            if (restaurantError) throw restaurantError;
+          } else if (newUserData.restaurantId) {
+            // Assign existing restaurant to partner
+            const { error: restaurantError } = await supabase
+              .from('restaurants')
+              .update({ partner_id: authData.user.id })
+              .eq('id', newUserData.restaurantId);
+
+            if (restaurantError) throw restaurantError;
+          }
+        }
+
+        const roleLabel = newUserData.role === 'partner' ? 'Partner' : newUserData.role === 'rider' ? 'Rider' : 'Admin';
+        Alert.alert('Success', `${roleLabel} account created successfully!`);
+        setCreateModalVisible(false);
+        setNewUserData({
+          email: '',
+          password: '',
+          full_name: '',
+          phone: '',
+          role: 'partner',
+          restaurantId: '',
+          createNewRestaurant: true,
+          restaurantName: '',
+        });
+        fetchUsers();
+      }
+    } catch (error: any) {
+      console.error('Error creating account:', error);
+      Alert.alert('Error', error.message || 'Failed to create account');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -307,6 +442,15 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
         <View style={{ height: 100 }} />
       </ScrollView>
 
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setCreateModalVisible(true)}
+        activeOpacity={0.8}
+      >
+        <Icon name="plus" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
+
       {/* User Details Modal */}
       <Modal
         visible={modalVisible}
@@ -369,28 +513,6 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
                   <Text style={styles.detailValue}>{formatDate(selectedUser.updated_at)}</Text>
                 </View>
 
-                <View style={styles.modalActions}>
-                  <Text style={styles.actionsTitle}>Change Role</Text>
-                  <View style={styles.roleButtons}>
-                    {(['customer', 'partner', 'rider', 'admin'] as const).map((role) => (
-                      <TouchableOpacity
-                        key={role}
-                        style={[
-                          styles.roleButton,
-                          selectedUser.role === role && styles.roleButtonActive,
-                        ]}
-                        onPress={() => handleChangeRole(selectedUser.id, role)}
-                        activeOpacity={0.7}
-                      >
-                        <Icon name={getRoleIcon(role)} size={16} color={getRoleColor(role)} />
-                        <Text style={[styles.roleButtonText, { color: getRoleColor(role) }]}>
-                          {role}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
                 <TouchableOpacity
                   style={styles.deleteButton}
                   onPress={() => handleDeleteUser(selectedUser.id)}
@@ -401,6 +523,227 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
                 </TouchableOpacity>
               </ScrollView>
             )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Create Account Modal */}
+      <Modal
+        visible={createModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setCreateModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Create New Account</Text>
+              <TouchableOpacity onPress={() => setCreateModalVisible(false)}>
+                <Icon name="x" size={24} color={PartnerColors.light.text.primary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              {/* Role Selection */}
+              <Text style={styles.inputLabel}>Account Type *</Text>
+              <View style={styles.roleSelector}>
+                <TouchableOpacity
+                  style={[
+                    styles.roleSelectorButton,
+                    newUserData.role === 'partner' && styles.roleSelectorButtonActive,
+                  ]}
+                  onPress={() => setNewUserData({ ...newUserData, role: 'partner' })}
+                >
+                  <Icon name="briefcase" size={20} color={newUserData.role === 'partner' ? PartnerColors.primary : '#6B7280'} />
+                  <Text style={[
+                    styles.roleSelectorText,
+                    newUserData.role === 'partner' && styles.roleSelectorTextActive,
+                  ]}>Partner</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.roleSelectorButton,
+                    newUserData.role === 'rider' && styles.roleSelectorButtonActive,
+                  ]}
+                  onPress={() => setNewUserData({ ...newUserData, role: 'rider' })}
+                >
+                  <Icon name="truck" size={20} color={newUserData.role === 'rider' ? PartnerColors.primary : '#6B7280'} />
+                  <Text style={[
+                    styles.roleSelectorText,
+                    newUserData.role === 'rider' && styles.roleSelectorTextActive,
+                  ]}>Rider</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.roleSelectorButton,
+                    newUserData.role === 'admin' && styles.roleSelectorButtonActive,
+                  ]}
+                  onPress={() => setNewUserData({ ...newUserData, role: 'admin' })}
+                >
+                  <Icon name="shield" size={20} color={newUserData.role === 'admin' ? PartnerColors.primary : '#6B7280'} />
+                  <Text style={[
+                    styles.roleSelectorText,
+                    newUserData.role === 'admin' && styles.roleSelectorTextActive,
+                  ]}>Admin</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Full Name */}
+              <Text style={styles.inputLabel}>Full Name *</Text>
+              <TextInput
+                style={styles.input}
+                value={newUserData.full_name}
+                onChangeText={(text) => setNewUserData({ ...newUserData, full_name: text })}
+                placeholder="Enter full name"
+                placeholderTextColor="#9CA3AF"
+              />
+
+              {/* Email */}
+              <Text style={styles.inputLabel}>Email *</Text>
+              <TextInput
+                style={styles.input}
+                value={newUserData.email}
+                onChangeText={(text) => setNewUserData({ ...newUserData, email: text })}
+                placeholder="Enter email address"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+
+              {/* Password */}
+              <Text style={styles.inputLabel}>Password *</Text>
+              <TextInput
+                style={styles.input}
+                value={newUserData.password}
+                onChangeText={(text) => setNewUserData({ ...newUserData, password: text })}
+                placeholder="Enter password (min 6 characters)"
+                placeholderTextColor="#9CA3AF"
+                secureTextEntry
+              />
+
+              {/* Phone */}
+              <Text style={styles.inputLabel}>Phone Number</Text>
+              <TextInput
+                style={styles.input}
+                value={newUserData.phone}
+                onChangeText={(text) => setNewUserData({ ...newUserData, phone: text })}
+                placeholder="Enter phone number"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="phone-pad"
+              />
+
+              {/* Restaurant Selection (Only for Partners) */}
+              {newUserData.role === 'partner' && (
+                <>
+                  <Text style={styles.inputLabel}>Restaurant Assignment *</Text>
+                  <View style={styles.roleSelector}>
+                    <TouchableOpacity
+                      style={[
+                        styles.roleSelectorButton,
+                        newUserData.createNewRestaurant && styles.roleSelectorButtonActive,
+                      ]}
+                      onPress={() => setNewUserData({ ...newUserData, createNewRestaurant: true, restaurantId: '' })}
+                    >
+                      <Icon name="plus-circle" size={18} color={newUserData.createNewRestaurant ? PartnerColors.primary : '#6B7280'} />
+                      <Text style={[
+                        styles.roleSelectorText,
+                        newUserData.createNewRestaurant && styles.roleSelectorTextActive,
+                      ]}>Create New</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.roleSelectorButton,
+                        !newUserData.createNewRestaurant && styles.roleSelectorButtonActive,
+                      ]}
+                      onPress={() => setNewUserData({ ...newUserData, createNewRestaurant: false })}
+                    >
+                      <Icon name="list" size={18} color={!newUserData.createNewRestaurant ? PartnerColors.primary : '#6B7280'} />
+                      <Text style={[
+                        styles.roleSelectorText,
+                        !newUserData.createNewRestaurant && styles.roleSelectorTextActive,
+                      ]}>Select Existing</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {newUserData.createNewRestaurant ? (
+                    <>
+                      <Text style={styles.inputLabel}>Restaurant Name (Optional)</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={newUserData.restaurantName}
+                        onChangeText={(text) => setNewUserData({ ...newUserData, restaurantName: text })}
+                        placeholder={`Default: ${newUserData.full_name}'s Restaurant`}
+                        placeholderTextColor="#9CA3AF"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.inputLabel}>Select Restaurant *</Text>
+                      {loadingRestaurants ? (
+                        <ActivityIndicator size="small" color={PartnerColors.primary} style={{ marginVertical: 16 }} />
+                      ) : (
+                        <ScrollView 
+                          style={styles.restaurantList} 
+                          contentContainerStyle={styles.restaurantListContent}
+                          nestedScrollEnabled
+                          showsVerticalScrollIndicator={true}
+                        >
+                          {restaurants.map((restaurant) => (
+                            <TouchableOpacity
+                              key={restaurant.id}
+                              style={[
+                                styles.restaurantItem,
+                                newUserData.restaurantId === restaurant.id && styles.restaurantItemActive,
+                              ]}
+                              onPress={() => setNewUserData({ ...newUserData, restaurantId: restaurant.id })}
+                            >
+                              <Icon 
+                                name={newUserData.restaurantId === restaurant.id ? "check-circle" : "circle"} 
+                                size={20} 
+                                color={newUserData.restaurantId === restaurant.id ? PartnerColors.primary : '#D1D5DB'} 
+                              />
+                              <View style={{ flex: 1 }}>
+                                <Text style={[
+                                  styles.restaurantItemText,
+                                  newUserData.restaurantId === restaurant.id && styles.restaurantItemTextActive,
+                                ]}>
+                                  {restaurant.name}
+                                </Text>
+                                {restaurant.partner_id && (
+                                  <Text style={styles.restaurantSubtext}>
+                                    Already registered
+                                  </Text>
+                                )}
+                              </View>
+                            </TouchableOpacity>
+                          ))}
+                          {restaurants.length === 0 && (
+                            <Text style={styles.emptyText}>No restaurants available.</Text>
+                          )}
+                        </ScrollView>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* Create Button */}
+              <TouchableOpacity
+                style={[styles.createButton, creating && styles.createButtonDisabled]}
+                onPress={handleCreateAccount}
+                disabled={creating}
+                activeOpacity={0.8}
+              >
+                {creating ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Icon name="user-plus" size={18} color="#FFFFFF" />
+                    <Text style={styles.createButtonText}>Create Account</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -688,20 +1031,151 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textTransform: 'capitalize',
   },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: PartnerColors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: PartnerTypography.fontWeight.semibold,
+    color: PartnerColors.light.text.primary,
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  input: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: PartnerColors.light.text.primary,
+    borderWidth: 1,
+    borderColor: PartnerColors.light.borderLight,
+  },
+  roleSelector: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+  roleSelectorButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 2,
+    borderColor: PartnerColors.light.borderLight,
+  },
+  roleSelectorButtonActive: {
+    backgroundColor: `${PartnerColors.primary}15`,
+    borderColor: PartnerColors.primary,
+  },
+  roleSelectorText: {
+    fontSize: 16,
+    fontWeight: PartnerTypography.fontWeight.semibold,
+    color: '#6B7280',
+  },
+  roleSelectorTextActive: {
+    color: PartnerColors.primary,
+  },
+  createButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: PartnerColors.primary,
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginTop: 24,
+    marginBottom: 24,
+  },
+  createButtonDisabled: {
+    opacity: 0.6,
+  },
+  createButtonText: {
+    fontSize: 16,
+    fontWeight: PartnerTypography.fontWeight.bold,
+    color: '#FFFFFF',
+  },
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EF4444',
-    borderRadius: 12,
-    paddingVertical: 14,
-    marginTop: 24,
     gap: 8,
+    backgroundColor: '#EF4444',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 24,
   },
   deleteButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: PartnerTypography.fontWeight.bold,
     color: '#FFFFFF',
+  },
+  restaurantList: {
+    maxHeight: 200,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: PartnerColors.light.borderLight,
+    backgroundColor: '#F9FAFB',
+    marginBottom: 16,
+  },
+  restaurantListContent: {
+    flexGrow: 1,
+  },
+  restaurantItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: PartnerColors.light.borderLight,
+  },
+  restaurantItemActive: {
+    backgroundColor: `${PartnerColors.primary}10`,
+  },
+  restaurantItemText: {
+    flex: 1,
+    fontSize: 15,
+    color: PartnerColors.light.text.primary,
+  },
+  restaurantItemTextActive: {
+    fontWeight: PartnerTypography.fontWeight.semibold,
+    color: PartnerColors.primary,
+  },
+  restaurantSubtext: {
+    fontSize: 12,
+    color: '#F59E0B',
+    marginTop: 2,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: PartnerColors.light.text.secondary,
+    textAlign: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
   },
 });
 

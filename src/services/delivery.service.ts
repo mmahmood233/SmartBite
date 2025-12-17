@@ -227,27 +227,41 @@ export const updateDeliveryStatus = async (
       updateData.delivery_time = new Date().toISOString();
     }
 
-    const { error } = await supabase
+    // Update deliveries table
+    const { error, data: delivery } = await supabase
       .from('deliveries')
       .update(updateData)
-      .eq('id', deliveryId);
+      .eq('id', deliveryId)
+      .select('order_id, rider_id')
+      .single();
 
     if (error) throw error;
 
-    // If delivered, update rider status back to online
-    if (status === 'delivered') {
-      const { data: delivery } = await supabase
-        .from('deliveries')
-        .select('rider_id')
-        .eq('id', deliveryId)
-        .single();
+    // IMPORTANT: Also update the orders table delivery_status for tracking
+    if (delivery) {
+      const orderUpdateData: any = {
+        delivery_status: status,
+        updated_at: new Date().toISOString(),
+      };
 
-      if (delivery) {
-        await supabase
-          .from('riders')
-          .update({ status: 'online' })
-          .eq('id', delivery.rider_id);
+      // If delivered, also update order status
+      if (status === 'delivered') {
+        orderUpdateData.status = 'delivered';
+        orderUpdateData.actual_delivery_time = new Date().toISOString();
       }
+
+      await supabase
+        .from('orders')
+        .update(orderUpdateData)
+        .eq('id', delivery.order_id);
+    }
+
+    // If delivered, update rider status back to online
+    if (status === 'delivered' && delivery) {
+      await supabase
+        .from('riders')
+        .update({ status: 'online' })
+        .eq('id', delivery.rider_id);
     }
 
     return true;

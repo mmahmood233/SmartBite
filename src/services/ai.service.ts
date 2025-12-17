@@ -21,6 +21,7 @@ export interface DishRecommendation {
   rating: number;
   eta: string;
   spicyLevel?: number;
+  isRestaurant?: boolean;
 }
 
 export interface AIResponse {
@@ -82,7 +83,83 @@ export const sendAIMessage = async (
 
     // Try to parse JSON
     try {
-      const data: AIResponse = JSON.parse(cleanedText);
+      let data = JSON.parse(cleanedText);
+      console.log('Parsed JSON data:', data);
+      
+      // Check if response field contains another JSON string (double-encoded or markdown-wrapped)
+      if (data.response && typeof data.response === 'string') {
+        let innerResponse = data.response.trim();
+        
+        // Strip markdown code blocks if present
+        if (innerResponse.startsWith('```json') || innerResponse.startsWith('```')) {
+          console.log('Detected markdown code block, stripping...');
+          innerResponse = innerResponse
+            .replace(/^```json\s*\n?/i, '')
+            .replace(/^```\s*\n?/, '')
+            .replace(/\n?```\s*$/,'')
+            .trim();
+          console.log('Stripped markdown, result:', innerResponse.substring(0, 100) + '...');
+        }
+        
+        // Try to parse the inner JSON
+        if (innerResponse.startsWith('{')) {
+          try {
+            console.log('Parsing inner JSON...');
+            data = JSON.parse(innerResponse);
+            console.log('Successfully parsed inner data');
+          } catch (e) {
+            console.log('Failed to parse inner JSON:', e);
+          }
+        }
+      }
+      
+      // Check if it's the new format with message, restaurants, menu_items
+      if (data.message) {
+        const recommendations: DishRecommendation[] = [];
+        
+        // Convert restaurants to recommendations
+        if (data.restaurants && Array.isArray(data.restaurants)) {
+          console.log(`Converting ${data.restaurants.length} restaurants to recommendations`);
+          data.restaurants.forEach((restaurant: any) => {
+            recommendations.push({
+              id: restaurant.id,
+              name: restaurant.name,
+              restaurant: restaurant.name,
+              restaurantId: restaurant.id,
+              price: restaurant.minimum_order || 0,
+              image: restaurant.image_url || '',
+              rating: restaurant.rating || 4.5,
+              eta: restaurant.delivery_time || '30-40 min',
+              isRestaurant: true, // Flag to identify restaurants
+            });
+          });
+        }
+        
+        // Convert menu_items to recommendations
+        if (data.menu_items && Array.isArray(data.menu_items)) {
+          console.log(`Converting ${data.menu_items.length} menu items to recommendations`);
+          data.menu_items.forEach((item: any) => {
+            recommendations.push({
+              id: item.id,
+              name: item.name,
+              restaurant: item.restaurant || 'Restaurant',
+              restaurantId: item.restaurant_id,
+              price: item.price,
+              image: item.image_url || '',
+              rating: 4.5,
+              eta: '20-30 min',
+            });
+          });
+        }
+        
+        console.log(`Returning ${recommendations.length} total recommendations`);
+        return {
+          text: data.message,
+          recommendations,
+        };
+      }
+      
+      // Fallback to old format
       return {
         text: data.response || cleanedText,
         recommendations: data.recommendations || [],

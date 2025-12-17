@@ -11,7 +11,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types';
 import { Feather as Icon } from '@expo/vector-icons';
@@ -40,6 +40,25 @@ const RiderHomeScreen: React.FC = () => {
   useEffect(() => {
     loadRiderProfile();
   }, []);
+
+  // Refresh active delivery when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      if (riderId) {
+        checkActiveDelivery();
+      }
+    }, [riderId])
+  );
+
+  const checkActiveDelivery = async () => {
+    if (!riderId) return;
+    try {
+      const delivery = await getActiveDelivery(riderId);
+      setActiveDelivery(delivery);
+    } catch (err) {
+      console.error('Error checking active delivery:', err);
+    }
+  };
 
   const loadRiderProfile = async () => {
     try {
@@ -229,20 +248,29 @@ const RiderHomeScreen: React.FC = () => {
             {isOnline ? 'You are online' : 'You are offline'}
           </Text>
         </View>
-        <TouchableOpacity
-          style={[styles.statusToggle, isOnline && styles.statusToggleOnline]}
-          onPress={toggleOnlineStatus}
-          activeOpacity={0.7}
-        >
-          <Icon
-            name={isOnline ? 'zap' : 'zap-off'}
-            size={20}
-            color={isOnline ? '#FFFFFF' : colors.textSecondary}
-          />
-          <Text style={[styles.statusText, isOnline && styles.statusTextOnline]}>
-            {isOnline ? 'Online' : 'Offline'}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <TouchableOpacity
+            style={styles.notificationButton}
+            onPress={() => navigation.navigate('RiderNotifications')}
+            activeOpacity={0.7}
+          >
+            <Icon name="bell" size={20} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.statusToggle, isOnline && styles.statusToggleOnline]}
+            onPress={toggleOnlineStatus}
+            activeOpacity={0.7}
+          >
+            <Icon
+              name={isOnline ? 'zap' : 'zap-off'}
+              size={20}
+              color={isOnline ? '#FFFFFF' : colors.textSecondary}
+            />
+            <Text style={[styles.statusText, isOnline && styles.statusTextOnline]}>
+              {isOnline ? 'Online' : 'Offline'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Active Delivery Banner */}
@@ -400,6 +428,16 @@ const styles = StyleSheet.create({
   },
   statusToggleOnline: {
     backgroundColor: colors.primary,
+  },
+  notificationButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   statusText: {
     fontSize: FONT_SIZE.md,

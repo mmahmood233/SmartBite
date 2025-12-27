@@ -32,7 +32,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Payment'>;
 const PaymentScreen: React.FC<Props> = ({ route, navigation }) => {
   const { t } = useLanguage();
   const { amount, orderData } = route.params || { amount: 0, orderData: null };
-  const { clearCart } = useCart();
+  const { cart, clearCart } = useCart();
 
   const [selectedMethod, setSelectedMethod] = useState('card');
   const [loading, setLoading] = useState(false);
@@ -93,6 +93,7 @@ const PaymentScreen: React.FC<Props> = ({ route, navigation }) => {
         total_amount: orderData.total_amount,
         delivery_fee: orderData.delivery_fee,
         subtotal: orderData.subtotal,
+        delivery_address_id: orderData.delivery_address_id,
         delivery_address: orderData.delivery_address,
         delivery_phone: orderData.delivery_phone,
         delivery_notes: orderData.delivery_notes,
@@ -129,6 +130,7 @@ const PaymentScreen: React.FC<Props> = ({ route, navigation }) => {
       orderNumber: order.order_number,
       paymentId: paymentResult.paymentId!,
       restaurantName: orderData.restaurantName,
+      restaurantLogo: cart.restaurantLogo,
       items: orderData.items,
       total: amount,
     });

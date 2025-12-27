@@ -20,7 +20,7 @@ BEGIN
       'You have a new order. Please confirm and start preparing.',
       jsonb_build_object(
         'orderId', NEW.id,
-        'orderTotal', NEW.total,
+        'orderTotal', NEW.total_amount,
         'status', NEW.status
       ),
       FALSE,

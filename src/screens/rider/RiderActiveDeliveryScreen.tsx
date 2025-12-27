@@ -56,50 +56,40 @@ const RiderActiveDeliveryScreen: React.FC = () => {
   const handleStatusUpdate = async () => {
     if (!delivery || !riderId) return;
 
-    const statusFlow: Record<string, string> = {
-      'assigned': 'heading_to_restaurant',
-      'heading_to_restaurant': 'arrived_at_restaurant',
-      'arrived_at_restaurant': 'picked_up',
-      'picked_up': 'heading_to_customer',
-      'heading_to_customer': 'arrived_at_customer',
-      'arrived_at_customer': 'delivered',
-    };
-
-    const nextStatus = statusFlow[delivery.status];
-    if (!nextStatus) return;
-
+    // ULTRA SIMPLE: Just mark as delivered instantly
     try {
       setUpdating(true);
+      console.log('🚀 STARTING DELIVERY COMPLETION:', {
+        deliveryId: delivery.id,
+        orderId: delivery.order_id,
+        riderId,
+      });
 
-      // Insert location point (mock GPS - Option B)
+      // Mock GPS location
       await insertRiderLocationPoint(
         riderId,
         delivery.order_id,
-        26.2285, // Mock latitude (Bahrain)
-        50.5860  // Mock longitude (Bahrain)
+        26.2285,
+        50.5860
       );
+      console.log('✅ GPS location inserted');
 
-      // Update delivery status
-      if (nextStatus === 'delivered') {
-        await updateDeliveryStatus(delivery.id, 'delivered' as any);
-        
-        // Navigate back immediately to clear active delivery
+      // Instantly mark as delivered
+      console.log('📦 Calling updateDeliveryStatus...');
+      const result = await updateDeliveryStatus(delivery.id, 'delivered' as any);
+      console.log('✅ updateDeliveryStatus returned:', result);
+
+      // Only navigate if successful
+      console.log('✅ DELIVERY COMPLETED SUCCESSFULLY');
+      Alert.alert(t('common.success'), 'Delivery Complete!');
+      
+      // Wait a bit before navigating
+      setTimeout(() => {
         navigation.navigate('RiderHome');
-        
-        // Show success message after navigation
-        setTimeout(() => {
-          Alert.alert(
-            t('common.success'),
-            t('rider.deliveryComplete')
-          );
-        }, 300);
-      } else {
-        await updateDeliveryStatus(delivery.id, nextStatus as any);
-        await refetch();
-      }
+      }, 1000);
     } catch (err: any) {
-      console.error('Error updating status:', err);
-      Alert.alert('Error', err.message || 'Failed to update status');
+      console.error('❌ DELIVERY COMPLETION FAILED:', err);
+      Alert.alert('Error', err.message || 'Failed to complete delivery');
     } finally {
       setUpdating(false);
     }
@@ -120,58 +110,15 @@ const RiderActiveDeliveryScreen: React.FC = () => {
   };
 
   const getStatusText = () => {
-    if (!delivery) return '';
-    switch (delivery.status) {
-      case 'assigned':
-        return t('rider.headingToRestaurant');
-      case 'heading_to_restaurant':
-        return t('rider.headingToRestaurant');
-      case 'arrived_at_restaurant':
-        return t('rider.arrivedAtRestaurant');
-      case 'picked_up':
-        return t('rider.orderPickedUp');
-      case 'heading_to_customer':
-        return t('rider.headingToCustomer');
-      case 'arrived_at_customer':
-        return t('rider.arrivedAtCustomer');
-      case 'delivered':
-        return t('rider.delivered');
-      default:
-        return '';
-    }
+    return 'Ready to Deliver';
   };
 
   const getButtonText = () => {
-    if (!delivery) return t('common.continue');
-    switch (delivery.status) {
-      case 'assigned':
-      case 'heading_to_restaurant':
-        return t('rider.arrivedAtRestaurant');
-      case 'arrived_at_restaurant':
-        return t('rider.pickedUpOrder');
-      case 'picked_up':
-        return t('rider.headingToCustomer');
-      case 'heading_to_customer':
-        return t('rider.arrivedAtCustomer');
-      case 'arrived_at_customer':
-        return t('rider.markAsDelivered');
-      default:
-        return t('common.continue');
-    }
+    return 'Complete Delivery';
   };
 
   const getProgressPercentage = () => {
-    if (!delivery) return 0;
-    const statusProgress: Record<string, number> = {
-      'assigned': 10,
-      'heading_to_restaurant': 20,
-      'arrived_at_restaurant': 40,
-      'picked_up': 60,
-      'heading_to_customer': 80,
-      'arrived_at_customer': 90,
-      'delivered': 100,
-    };
-    return statusProgress[delivery.status] || 0;
+    return 50;
   };
 
   if (loading) {
@@ -213,7 +160,7 @@ const RiderActiveDeliveryScreen: React.FC = () => {
           <Text style={styles.headerSubtitle}>Order #{delivery.order_id.slice(0, 8)}</Text>
         </View>
         <View style={styles.earningsBadge}>
-          <Text style={styles.earningsText}>BD {delivery.earnings.toFixed(2)}</Text>
+          <Text style={styles.earningsText}>BD {delivery.total.toFixed(2)}</Text>
         </View>
       </View>
 
@@ -227,6 +174,9 @@ const RiderActiveDeliveryScreen: React.FC = () => {
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${getProgressPercentage()}%` }]} />
           </View>
+          <Text style={styles.statusSubtitle}>
+            Tap button below to complete delivery
+          </Text>
         </View>
 
         {/* Pickup Location */}
@@ -269,7 +219,7 @@ const RiderActiveDeliveryScreen: React.FC = () => {
             </View>
             <View style={styles.cardHeaderText}>
               <Text style={styles.cardLabel}>{t('rider.deliveryLocation')}</Text>
-              <Text style={styles.cardTitle}>{t('common.customer')}</Text>
+              <Text style={styles.cardTitle}>{delivery.delivery_location.name}</Text>
             </View>
           </View>
 
@@ -296,10 +246,22 @@ const RiderActiveDeliveryScreen: React.FC = () => {
         {/* Order Info */}
         <View style={styles.card}>
           <Text style={styles.cardSectionTitle}>{t('rider.orderInformation')}</Text>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{t('common.items')}</Text>
-            <Text style={styles.infoValue}>{delivery.order_items.length} {t('common.items')}</Text>
-          </View>
+          
+          {/* Order Items List */}
+          {delivery.order_items.map((item: any, index: number) => (
+            <View key={index} style={styles.itemRow}>
+              <View style={styles.itemInfo}>
+                <Text style={styles.itemName}>{item.dish_name}</Text>
+                <Text style={styles.itemQuantity}>x{item.quantity}</Text>
+              </View>
+              <Text style={styles.itemPrice}>
+                BD {((item.unit_price || 0) * item.quantity).toFixed(2)}
+              </Text>
+            </View>
+          ))}
+          
+          <View style={styles.divider} />
+          
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>{t('common.total')}</Text>
             <Text style={styles.infoValue}>BD {delivery.total.toFixed(2)}</Text>
@@ -545,6 +507,40 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.md,
     color: colors.textSecondary,
   },
+  itemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  itemInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  itemName: {
+    fontSize: FONT_SIZE.md,
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  itemQuantity: {
+    fontSize: FONT_SIZE.sm,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+  itemPrice: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: SPACING.md,
+  },
   emptyTitle: {
     fontSize: FONT_SIZE.xl,
     fontWeight: '700',
@@ -553,16 +549,18 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   goBackButton: {
-    marginTop: SPACING.xl,
-    paddingHorizontal: SPACING.xxxl,
-    paddingVertical: SPACING.md,
-    backgroundColor: colors.primary,
-    borderRadius: BORDER_RADIUS.lg,
+    padding: 8,
   },
   goBackButtonText: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  statusSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
   },
 });
 

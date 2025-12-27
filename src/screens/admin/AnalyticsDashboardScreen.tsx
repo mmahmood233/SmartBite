@@ -16,8 +16,10 @@ import {
 } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import { PartnerColors, PartnerSpacing } from '../../constants/partnerTheme';
+import { PartnerColors, PartnerSpacing, PartnerTypography } from '../../constants/partnerTheme';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useNavigation } from '@react-navigation/native'; // Add this line
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -31,7 +33,9 @@ interface AnalyticsData {
   ordersGrowth: number;
 }
 
-const AnalyticsDashboardScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+const AnalyticsDashboardScreen: React.FC = () => {
+  const navigation = useNavigation();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     totalRevenue: 0,
@@ -153,8 +157,8 @@ const AnalyticsDashboardScreen: React.FC<{ navigation: any }> = ({ navigation })
           <Icon name="arrow-left" size={24} color={PartnerColors.light.text.primary} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Analytics Dashboard</Text>
-          <Text style={styles.headerSubtitle}>Business insights & statistics</Text>
+          <Text style={styles.headerTitle}>{t('admin.analytics')}</Text>
+          <Text style={styles.headerSubtitle}>{t('admin.platformOverview')}</Text>
         </View>
         <TouchableOpacity onPress={fetchAnalytics} style={styles.refreshButton}>
           <Icon name="refresh-cw" size={20} color={PartnerColors.primary} />
@@ -179,7 +183,7 @@ const AnalyticsDashboardScreen: React.FC<{ navigation: any }> = ({ navigation })
                   selectedPeriod === period && styles.periodButtonTextActive,
                 ]}
               >
-                {period.charAt(0).toUpperCase() + period.slice(1)}
+                {period === 'week' ? t('admin.week') : period === 'month' ? t('admin.month') : t('admin.year')}
               </Text>
             </TouchableOpacity>
           ))}
@@ -188,39 +192,39 @@ const AnalyticsDashboardScreen: React.FC<{ navigation: any }> = ({ navigation })
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <StatCard
-            title="Total Revenue"
+            title={t('admin.totalRevenue')}
             value={`BD ${analytics.totalRevenue.toFixed(2)}`}
             icon="dollar-sign"
             color="#10B981"
             growth={analytics.revenueGrowth}
           />
           <StatCard
-            title="Total Orders"
+            title={t('admin.ordersToday')}
             value={analytics.totalOrders}
             icon="shopping-bag"
             color="#6366F1"
             growth={analytics.ordersGrowth}
           />
           <StatCard
-            title="Total Users"
+            title={t('admin.users')}
             value={analytics.totalUsers}
             icon="users"
             color="#F59E0B"
           />
           <StatCard
-            title="Restaurants"
+            title={t('admin.restaurants')}
             value={analytics.totalRestaurants}
             icon="home"
             color="#EF4444"
           />
           <StatCard
-            title="Active Riders"
+            title={t('admin.riders')}
             value={analytics.activeRiders}
             icon="truck"
             color="#3B82F6"
           />
           <StatCard
-            title="Avg Order Value"
+            title={t('admin.avgOrderValue')}
             value={`BD ${(analytics.totalRevenue / (analytics.totalOrders || 1)).toFixed(2)}`}
             icon="trending-up"
             color="#8B5CF6"
@@ -229,7 +233,7 @@ const AnalyticsDashboardScreen: React.FC<{ navigation: any }> = ({ navigation })
 
         {/* Revenue Chart */}
         <View style={styles.chartSection}>
-          <Text style={styles.chartTitle}>Revenue Trend</Text>
+          <Text style={styles.chartTitle}>{t('admin.revenue')} Trend</Text>
           <LineChart
             data={revenueChartData}
             width={screenWidth - 72}
@@ -257,7 +261,7 @@ const AnalyticsDashboardScreen: React.FC<{ navigation: any }> = ({ navigation })
 
         {/* Orders Chart */}
         <View style={styles.chartSection}>
-          <Text style={styles.chartTitle}>Orders Overview</Text>
+          <Text style={styles.chartTitle}>{t('admin.ordersToday')} Overview</Text>
           <BarChart
             data={ordersChartData}
             width={screenWidth - 72}

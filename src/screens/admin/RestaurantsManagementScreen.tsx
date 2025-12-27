@@ -440,8 +440,8 @@ const RestaurantsManagementScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.headerTitle}>Restaurants</Text>
-          <Text style={styles.headerSubtitle}>{restaurants.length} total restaurants</Text>
+          <Text style={styles.headerTitle}>{t('admin.restaurants')}</Text>
+          <Text style={styles.headerSubtitle}>{restaurants.length} {t('admin.restaurants').toLowerCase()}</Text>
         </View>
         <TouchableOpacity
           style={styles.addButton}
@@ -458,7 +458,7 @@ const RestaurantsManagementScreen: React.FC = () => {
           <Icon name="search" size={20} color={PartnerColors.light.text.tertiary} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search restaurants..."
+            placeholder={t('admin.searchRestaurants')}
             placeholderTextColor={PartnerColors.light.text.tertiary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -478,7 +478,7 @@ const RestaurantsManagementScreen: React.FC = () => {
             activeOpacity={0.7}
           >
             <Text style={[styles.filterChipText, filterStatus === 'all' && styles.filterChipTextActive]}>
-              All
+              {t('admin.allRestaurants')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -487,7 +487,7 @@ const RestaurantsManagementScreen: React.FC = () => {
             activeOpacity={0.7}
           >
             <Text style={[styles.filterChipText, filterStatus === 'active' && styles.filterChipTextActive]}>
-              Active
+              {t('admin.active')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -496,7 +496,7 @@ const RestaurantsManagementScreen: React.FC = () => {
             activeOpacity={0.7}
           >
             <Text style={[styles.filterChipText, filterStatus === 'inactive' && styles.filterChipTextActive]}>
-              Inactive
+              {t('admin.deactivated')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -509,7 +509,13 @@ const RestaurantsManagementScreen: React.FC = () => {
             <View key={restaurant.id} style={styles.restaurantCard}>
               {/* Card Header */}
               <View style={styles.cardHeader}>
-                <Image source={restaurant.logo} style={styles.restaurantLogo} />
+                {restaurant.logo ? (
+                  <Image source={{ uri: restaurant.logo }} style={styles.restaurantLogo} />
+                ) : (
+                  <View style={[styles.restaurantLogo, { backgroundColor: PartnerColors.primary, justifyContent: 'center', alignItems: 'center' }]}>
+                    <Text style={{ color: '#FFF', fontSize: 20, fontWeight: 'bold' }}>{restaurant.name.charAt(0)}</Text>
+                  </View>
+                )}
                 <View style={styles.restaurantInfo}>
                   <Text style={styles.restaurantName}>{restaurant.name}</Text>
                   <View style={styles.categoryBadge}>

@@ -591,7 +591,7 @@ const RestaurantDetailScreen: React.FC<RestaurantDetailScreenProps> = ({ route, 
         {/* Hero Header */}
         <View style={styles.heroContainer}>
           <Image
-            source={require('../../../../assets/food.png')}
+            source={restaurant?.logo ? { uri: restaurant.logo } : require('../../../../assets/food.png')}
             style={styles.heroImage}
             resizeMode="cover"
           />

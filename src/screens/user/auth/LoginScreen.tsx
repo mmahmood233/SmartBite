@@ -195,29 +195,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             accessibilityLabel="Sign in to Wajba"
           />
 
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>{t('auth.orContinueWith')}</Text>
-            <View style={styles.divider} />
-          </View>
-
-          {/* Social Login Buttons */}
-          <View style={styles.socialButtonsContainer}>
-            <SocialButton
-              icon="🍎"
-              label="Apple"
-              onPress={handleAppleSignIn}
-              accessibilityLabel="Sign in with Apple"
-            />
-            <SocialButton
-              icon="🔍"
-              label="Google"
-              onPress={handleGoogleSignIn}
-              accessibilityLabel="Sign in with Google"
-            />
-          </View>
-
           {/* Sign Up Link */}
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>{t('auth.noAccount')} </Text>

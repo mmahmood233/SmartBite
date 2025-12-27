@@ -10,6 +10,7 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -67,7 +68,8 @@ const FavoritesScreen: React.FC = () => {
             category,
             rating,
             delivery_fee,
-            avg_prep_time
+            avg_prep_time,
+            logo
           )
         `)
         .eq('user_id', user.id)
@@ -84,7 +86,7 @@ const FavoritesScreen: React.FC = () => {
         rating: fav.restaurants?.rating || 0,
         deliveryFee: fav.restaurants?.delivery_fee || 0,
         deliveryTime: fav.restaurants?.avg_prep_time || '30 min',
-        logo: '🍽️',
+        logo: fav.restaurants?.logo || null,
       })) || [];
 
       setFavorites(transformedFavorites);
@@ -185,9 +187,17 @@ const FavoritesScreen: React.FC = () => {
     >
       {/* Restaurant Thumbnail */}
       <View style={styles.thumbnailContainer}>
-        <View style={styles.thumbnail}>
-          <Text style={styles.thumbnailEmoji}>{restaurant.logo}</Text>
-        </View>
+        {restaurant.logo ? (
+          <Image 
+            source={{ uri: restaurant.logo }} 
+            style={styles.thumbnail}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.thumbnail}>
+            <Text style={styles.thumbnailEmoji}>🍽️</Text>
+          </View>
+        )}
       </View>
 
       {/* Restaurant Info */}

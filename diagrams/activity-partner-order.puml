@@ -1,7 +1,11 @@
-@startuml Partner Activity Diagram - Manage Orders
+@startuml Partner Order Processing
 !theme plain
+skinparam ActivityBackgroundColor #FFE0B2
+skinparam ActivityBorderColor #FF9800
+skinparam ActivityDiamondBackgroundColor #FFF3E0
+skinparam ActivityDiamondBorderColor #FFB74D
 
-title Wajba - Restaurant Partner Manage Orders Activity Diagram
+title Wajba - Partner Order Processing Activity Diagram
 
 start
 
@@ -9,76 +13,33 @@ start
 
 :View Dashboard;
 
-:Navigate to Orders;
+:Navigate to Live Orders;
 
 :View Incoming Orders;
 
-if (New Order Received?) then (no)
+if (New Order?) then (yes)
+  :View Order Details;
+  :Check Items & Address;
+else (no)
   :Wait for Orders;
   stop
-else (yes)
 endif
 
-:View Order Details;
-
-:Check Order Items;
-
-:Check Delivery Address;
-
-if (Can Fulfill Order?) then (no)
-  :Select Reject Order;
-  :Enter Rejection Reason;
-  :Confirm Rejection;
-  :Notify Customer;
-  :Order Rejected;
+if (Can Fulfill?) then (no)
+  :Reject Order;
   stop
 else (yes)
+  :Accept Order;
 endif
 
-:Accept Order;
+:Start Preparing;
 
-:Order Status: Accepted;
+:Prepare Food Items;
 
-:Notify Customer;
+:Mark as Ready for Pickup;
 
-:Notify Rider System;
+:Order Complete;
 
-:Start Preparing Food;
-
-:Update Order Status to "Preparing";
-
-:Prepare Order Items;
-
-if (Order Ready?) then (no)
-  :Continue Preparing;
-else (yes)
-endif
-
-:Update Order Status to "Ready for Pickup";
-
-:Notify Rider;
-
-:Wait for Rider Arrival;
-
-if (Rider Arrived?) then (no)
-  :Wait;
-else (yes)
-endif
-
-:Verify Rider;
-
-:Hand Over Order to Rider;
-
-:Update Order Status to "Picked Up";
-
-:Order Completed;
-
-if (More Orders?) then (yes)
-  :View Next Order;
-else (no)
-  :View Order History;
-  :View Statistics;
-  stop
-endif
+stop
 
 @enduml

@@ -1,5 +1,9 @@
-@startuml Customer Activity Diagram - Place Order
+@startuml Customer Place Order
 !theme plain
+skinparam ActivityBackgroundColor #FFE0B2
+skinparam ActivityBorderColor #FF9800
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #FBC02D
 
 title Wajba - Customer Place Order Activity Diagram
 
@@ -7,28 +11,19 @@ start
 
 :Open App;
 
-if (Logged In?) then (no)
+if (Logged In?) then (yes)
+else (no)
   :Navigate to Login;
-  :Enter Email & Password;
-  :Submit Login;
-  if (Valid Credentials?) then (no)
-    :Show Error Message;
+  :Enter Credentials;
+  if (Valid?) then (no)
+    :Show Error;
     stop
-  else (yes)
-    :Login Successful;
   endif
-else (yes)
 endif
 
 :View Restaurant List;
 
 :Browse Restaurants;
-
-if (Found Restaurant?) then (no)
-  :Use Search/Filter;
-  :Search by Name or Category;
-else (yes)
-endif
 
 :Select Restaurant;
 
@@ -36,28 +31,17 @@ endif
 
 :Browse Menu Items;
 
-if (Need Help?) then (yes)
-  :Open AI Chat Assistant;
-  :Ask Questions about Menu;
-  :Get AI Recommendations;
-  :Receive Answers;
-else (no)
-endif
-
 repeat
-  :Select Dish;
-  :Choose Quantity;
+  :Select Item;
   :Add to Cart;
-  
-  if (Add More Items?) then (yes)
-  else (no)
-  endif
-repeat while (Add More Items?) is (yes)
+backward:Continue Shopping;
+repeat while (More Items?) is (yes)
+->no;
 
 :View Cart;
 
-if (Cart OK?) then (no)
-  :Update/Remove Items;
+if (Cart Valid?) then (no)
+  :Update Cart;
 else (yes)
 endif
 
@@ -65,35 +49,26 @@ endif
 
 :Select Delivery Address;
 
-if (Add Instructions?) then (yes)
-  :Enter Delivery Instructions;
-else (no)
-endif
-
 :Choose Payment Method;
 
-if (Payment Method?) then (Card)
+if (Payment Type?) then (Card)
   :Enter Card Details;
-  :Process Payment via Gateway;
-  
-  if (Payment Successful?) then (no)
-    :Show Payment Error;
+  :Process Payment;
+  if (Payment Success?) then (no)
+    :Show Error;
     stop
-  else (yes)
   endif
 else (Cash)
-  :Select Cash on Delivery;
+  :Cash on Delivery;
 endif
 
 :Place Order;
 
-:Show Order Confirmation;
+:Show Confirmation;
 
-:Track Order Status;
+:Track Order;
 
 :Receive Order;
-
-:Order Complete;
 
 stop
 

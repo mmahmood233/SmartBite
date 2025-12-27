@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Platform,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -108,7 +109,8 @@ const OrdersScreen: React.FC = () => {
           total_amount,
           created_at,
           restaurants (
-            name
+            name,
+            logo
           ),
           order_items (
             id
@@ -125,7 +127,7 @@ const OrdersScreen: React.FC = () => {
         orderNumber: order.order_number,
         restaurant: {
           name: order.restaurants?.name || 'Restaurant',
-          logo: '🍽️',
+          logo: order.restaurants?.logo || null,
         },
         status: order.status,
         eta: '15–20 min', // Mock for now
@@ -209,7 +211,15 @@ const OrdersScreen: React.FC = () => {
         <View style={styles.orderHeader}>
           <View style={styles.restaurantInfo}>
             <View style={styles.restaurantLogo}>
-              <Text style={styles.restaurantLogoText}>{order.restaurant.logo}</Text>
+              {order.restaurant.logo ? (
+                <Image 
+                  source={{ uri: order.restaurant.logo }} 
+                  style={styles.restaurantLogoImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={styles.restaurantLogoText}>🍽️</Text>
+              )}
             </View>
             <View style={styles.restaurantDetails}>
               <Text style={styles.restaurantName}>{order.restaurant.name}</Text>
@@ -271,7 +281,15 @@ const OrdersScreen: React.FC = () => {
         <View style={styles.orderHeader}>
           <View style={styles.restaurantInfo}>
             <View style={styles.restaurantLogo}>
-              <Text style={styles.restaurantLogoText}>{order.restaurant.logo}</Text>
+              {order.restaurant.logo ? (
+                <Image 
+                  source={{ uri: order.restaurant.logo }} 
+                  style={styles.restaurantLogoImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={styles.restaurantLogoText}>🍽️</Text>
+              )}
             </View>
             <View style={styles.restaurantDetails}>
               <View style={styles.restaurantTopRow}>
@@ -533,6 +551,11 @@ const styles = StyleSheet.create({
   },
   restaurantLogoText: {
     fontSize: 24,
+  },
+  restaurantLogoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: BORDER_RADIUS.md,
   },
   restaurantDetails: {
     flex: 1,

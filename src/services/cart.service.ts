@@ -31,6 +31,7 @@ export interface Cart {
   items: CartItem[];
   restaurantId: string | null;
   restaurantName: string | null;
+  restaurantLogo?: string | null;
   subtotal: number;
   deliveryFee: number;
   total: number;
@@ -140,14 +141,16 @@ export const addToCart = async (
   cart.restaurantId = restaurantId;
   cart.restaurantName = restaurantName;
   
-  // Fetch restaurant delivery fee if not already set or if restaurant changed
+  // Fetch restaurant delivery fee and logo if not already set or if restaurant changed
   if (cart.deliveryFee === 0 || cart.items.length === 1) {
     try {
       const restaurant = await fetchRestaurantById(restaurantId);
       cart.deliveryFee = restaurant?.delivery_fee || 0;
+      cart.restaurantLogo = restaurant?.logo || null;
     } catch (error) {
-      console.error('Error fetching restaurant delivery fee:', error);
+      console.error('Error fetching restaurant details:', error);
       cart.deliveryFee = 0;
+      cart.restaurantLogo = null;
     }
   }
   

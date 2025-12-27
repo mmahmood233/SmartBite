@@ -14,6 +14,7 @@ import {
   StatusBar,
   Platform,
   Alert,
+  Modal,
 } from 'react-native';
 import { Feather as Icon } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -30,7 +31,7 @@ import {
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const AdminSettingsScreen: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language, changeLanguage } = useLanguage();
   const navigation = useNavigation();
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -41,6 +42,12 @@ const AdminSettingsScreen: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [adminName, setAdminName] = useState('Admin User');
   const [adminEmail, setAdminEmail] = useState('admin@wajba.bh');
+  const [currentLanguage, setCurrentLanguage] = useState(language === 'ar' ? 'العربية' : 'English');
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
+
+  useEffect(() => {
+    setCurrentLanguage(language === 'ar' ? 'العربية' : 'English');
+  }, [language]);
 
   // Fetch platform settings and user data
   useEffect(() => {
@@ -191,6 +198,13 @@ const AdminSettingsScreen: React.FC = () => {
     navigation.navigate('ChangePassword' as never);
   };
 
+  const handleLanguageSelect = async (lang: string) => {
+    const langCode = lang === 'العربية' ? 'ar' : 'en';
+    await changeLanguage(langCode);
+    setCurrentLanguage(lang);
+    setLanguageModalVisible(false);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -198,8 +212,8 @@ const AdminSettingsScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.headerTitle}>Settings</Text>
-          <Text style={styles.headerSubtitle}>Admin Configuration</Text>
+          <Text style={styles.headerTitle}>{t('admin.settings')}</Text>
+          <Text style={styles.headerSubtitle}>{t('admin.adminConfiguration')}</Text>
         </View>
       </View>
 
@@ -215,13 +229,35 @@ const AdminSettingsScreen: React.FC = () => {
           <Text style={styles.adminEmail}>{adminEmail}</Text>
           <View style={styles.roleBadge}>
             <Icon name="shield" size={14} color={PartnerColors.primary} />
-            <Text style={styles.roleText}>Platform Administrator</Text>
+            <Text style={styles.roleText}>{t('admin.platformAdministrator')}</Text>
           </View>
+        </View>
+
+        {/* App Preferences */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('admin.appPreferences').toUpperCase()}</Text>
+          
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => setLanguageModalVisible(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.menuIcon, { backgroundColor: '#E6F7F4' }]}>
+                <Icon name="globe" size={20} color={PartnerColors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>{t('settings.language')}</Text>
+            </View>
+            <View style={styles.languageSelector}>
+              <Text style={styles.languageText}>{currentLanguage}</Text>
+              <Icon name="chevron-down" size={18} color={PartnerColors.light.text.tertiary} />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Account Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>ACCOUNT</Text>
+          <Text style={styles.sectionTitle}>{t('admin.account').toUpperCase()}</Text>
           
           <TouchableOpacity
             style={styles.menuItem}
@@ -232,78 +268,15 @@ const AdminSettingsScreen: React.FC = () => {
               <View style={[styles.menuIcon, { backgroundColor: '#E6F7F4' }]}>
                 <Icon name="lock" size={20} color={PartnerColors.primary} />
               </View>
-              <Text style={styles.menuItemText}>Change Password</Text>
+              <Text style={styles.menuItemText}>{t('settings.changePassword')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color={PartnerColors.light.text.tertiary} />
           </TouchableOpacity>
         </View>
 
-        {/* Platform Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>PLATFORM CONFIGURATION</Text>
-          
-          {/* Default Delivery Fee */}
-          <View style={styles.settingCard}>
-            <View style={styles.settingHeader}>
-              <View style={styles.settingIconContainer}>
-                <Icon name="truck" size={20} color={PartnerColors.primary} />
-              </View>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingTitle}>Default Delivery Fee</Text>
-                <Text style={styles.settingSubtitle}>Applied to new restaurants</Text>
-              </View>
-            </View>
-            <View style={styles.settingInputRow}>
-              <TextInput
-                style={styles.settingInput}
-                value={defaultDeliveryFee}
-                onChangeText={setDefaultDeliveryFee}
-                keyboardType="decimal-pad"
-                placeholder="0.5"
-                placeholderTextColor="#9CA3AF"
-              />
-              <Text style={styles.settingUnit}>BD</Text>
-            </View>
-          </View>
-
-          {/* Minimum Order Amount */}
-          <View style={styles.settingCard}>
-            <View style={styles.settingHeader}>
-              <View style={styles.settingIconContainer}>
-                <Icon name="shopping-bag" size={20} color={PartnerColors.primary} />
-              </View>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingTitle}>Minimum Order Amount</Text>
-                <Text style={styles.settingSubtitle}>Required for all orders</Text>
-              </View>
-            </View>
-            <View style={styles.settingInputRow}>
-              <TextInput
-                style={styles.settingInput}
-                value={minOrderAmount}
-                onChangeText={setMinOrderAmount}
-                keyboardType="decimal-pad"
-                placeholder="2"
-                placeholderTextColor="#9CA3AF"
-              />
-              <Text style={styles.settingUnit}>BD</Text>
-            </View>
-          </View>
-
-          {/* Save Button */}
-          <TouchableOpacity
-            style={styles.saveSettingsButton}
-            onPress={handleSaveSettings}
-            activeOpacity={0.8}
-          >
-            <Icon name="check-circle" size={20} color="#FFFFFF" />
-            <Text style={styles.saveSettingsButtonText}>Save Settings</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Other Settings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>OTHER</Text>
+          <Text style={styles.sectionTitle}>{t('admin.other').toUpperCase()}</Text>
           
           <TouchableOpacity
             style={styles.menuItem}
@@ -314,7 +287,7 @@ const AdminSettingsScreen: React.FC = () => {
               <View style={[styles.menuIcon, { backgroundColor: '#FEF3C7' }]}>
                 <Icon name="file-text" size={20} color="#F59E0B" />
               </View>
-              <Text style={styles.menuItemText}>View Logs</Text>
+              <Text style={styles.menuItemText}>{t('admin.viewLogs')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color={PartnerColors.light.text.tertiary} />
           </TouchableOpacity>
@@ -334,7 +307,7 @@ const AdminSettingsScreen: React.FC = () => {
               <View style={[styles.menuIcon, { backgroundColor: '#F0F4FF' }]}>
                 <Icon name="settings" size={20} color="#007AFF" />
               </View>
-              <Text style={styles.menuItemText}>Advanced Settings</Text>
+              <Text style={styles.menuItemText}>{t('admin.advancedSettings')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color={PartnerColors.light.text.tertiary} />
           </TouchableOpacity>
@@ -354,7 +327,7 @@ const AdminSettingsScreen: React.FC = () => {
               <View style={[styles.menuIcon, { backgroundColor: '#FFF4E6' }]}>
                 <Icon name="bar-chart-2" size={20} color="#FF9500" />
               </View>
-              <Text style={styles.menuItemText}>Analytics & Reports</Text>
+              <Text style={styles.menuItemText}>{t('admin.analyticsReports')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color={PartnerColors.light.text.tertiary} />
           </TouchableOpacity>
@@ -368,7 +341,7 @@ const AdminSettingsScreen: React.FC = () => {
               <View style={[styles.menuIcon, { backgroundColor: '#ECFDF5' }]}>
                 <Icon name="bell" size={20} color="#10B981" />
               </View>
-              <Text style={styles.menuItemText}>Notifications</Text>
+              <Text style={styles.menuItemText}>{t('admin.notifications')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color={PartnerColors.light.text.tertiary} />
           </TouchableOpacity>
@@ -376,7 +349,7 @@ const AdminSettingsScreen: React.FC = () => {
 
         {/* Support Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>SUPPORT</Text>
+          <Text style={styles.sectionTitle}>{t('settings.support').toUpperCase()}</Text>
           
           <TouchableOpacity
             style={styles.menuItem}
@@ -387,7 +360,7 @@ const AdminSettingsScreen: React.FC = () => {
               <View style={[styles.menuIcon, { backgroundColor: '#F0F4FF' }]}>
                 <Icon name="help-circle" size={20} color="#007AFF" />
               </View>
-              <Text style={styles.menuItemText}>Help Center</Text>
+              <Text style={styles.menuItemText}>{t('admin.helpCenter')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color={PartnerColors.light.text.tertiary} />
           </TouchableOpacity>
@@ -411,7 +384,7 @@ const AdminSettingsScreen: React.FC = () => {
               <View style={[styles.menuIcon, { backgroundColor: '#F9FAFB' }]}>
                 <Icon name="info" size={20} color={PartnerColors.light.text.secondary} />
               </View>
-              <Text style={styles.menuItemText}>About</Text>
+              <Text style={styles.menuItemText}>{t('admin.about')}</Text>
             </View>
             <Icon name="chevron-right" size={20} color={PartnerColors.light.text.tertiary} />
           </TouchableOpacity>
@@ -425,7 +398,7 @@ const AdminSettingsScreen: React.FC = () => {
             activeOpacity={0.8}
           >
             <Icon name="log-out" size={20} color="#EF4444" />
-            <Text style={styles.logoutButtonText}>Logout</Text>
+            <Text style={styles.logoutButtonText}>{t('settings.logout')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -449,6 +422,49 @@ const AdminSettingsScreen: React.FC = () => {
         message={saving ? 'Saving settings...' : 'Loading settings...'}
         overlay
       />
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={languageModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setLanguageModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setLanguageModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>{t('partner.language')}</Text>
+
+            <TouchableOpacity
+              style={styles.languageOption}
+              onPress={() => handleLanguageSelect('English')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.languageOptionText}>English</Text>
+              {currentLanguage === 'English' && (
+                <Icon name="check" size={20} color={PartnerColors.primary} />
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.languageOptionDivider} />
+
+            <TouchableOpacity
+              style={styles.languageOption}
+              onPress={() => handleLanguageSelect('العربية')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.languageOptionText}>العربية</Text>
+              {currentLanguage === 'العربية' && (
+                <Icon name="check" size={20} color={PartnerColors.primary} />
+              )}
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -687,6 +703,59 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: PartnerTypography.fontWeight.bold,
     color: '#FFFFFF',
+  },
+  languageSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  languageText: {
+    fontSize: 16,
+    color: PartnerColors.light.text.secondary,
+    fontWeight: PartnerTypography.fontWeight.medium,
+  },
+  // Language Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: PartnerTypography.fontWeight.bold,
+    color: PartnerColors.light.text.primary,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  languageOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  languageOptionText: {
+    fontSize: 18,
+    color: PartnerColors.light.text.primary,
+    fontWeight: PartnerTypography.fontWeight.medium,
+  },
+  languageOptionDivider: {
+    height: 1,
+    backgroundColor: PartnerColors.light.borderLight,
   },
 });
 

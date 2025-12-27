@@ -23,6 +23,7 @@ import { PartnerColors, PartnerSpacing, PartnerBorderRadius, PartnerTypography }
 import { getDashboardStats, getRevenueData, getRecentActivity, DashboardStats } from '../../services/admin-analytics.service';
 import { supabase } from '../../lib/supabase';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getUserNotifications } from '../../services/notification.service';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -34,6 +35,7 @@ const AdminDashboardScreen: React.FC = () => {
   const [revenueData, setRevenueData] = useState<{ labels: string[]; datasets: { data: number[] }[] } | null>(null);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Fetch dashboard data
   useEffect(() => {
@@ -48,12 +50,15 @@ const AdminDashboardScreen: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [statsData, activityData] = await Promise.all([
+      const { data: { user } } = await supabase.auth.getUser();
+      const [statsData, activityData, notifications] = await Promise.all([
         getDashboardStats(),
         getRecentActivity(3),
+        user ? getUserNotifications(user.id) : Promise.resolve([]),
       ]);
       setStats(statsData);
       setRecentActivity(activityData);
+      setUnreadCount(notifications.filter((n: any) => !n.read).length);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -102,7 +107,7 @@ const AdminDashboardScreen: React.FC = () => {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={PartnerColors.primary} />
-        <Text style={{ marginTop: 16, color: PartnerColors.light.text.secondary }}>Loading dashboard...</Text>
+        <Text style={{ marginTop: 16, color: PartnerColors.light.text.secondary }}>{t('admin.loadingDashboard')}</Text>
       </View>
     );
   }
@@ -114,14 +119,20 @@ const AdminDashboardScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Admin Dashboard</Text>
-          <Text style={styles.subtitle}>Platform Overview</Text>
+          <Text style={styles.greeting}>{t('admin.dashboard')}</Text>
+          <Text style={styles.subtitle}>{t('admin.platformOverview')}</Text>
         </View>
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('AdminNotifications' as never)}
+          activeOpacity={0.7}
+        >
           <Icon name="bell" size={24} color={PartnerColors.light.text.primary} />
-          <View style={styles.notificationBadge}>
-            <Text style={styles.notificationBadgeText}>3</Text>
-          </View>
+          {unreadCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>{unreadCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -134,7 +145,7 @@ const AdminDashboardScreen: React.FC = () => {
             activeOpacity={0.7}
           >
             <Text style={[styles.periodButtonText, selectedPeriod === 'week' && styles.periodButtonTextActive]}>
-              Week
+              {t('admin.week')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -143,7 +154,7 @@ const AdminDashboardScreen: React.FC = () => {
             activeOpacity={0.7}
           >
             <Text style={[styles.periodButtonText, selectedPeriod === 'month' && styles.periodButtonTextActive]}>
-              Month
+              {t('admin.month')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -152,14 +163,14 @@ const AdminDashboardScreen: React.FC = () => {
             activeOpacity={0.7}
           >
             <Text style={[styles.periodButtonText, selectedPeriod === 'year' && styles.periodButtonTextActive]}>
-              Year
+              {t('admin.year')}
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Revenue Chart */}
         <View style={styles.chartSection}>
-          <Text style={styles.chartTitle}>Revenue Trends</Text>
+          <Text style={styles.chartTitle}>{t('admin.revenue')} Trends</Text>
           {revenueData && (
             <LineChart
               data={revenueData}
@@ -195,7 +206,7 @@ const AdminDashboardScreen: React.FC = () => {
             >
               <Icon name="shopping-bag" size={24} color="#FFFFFF" />
               <Text style={styles.statValue}>{stats?.totalRestaurants || 0}</Text>
-              <Text style={styles.statLabel}>Restaurants</Text>
+              <Text style={styles.statLabel}>{t('admin.restaurants')}</Text>
             </LinearGradient>
           </View>
 
@@ -208,7 +219,7 @@ const AdminDashboardScreen: React.FC = () => {
             >
               <Icon name="users" size={24} color="#FFFFFF" />
               <Text style={styles.statValue}>{formatNumber(stats?.totalUsers || 0)}</Text>
-              <Text style={styles.statLabel}>Users</Text>
+              <Text style={styles.statLabel}>{t('admin.users')}</Text>
             </LinearGradient>
           </View>
 
@@ -221,7 +232,7 @@ const AdminDashboardScreen: React.FC = () => {
             >
               <Icon name="file-text" size={24} color="#FFFFFF" />
               <Text style={styles.statValue}>{formatNumber(stats?.todayOrders || 0)}</Text>
-              <Text style={styles.statLabel}>Orders Today</Text>
+              <Text style={styles.statLabel}>{t('admin.ordersToday')}</Text>
             </LinearGradient>
           </View>
 
@@ -234,14 +245,14 @@ const AdminDashboardScreen: React.FC = () => {
             >
               <Icon name="dollar-sign" size={24} color="#FFFFFF" />
               <Text style={styles.statValue}>{formatRevenue(stats?.totalRevenue || 0)}</Text>
-              <Text style={styles.statLabel}>Total Revenue</Text>
+              <Text style={styles.statLabel}>{t('admin.totalRevenue')}</Text>
             </LinearGradient>
           </View>
         </View>
 
         {/* Quick Actions */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={styles.sectionTitle}>{t('admin.quickActions')}</Text>
           <View style={styles.actionsGrid}>
             <TouchableOpacity 
               style={styles.actionCard} 
@@ -251,7 +262,7 @@ const AdminDashboardScreen: React.FC = () => {
               <View style={[styles.actionIcon, { backgroundColor: '#E6F7F4' }]}>
                 <Icon name="users" size={24} color={PartnerColors.primary} />
               </View>
-              <Text style={styles.actionText}>Manage Users</Text>
+              <Text style={styles.actionText}>{t('admin.manageUsers')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -262,14 +273,14 @@ const AdminDashboardScreen: React.FC = () => {
               <View style={[styles.actionIcon, { backgroundColor: '#EEF2FF' }]}>
                 <Icon name="bar-chart-2" size={24} color="#6366F1" />
               </View>
-              <Text style={styles.actionText}>Analytics Dashboard</Text>
+              <Text style={styles.actionText}>{t('admin.analytics')}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Recent Activity */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <Text style={styles.sectionTitle}>{t('admin.recentActivity')}</Text>
           <View style={styles.activityCard}>
             {recentActivity.length > 0 ? (
               recentActivity.map((activity, index) => (

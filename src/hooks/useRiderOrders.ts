@@ -41,6 +41,7 @@ export const useRiderOrders = () => {
         delivery_address: order.delivery_address || 'Unknown Address',
         total: order.estimated_earnings / 0.15, // Reverse calculate from earnings
         items: [], // Items count is in items_count
+        items_count: order.items_count || 0,
         distance: order.distance || 0,
         estimated_earnings: order.estimated_earnings || 0,
         estimated_time: '15-20 min',

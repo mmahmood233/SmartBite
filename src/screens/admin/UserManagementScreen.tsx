@@ -237,7 +237,12 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
     }
 
     setCreating(true);
+    
+    // Save current admin session outside try block for access in catch
+    const { data: { session: adminSession } } = await supabase.auth.getSession();
+    
     try {
+      
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: newUserData.email,
@@ -253,20 +258,58 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
       if (authError) throw authError;
 
       if (authData.user) {
-        // Create user record
-        const { error: userError } = await supabase
+        // Check if user already exists (might be created by trigger)
+        const { data: existingUser } = await supabase
           .from('users')
-          .insert([
-            {
-              id: authData.user.id,
-              email: newUserData.email,
+          .select('id')
+          .eq('id', authData.user.id)
+          .single();
+
+        // Only insert if user doesn't exist yet
+        if (!existingUser) {
+          const { error: userError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: authData.user.id,
+                email: newUserData.email,
+                full_name: newUserData.full_name,
+                phone: newUserData.phone || null,
+                role: newUserData.role,
+              },
+            ]);
+
+          if (userError) throw userError;
+        } else {
+          // Update existing user with correct role and details
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({
               full_name: newUserData.full_name,
               phone: newUserData.phone || null,
               role: newUserData.role,
-            },
-          ]);
+            })
+            .eq('id', authData.user.id);
 
-        if (userError) throw userError;
+          if (updateError) throw updateError;
+        }
+
+        // If rider, create rider profile
+        if (newUserData.role === 'rider') {
+          const { error: riderError } = await supabase
+            .from('riders')
+            .insert([
+              {
+                user_id: authData.user.id,
+                full_name: newUserData.full_name,
+                phone: newUserData.phone || '',
+                vehicle_type: 'motorcycle',
+                status: 'offline',
+              },
+            ]);
+
+          if (riderError) throw riderError;
+        }
 
         // If partner, handle restaurant assignment
         if (newUserData.role === 'partner') {
@@ -299,6 +342,14 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
           }
         }
 
+        // Restore admin session after all database operations
+        if (adminSession) {
+          await supabase.auth.setSession({
+            access_token: adminSession.access_token,
+            refresh_token: adminSession.refresh_token,
+          });
+        }
+
         const roleLabel = newUserData.role === 'partner' ? 'Partner' : newUserData.role === 'rider' ? 'Rider' : 'Admin';
         Alert.alert('Success', `${roleLabel} account created successfully!`);
         setCreateModalVisible(false);
@@ -317,6 +368,14 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
     } catch (error: any) {
       console.error('Error creating account:', error);
       Alert.alert('Error', error.message || 'Failed to create account');
+      
+      // Restore admin session even on error
+      if (adminSession) {
+        await supabase.auth.setSession({
+          access_token: adminSession.access_token,
+          refresh_token: adminSession.refresh_token,
+        });
+      }
     } finally {
       setCreating(false);
     }
@@ -341,8 +400,8 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
           <Icon name="arrow-left" size={24} color={PartnerColors.light.text.primary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>User Management</Text>
-          <Text style={styles.headerSubtitle}>{filteredUsers.length} users</Text>
+          <Text style={styles.headerTitle}>{t('admin.userManagement')}</Text>
+          <Text style={styles.headerSubtitle}>{filteredUsers.length} {t('admin.users').toLowerCase()}</Text>
         </View>
         <TouchableOpacity onPress={fetchUsers} style={styles.refreshButton}>
           <Icon name="refresh-cw" size={20} color={PartnerColors.primary} />
@@ -355,7 +414,7 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
           <Icon name="search" size={20} color="#9CA3AF" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by name, email, or phone..."
+            placeholder={t('admin.searchUsers')}
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#9CA3AF"
@@ -369,7 +428,12 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
       </View>
 
       {/* Role Filter */}
-      <View style={styles.filterContainer}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterScrollView}
+        contentContainerStyle={styles.filterContainer}
+      >
         {(['all', 'customer', 'partner', 'rider', 'admin'] as UserRole[]).map((role) => (
           <TouchableOpacity
             key={role}
@@ -386,11 +450,11 @@ const UserManagementScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
                 selectedRole === role && styles.filterChipTextActive,
               ]}
             >
-              {role.charAt(0).toUpperCase() + role.slice(1)}
+              {role === 'all' ? t('admin.allUsers') : role === 'customer' ? t('admin.customers') : role === 'rider' ? t('admin.riders') : role === 'partner' ? t('admin.partner') : t('admin.admin')}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* Users List */}
       <ScrollView 
@@ -812,13 +876,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: PartnerColors.light.text.primary,
   },
+  filterScrollView: {
+    backgroundColor: '#FFFFFF',
+    maxHeight: 70,
+  },
   filterContainer: {
     flexDirection: 'row',
     paddingHorizontal: PartnerSpacing.xl,
     paddingTop: 16,
     paddingBottom: 16,
     gap: 12,
-    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
   },
   filterChip: {
     paddingHorizontal: 20,
@@ -827,6 +895,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderWidth: 2,
     borderColor: 'transparent',
+    alignSelf: 'flex-start',
   },
   filterChipActive: {
     backgroundColor: '#FFFFFF',

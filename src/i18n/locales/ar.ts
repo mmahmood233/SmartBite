@@ -164,8 +164,9 @@ export default {
     serviceFee: 'رسوم الخدمة',
     total: 'الإجمالي',
     proceedToCheckout: 'المتابعة للدفع',
-    clearCart: 'إفراغ السلة',
+    clearCart: 'مسح السلة',
     addMore: 'إضافة المزيد',
+    orderItems: 'عناصر الطلب',
   },
 
   // Checkout
@@ -201,6 +202,7 @@ export default {
     itemsOrdered: 'العناصر المطلوبة',
     deliveryInformation: 'معلومات التوصيل',
     deliveryAddress: 'عنوان التوصيل',
+    estimatedArrival: 'الوصول المتوقع',
     getHelp: 'احصل على مساعدة',
     items: 'عناصر',
   },
@@ -241,6 +243,7 @@ export default {
     noAddresses: 'لا توجد عناوين محفوظة',
     noAddressesMessage: 'أضف عناوين التوصيل الخاصة بك لإتمام الطلب بشكل أسرع',
     addNewAddress: 'إضافة عنوان جديد',
+    addAddress: 'إضافة عنوان',
     editAddress: 'تعديل العنوان',
     deleteAddress: 'حذف العنوان',
     deleteAddressMessage: 'إزالة {{title}} من عناوينك المحفوظة؟',
@@ -287,6 +290,8 @@ export default {
     removePaymentMessage: 'إزالة {{label}} من طرق الدفع الخاصة بك؟',
     securityNotice: 'تفاصيلك مشفرة ومحفوظة بشكل آمن',
     expires: 'تنتهي في',
+    default: 'افتراضي',
+    defaultUpdated: 'تم تحديث طريقة الدفع الافتراضية',
   },
 
   // Offers
@@ -371,6 +376,9 @@ export default {
     english: 'English',
     arabic: 'العربية',
     selectLanguage: 'اختر اللغة',
+    changePassword: 'تغيير كلمة المرور',
+    logout: 'تسجيل الخروج',
+    support: 'الدعم',
   },
 
   // Navigation
@@ -736,5 +744,116 @@ export default {
     oneDeliveryAtTime: 'يمكنك التعامل مع توصيل واحد فقط في كل مرة. يرجى إكمال التوصيل الحالي قبل قبول طلب جديد.',
     viewCurrentDelivery: 'عرض التوصيل الحالي',
     profileNotFound: 'الملف الشخصي غير موجود',
+  },
+
+  // Admin Portal
+  admin: {
+    // Dashboard
+    dashboard: 'لوحة التحكم',
+    platformOverview: 'نظرة عامة على المنصة',
+    loadingDashboard: 'جاري تحميل لوحة التحكم...',
+    week: 'أسبوع',
+    month: 'شهر',
+    year: 'سنة',
+    revenue: 'الإيرادات',
+    restaurants: 'المطاعم',
+    users: 'المستخدمون',
+    ordersToday: 'طلبات اليوم',
+    totalRevenue: 'إجمالي الإيرادات',
+    recentActivity: 'النشاط الأخير',
+    viewAll: 'عرض الكل',
+    justNow: 'الآن',
+    hoursAgo: 'منذ ساعات',
+    daysAgo: 'منذ أيام',
+    
+    // Quick Actions
+    quickActions: 'إجراءات سريعة',
+    manageRestaurants: 'إدارة المطاعم',
+    manageUsers: 'إدارة المستخدمين',
+    viewAnalytics: 'عرض التحليلات',
+    manageCategories: 'إدارة الفئات',
+    
+    // Restaurant Management
+    restaurantManagement: 'إدارة المطاعم',
+    addRestaurant: 'إضافة مطعم',
+    searchRestaurants: 'البحث عن المطاعم...',
+    allRestaurants: 'جميع المطاعم',
+    activeRestaurants: 'نشط',
+    pendingRestaurants: 'قيد الانتظار',
+    deactivatedRestaurants: 'معطل',
+    restaurantName: 'اسم المطعم',
+    status: 'الحالة',
+    actions: 'الإجراءات',
+    active: 'نشط',
+    pending: 'قيد الانتظار',
+    deactivated: 'معطل',
+    activate: 'تفعيل',
+    deactivate: 'تعطيل',
+    viewDetails: 'عرض التفاصيل',
+    noRestaurants: 'لا توجد مطاعم',
+    
+    // User Management
+    userManagement: 'إدارة المستخدمين',
+    searchUsers: 'البحث عن المستخدمين...',
+    allUsers: 'جميع المستخدمين',
+    customers: 'العملاء',
+    riders: 'السائقون',
+    userName: 'اسم المستخدم',
+    email: 'البريد الإلكتروني',
+    role: 'الدور',
+    joinedDate: 'تاريخ الانضمام',
+    customer: 'عميل',
+    rider: 'سائق',
+    partner: 'شريك',
+    admin: 'مسؤول',
+    noUsers: 'لا يوجد مستخدمون',
+    
+    // Categories Management
+    categoriesManagement: 'إدارة الفئات',
+    addCategory: 'إضافة فئة',
+    categoryName: 'اسم الفئة',
+    description: 'الوصف',
+    icon: 'الأيقونة',
+    noCategories: 'لا توجد فئات',
+    
+    // Promotions Management
+    promotionsManagement: 'إدارة العروض الترويجية',
+    addPromotion: 'إضافة عرض ترويجي',
+    promotionTitle: 'عنوان العرض',
+    discount: 'الخصم',
+    startDate: 'تاريخ البدء',
+    endDate: 'تاريخ الانتهاء',
+    noPromotions: 'لا توجد عروض ترويجية',
+    
+    // Analytics
+    analytics: 'التحليلات',
+    analyticsReports: 'التحليلات والتقارير',
+    
+    // Settings
+    settings: 'الإعدادات',
+    adminConfiguration: 'إعدادات المسؤول',
+    platformAdministrator: 'مسؤول المنصة',
+    appPreferences: 'تفضيلات التطبيق',
+    account: 'الحساب',
+    platformConfiguration: 'إعدادات المنصة',
+    defaultDeliveryFee: 'رسوم التوصيل الافتراضية',
+    deliveryFeeDescription: 'رسوم التوصيل القياسية لجميع الطلبات',
+    minOrderAmount: 'الحد الأدنى لقيمة الطلب',
+    minOrderDescription: 'الحد الأدنى المطلوب لقيمة الطلب',
+    saveSettings: 'حفظ الإعدادات',
+    other: 'أخرى',
+    viewLogs: 'عرض السجلات',
+    advancedSettings: 'الإعدادات المتقدمة',
+    helpCenter: 'مركز المساعدة',
+    about: 'حول',
+    
+    // Notifications
+    notifications: 'الإشعارات',
+    markAllAsRead: 'تحديد الكل كمقروء',
+    noNotifications: 'لا توجد إشعارات',
+    allCaughtUp: 'أنت على اطلاع بكل شيء!',
+    
+    // Additional
+    avgOrderValue: 'متوسط قيمة الطلب',
   },
 };

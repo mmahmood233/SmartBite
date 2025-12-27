@@ -9,6 +9,7 @@ import {
   Animated,
   ActivityIndicator,
   ScrollView,
+  Image,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -112,7 +113,8 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
           rider_id,
           restaurants (
             name,
-            rating
+            rating,
+            logo
           ),
           order_items (
             id,
@@ -146,7 +148,7 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
         status: order.status,
         restaurant: {
           name: order.restaurants?.name || 'Restaurant',
-          logo: '🍽️',
+          logo: order.restaurants?.logo || null,
           rating: order.restaurants?.rating || 0,
         },
         deliveryDate: new Date(order.created_at).toLocaleDateString('en-US', { 
@@ -245,7 +247,15 @@ const OrderDetailsScreen: React.FC<OrderDetailsScreenProps> = ({ route, navigati
           <View style={styles.restaurantCard}>
             <View style={styles.restaurantHeader}>
               <View style={styles.restaurantLogo}>
-                <Text style={styles.restaurantLogoText}>{orderData.restaurant.logo}</Text>
+                {orderData.restaurant.logo ? (
+                  <Image 
+                    source={{ uri: orderData.restaurant.logo }} 
+                    style={styles.restaurantLogoImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text style={styles.restaurantLogoText}>🍽️</Text>
+                )}
               </View>
               <View style={styles.restaurantInfo}>
                 <Text style={styles.restaurantName}>{orderData.restaurant.name}</Text>
@@ -553,6 +563,11 @@ const styles = StyleSheet.create({
   },
   restaurantLogoText: {
     fontSize: 28,
+  },
+  restaurantLogoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: BORDER_RADIUS.md + 2,
   },
   restaurantInfo: {
     flex: 1,

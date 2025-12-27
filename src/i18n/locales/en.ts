@@ -81,7 +81,6 @@ export default {
     orContinueWith: 'or continue with',
     welcomeBack: 'Welcome Back',
     signInToContinue: 'Sign in to continue',
-    createAccount: 'Create Account',
     joinMessage: 'Join Wajba and let AI personalize your food journey',
     accountCreated: 'Account Created!',
     welcomeMessage: 'Welcome to Wajba! Your account has been created successfully.',
@@ -163,6 +162,7 @@ export default {
     proceedToCheckout: 'Proceed to Checkout',
     clearCart: 'Clear Cart',
     addMore: 'Add More Items',
+    orderItems: 'Order Items',
   },
 
   // Checkout
@@ -198,6 +198,7 @@ export default {
     itemsOrdered: 'Items Ordered',
     deliveryInformation: 'Delivery Information',
     deliveryAddress: 'Delivery Address',
+    estimatedArrival: 'Estimated Arrival',
     getHelp: 'Get Help',
     items: 'items',
   },
@@ -238,6 +239,7 @@ export default {
     noAddresses: 'No Saved Addresses',
     noAddressesMessage: 'Add your delivery addresses for faster checkout',
     addNewAddress: 'Add New Address',
+    addAddress: 'Add Address',
     editAddress: 'Edit Address',
     deleteAddress: 'Delete Address',
     deleteAddressMessage: 'Remove {{title}} from your saved addresses?',
@@ -284,6 +286,8 @@ export default {
     removePaymentMessage: 'Remove {{label}} from your payment methods?',
     securityNotice: 'Your details are encrypted and stored securely',
     expires: 'Expires',
+    default: 'Default',
+    defaultUpdated: 'Default payment method updated',
   },
 
   // Offers
@@ -325,7 +329,6 @@ export default {
     chatWithSupport: 'Chat with Support',
     chatMessage: 'Get instant help from our team',
     callUs: 'Call Us',
-    emailSupport: 'Email Support',
     faqs: 'FAQs',
     faqsMessage: 'Find answers to common questions',
     termsAndConditions: 'Terms & Conditions',
@@ -371,6 +374,9 @@ export default {
     arabic: 'العربية',
     languageChanged: 'Language changed successfully',
     restartForRTL: 'Please restart the app for full effect',
+    changePassword: 'Change Password',
+    logout: 'Logout',
+    support: 'Support',
   },
 
   // Navigation
@@ -492,8 +498,8 @@ export default {
     
     // Business Info
     manage: 'Manage',
-    open: 'Open',
-    closed: 'Closed',
+    businessOpen: 'Open',
+    businessClosed: 'Closed',
     
     // Management Section
     management: 'Management',
@@ -547,7 +553,6 @@ export default {
     price: 'Price',
     priceBD: 'Price (BD)',
     available: 'Available',
-    cancel: 'Cancel',
     save: 'Save',
     
     // Category Names
@@ -736,5 +741,116 @@ export default {
     oneDeliveryAtTime: 'You can only handle one delivery at a time. Please complete your current delivery before accepting a new order.',
     viewCurrentDelivery: 'View Current Delivery',
     profileNotFound: 'Profile not found',
+  },
+
+  // Admin Portal
+  admin: {
+    // Dashboard
+    dashboard: 'Dashboard',
+    platformOverview: 'Platform Overview',
+    loadingDashboard: 'Loading dashboard...',
+    week: 'Week',
+    month: 'Month',
+    year: 'Year',
+    revenue: 'Revenue',
+    restaurants: 'Restaurants',
+    users: 'Users',
+    ordersToday: 'Orders Today',
+    totalRevenue: 'Total Revenue',
+    recentActivity: 'Recent Activity',
+    viewAll: 'View All',
+    justNow: 'Just now',
+    hoursAgo: 'hours ago',
+    daysAgo: 'days ago',
+    
+    // Quick Actions
+    quickActions: 'Quick Actions',
+    manageRestaurants: 'Manage Restaurants',
+    manageUsers: 'Manage Users',
+    viewAnalytics: 'View Analytics',
+    manageCategories: 'Manage Categories',
+    
+    // Restaurant Management
+    restaurantManagement: 'Restaurant Management',
+    addRestaurant: 'Add Restaurant',
+    searchRestaurants: 'Search restaurants...',
+    allRestaurants: 'All Restaurants',
+    activeRestaurants: 'Active',
+    pendingRestaurants: 'Pending',
+    deactivatedRestaurants: 'Deactivated',
+    restaurantName: 'Restaurant Name',
+    status: 'Status',
+    actions: 'Actions',
+    active: 'Active',
+    pending: 'Pending',
+    deactivated: 'Deactivated',
+    activate: 'Activate',
+    deactivate: 'Deactivate',
+    viewDetails: 'View Details',
+    noRestaurants: 'No Restaurants Found',
+    
+    // User Management
+    userManagement: 'User Management',
+    searchUsers: 'Search users...',
+    allUsers: 'All Users',
+    customers: 'Customers',
+    riders: 'Riders',
+    userName: 'User Name',
+    email: 'Email',
+    role: 'Role',
+    joinedDate: 'Joined Date',
+    customer: 'Customer',
+    rider: 'Rider',
+    partner: 'Partner',
+    admin: 'Admin',
+    noUsers: 'No Users Found',
+    
+    // Categories Management
+    categoriesManagement: 'Categories Management',
+    addCategory: 'Add Category',
+    categoryName: 'Category Name',
+    description: 'Description',
+    icon: 'Icon',
+    noCategories: 'No Categories Found',
+    
+    // Promotions Management
+    promotionsManagement: 'Promotions Management',
+    addPromotion: 'Add Promotion',
+    promotionTitle: 'Promotion Title',
+    discount: 'Discount',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    noPromotions: 'No Promotions Found',
+    
+    // Analytics
+    analytics: 'Analytics',
+    analyticsReports: 'Analytics & Reports',
+    
+    // Settings
+    settings: 'Settings',
+    adminConfiguration: 'Admin Configuration',
+    platformAdministrator: 'Platform Administrator',
+    appPreferences: 'App Preferences',
+    account: 'Account',
+    platformConfiguration: 'Platform Configuration',
+    defaultDeliveryFee: 'Default Delivery Fee',
+    deliveryFeeDescription: 'Standard delivery fee for all orders',
+    minOrderAmount: 'Minimum Order Amount',
+    minOrderDescription: 'Minimum order value required',
+    saveSettings: 'Save Settings',
+    other: 'Other',
+    viewLogs: 'View Logs',
+    advancedSettings: 'Advanced Settings',
+    helpCenter: 'Help Center',
+    about: 'About',
+    
+    // Notifications
+    notifications: 'Notifications',
+    markAllAsRead: 'Mark all as read',
+    noNotifications: 'No Notifications',
+    allCaughtUp: "You're all caught up!",
+    
+    // Additional
+    avgOrderValue: 'Avg Order Value',
   },
 };

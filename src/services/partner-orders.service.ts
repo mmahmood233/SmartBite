@@ -56,7 +56,7 @@ export const getPartnerOrders = async (restaurantId: string, status?: string) =>
     .select(`
       *,
       users(full_name, phone),
-      user_addresses(building, road, block, area, city),
+      user_addresses(building, address_line1, area, city, phone),
       order_items(
         id,
         dish_name,
@@ -97,7 +97,7 @@ export const getNewOrders = async (restaurantId: string) => {
     .select(`
       *,
       users(full_name, phone),
-      user_addresses(building, road, block, area, city),
+      user_addresses(building, address_line1, area, city, phone),
       order_items(
         id,
         dish_name,
@@ -128,7 +128,7 @@ export const getActiveOrders = async (restaurantId: string) => {
     .select(`
       *,
       users(full_name, phone),
-      user_addresses(building, road, block, area, city),
+      user_addresses(building, address_line1, area, city, phone),
       order_items(
         id,
         dish_name,
@@ -241,7 +241,7 @@ export const getOrderDetails = async (orderId: string) => {
     .select(`
       *,
       users!user_id(full_name, phone, email),
-      user_addresses!delivery_address_id(building, road, block, area, city, label, contact_number),
+      user_addresses!delivery_address_id(building, address_line1, area, city, label, phone),
       order_items(
         id,
         dish_name,

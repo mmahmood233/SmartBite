@@ -194,12 +194,8 @@ const RiderHomeScreen: React.FC = () => {
 
       <View style={styles.orderMeta}>
         <View style={styles.metaItem}>
-          <Icon name="navigation" size={14} color={colors.textSecondary} />
-          <Text style={styles.metaText}>{order.distance} km</Text>
-        </View>
-        <View style={styles.metaItem}>
           <Icon name="clock" size={14} color={colors.textSecondary} />
-          <Text style={styles.metaText}>{order.estimated_time} min</Text>
+          <Text style={styles.metaText}>{order.estimated_time}</Text>
         </View>
         <View style={styles.metaItem}>
           <Icon name="package" size={14} color={colors.textSecondary} />

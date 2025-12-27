@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, StatusBar, Switch, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, StatusBar, Switch, Modal, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather as Icon } from '@expo/vector-icons';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
@@ -16,13 +16,13 @@ import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getUserNotifications } from '../../services/notification.service';
 
 const strings = getStrings('en');
 
 const PartnerMoreScreen: React.FC = () => {
   const navigation = useNavigation();
   const { t, language, changeLanguage } = useLanguage();
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState(language === 'ar' ? 'العربية' : 'English');
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
@@ -46,6 +46,7 @@ const PartnerMoreScreen: React.FC = () => {
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isActive, setIsActive] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [businessData, setBusinessData] = useState({
     name: '',
     category: '',
@@ -76,6 +77,7 @@ const PartnerMoreScreen: React.FC = () => {
         if (error) throw error;
 
         if (restaurantData) {
+          console.log('Restaurant logo URL:', restaurantData.logo);
           setRestaurantId(restaurantData.id);
           setIsActive(restaurantData.is_active ?? true);
           const status = restaurantData.status || 'closed';
@@ -92,6 +94,12 @@ const PartnerMoreScreen: React.FC = () => {
             rating: restaurantData.rating || 0,
             earnings: 'BD 0.00', // TODO: Calculate from orders
           });
+        }
+
+        // Fetch notifications
+        if (user) {
+          const notifications = await getUserNotifications(user.id);
+          setUnreadCount(notifications.filter((n: any) => !n.read).length);
         }
       } catch (error) {
         console.error('Error fetching restaurant data:', error);
@@ -189,11 +197,6 @@ const PartnerMoreScreen: React.FC = () => {
     );
   };
 
-  const handleDarkModeToggle = (value: boolean) => {
-    setIsDarkMode(value);
-    showSnackbar(`Dark mode ${value ? 'enabled' : 'disabled'}`, 'success');
-    // TODO: Apply dark mode theme
-  };
 
   const handleLanguageSelect = async (lang: string) => {
     const langCode = lang === 'العربية' ? 'ar' : 'en';
@@ -238,9 +241,39 @@ const PartnerMoreScreen: React.FC = () => {
     }
   };
 
-  const handleSaveBusinessInfo = (updatedData: any) => {
-    setBusinessData({ ...businessData, ...updatedData });
-    // Success message is shown by the modal's snackbar
+  const handleSaveBusinessInfo = async (updatedData: any) => {
+    // Refetch restaurant data from database to get updated image_url
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: restaurantData, error } = await supabase
+        .from('restaurants')
+        .select('*')
+        .eq('partner_id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (restaurantData) {
+        const status = restaurantData.status || 'closed';
+        setBusinessData({
+          name: restaurantData.name || '',
+          category: restaurantData.category || '',
+          description: restaurantData.description || '',
+          logo: restaurantData.logo,
+          isOpen: status === 'open',
+          status: status as 'open' | 'closed' | 'busy',
+          avgPrepTime: restaurantData.avg_prep_time || '20-25 min',
+          contactNumber: restaurantData.phone || '',
+          address: restaurantData.address || '',
+          rating: restaurantData.rating || 0,
+          earnings: 'BD 0.00',
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing restaurant data:', error);
+    }
   };
 
   if (loading) {
@@ -256,7 +289,9 @@ const PartnerMoreScreen: React.FC = () => {
         showBranding={true}
         showDropdown={false}
         showNotification={true}
-        hasNotification={true}
+        unreadCount={unreadCount}
+        onNotificationPress={() => navigation.navigate('PartnerNotifications' as never)}
+        restaurantLogo={businessData.logo}
       />
 
       <ScrollView 
@@ -280,7 +315,15 @@ const PartnerMoreScreen: React.FC = () => {
         <View style={styles.profileCard}>
           <View style={styles.profileLeft}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{businessData.name.charAt(0)}</Text>
+              {businessData.logo ? (
+                <Image 
+                  source={{ uri: businessData.logo }} 
+                  style={styles.avatarImage}
+                  key={businessData.logo}
+                />
+              ) : (
+                <Text style={styles.avatarText}>{businessData.name.charAt(0)}</Text>
+              )}
             </View>
             <View>
               <Text style={styles.restaurantName}>{businessData.name}</Text>
@@ -308,21 +351,6 @@ const PartnerMoreScreen: React.FC = () => {
         {/* App Preferences Section */}
         <Text style={styles.sectionTitle}>{t('partner.appPreferences')}</Text>
         
-        {/* Dark Mode Toggle */}
-        <View style={styles.preferenceCard}>
-          <View style={styles.menuLeft}>
-            <Icon name="moon" size={20} color={PartnerColors.primary} />
-            <Text style={styles.menuText}>{t('partner.darkMode')}</Text>
-          </View>
-          <Switch
-            value={isDarkMode}
-            onValueChange={handleDarkModeToggle}
-            trackColor={{ false: '#E0E0E0', true: PartnerColors.primary }}
-            thumbColor={isDarkMode ? '#FFFFFF' : '#F5F5F5'}
-            ios_backgroundColor="#E0E0E0"
-          />
-        </View>
-
         {/* Language Selector */}
         <TouchableOpacity
           style={styles.preferenceCard}
@@ -474,15 +502,20 @@ const styles = StyleSheet.create({
   profileLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: PartnerSpacing.md,
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: PartnerColors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: PartnerSpacing.md,
+  },
+  avatarImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   avatarText: {
     color: '#FFFFFF',
@@ -490,7 +523,7 @@ const styles = StyleSheet.create({
     fontWeight: PartnerTypography.fontWeight.bold,
   },
   restaurantName: {
-    fontSize: PartnerTypography.fontSize.xl,
+    fontSize: PartnerTypography.fontSize.lg,
     fontWeight: PartnerTypography.fontWeight.bold,
     color: PartnerColors.light.text.primary,
   },

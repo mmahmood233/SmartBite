@@ -36,6 +36,7 @@ const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = ({ route
     orderId = '',
     orderNumber = 'WAJ' + Math.floor(Math.random() * 10000),
     restaurantName = 'Restaurant',
+    restaurantLogo = null,
     items = [],
     total = 0,
   } = route.params || {};
@@ -76,7 +77,15 @@ const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = ({ route
           <View style={styles.summaryCard}>
             <View style={styles.restaurantHeader}>
               <View style={styles.restaurantLogo}>
-                <Text style={styles.restaurantLogoText}>🍽️</Text>
+                {restaurantLogo ? (
+                  <Image 
+                    source={{ uri: restaurantLogo }} 
+                    style={styles.restaurantLogoImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text style={styles.restaurantLogoText}>🍽️</Text>
+                )}
               </View>
               <View style={styles.restaurantInfo}>
                 <Text style={styles.restaurantName}>{restaurantName}</Text>
@@ -242,6 +251,11 @@ const styles = StyleSheet.create({
   },
   restaurantLogoText: {
     fontSize: 24,
+  },
+  restaurantLogoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: BORDER_RADIUS.md,
   },
   restaurantInfo: {
     flex: 1,

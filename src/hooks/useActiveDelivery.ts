@@ -13,6 +13,7 @@ export interface ActiveDelivery {
     phone: string;
   };
   delivery_location: {
+    name: string;
     address: string;
     phone: string;
   };
@@ -41,6 +42,12 @@ export const useActiveDelivery = (riderId: string) => {
       const data = await getActiveDelivery(riderId);
       
       if (data) {
+        console.log('Raw delivery data:', {
+          customer_name: data.orders?.customer_name,
+          order_items: data.orders?.order_items,
+          order_items_length: data.orders?.order_items?.length,
+        });
+
         // Transform data to match UI format
         const formattedDelivery: ActiveDelivery = {
           id: data.id,
@@ -53,16 +60,22 @@ export const useActiveDelivery = (riderId: string) => {
             phone: data.orders?.restaurants?.phone || '',
           },
           delivery_location: {
-            address: data.orders?.delivery_address || 'Unknown',
-            phone: data.orders?.users?.phone || '',
+            name: data.orders?.customer_name || 'Customer',
+            address: data.orders?.delivery_address || data.orders?.delivery_phone || 'Unknown',
+            phone: data.orders?.delivery_phone || '',
           },
-          order_items: data.orders?.items || [],
-          total: data.orders?.total || 0,
+          order_items: data.orders?.order_items || data.orders?.items || [],
+          total: data.orders?.total || data.orders?.total_amount || 0,
           earnings: data.earnings || 0,
           assigned_at: data.assigned_at,
           pickup_time: data.pickup_time,
           delivery_time: data.delivery_time,
         };
+
+        console.log('Formatted delivery:', {
+          customer_name: formattedDelivery.delivery_location.name,
+          items_count: formattedDelivery.order_items.length,
+        });
 
         setDelivery(formattedDelivery);
       } else {

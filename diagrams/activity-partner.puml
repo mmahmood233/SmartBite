@@ -1,7 +1,11 @@
-@startuml Partner Activity Diagram - Manage Menu
+@startuml Partner Menu Management
 !theme plain
+skinparam ActivityBackgroundColor #FFE0B2
+skinparam ActivityBorderColor #FF9800
+skinparam ActivityDiamondBackgroundColor #FFF3E0
+skinparam ActivityDiamondBorderColor #FFB74D
 
-title Wajba - Restaurant Partner Manage Menu Activity Diagram
+title Wajba - Partner Menu Management Activity Diagram
 
 start
 
@@ -13,85 +17,56 @@ start
 
 :View Current Menu Items;
 
-if (Need AI Assistance?) then (yes)
-  :Open AI Chat Assistant;
-  :Ask Menu Questions;
-  :Get Business Insights;
-  :Receive AI Recommendations;
-else (no)
-endif
-
-if (Action?) then (Add New Dish)
-  :Click Add Dish;
-  :Enter Dish Name;
-  :Enter Description;
+if (Action?) then (Add Dish)
+  :Enter Dish Details;
   :Set Price;
   :Select Category;
   
   if (Upload Image?) then (yes)
-    :Select Image from Gallery;
     :Upload Image;
-  else (no)
   endif
   
-  :Set Availability Status;
+  :Set Availability;
   :Save Dish;
   
-  if (Save Successful?) then (no)
-    :Show Error Message;
+  if (Success?) then (yes)
+    :Show Success;
+    :Refresh Menu;
+  else (no)
+    :Show Error;
     stop
-  else (yes)
-    :Show Success Message;
-    :Refresh Menu List;
   endif
-  
+
 elseif (Action?) then (Edit Dish)
-  :Select Dish to Edit;
-  :Load Dish Details;
+  :Select Dish;
+  :Load Details;
   :Update Information;
   
   if (Update Image?) then (yes)
     :Upload New Image;
-  else (no)
   endif
   
   :Save Changes;
-  :Show Success Message;
-  :Refresh Menu List;
-  
+  :Show Success;
+  :Refresh Menu;
+
 elseif (Action?) then (Delete Dish)
-  :Select Dish to Delete;
-  :Confirm Deletion;
-  
-  if (Confirmed?) then (no)
-    :Cancel;
-  else (yes)
-    :Delete Dish;
-    :Show Success Message;
-    :Refresh Menu List;
-  endif
-  
-elseif (Action?) then (Toggle Availability)
   :Select Dish;
-  :Toggle Available/Unavailable;
-  :Update Status;
-  :Show Success Message;
-  :Refresh Menu List;
   
-else (Manage Categories)
-  :View Categories;
-  
-  if (Category Action?) then (Add)
-    :Enter Category Name;
-    :Save Category;
-  else (Delete)
-    :Select Category;
-    :Confirm Deletion;
-    :Delete Category;
+  if (Confirm?) then (yes)
+    :Delete Dish;
+    :Show Success;
+    :Refresh Menu;
+  else (no)
+    :Cancel;
   endif
-  
-  :Show Success Message;
-  :Refresh Categories;
+
+else (Toggle Availability)
+  :Select Dish;
+  :Toggle Status;
+  :Update Database;
+  :Show Success;
+  :Refresh Menu;
 endif
 
 :Menu Updated;

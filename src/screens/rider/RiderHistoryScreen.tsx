@@ -41,26 +41,25 @@ const RiderHistoryScreen: React.FC = () => {
     }
   };
 
-  const renderDeliveryCard = (delivery: any) => (
-    <View key={delivery.id} style={styles.deliveryCard}>
-      <View style={styles.cardHeader}>
-        <View>
-          <Text style={styles.orderNumber}>Order #{delivery.order_id.slice(0, 8)}</Text>
-          <Text style={styles.restaurantName}>{delivery.restaurant_name}</Text>
+  const renderDeliveryCard = (delivery: any) => {
+    // Calculate earnings: use stored earnings or 15% of order total
+    const earnings = delivery.earnings > 0 ? delivery.earnings : (delivery.total_amount || 0) * 0.15;
+    
+    return (
+      <View key={delivery.id} style={styles.deliveryCard}>
+        <View style={styles.cardHeader}>
+          <View>
+            <Text style={styles.orderNumber}>Order #{delivery.order_id.slice(0, 8)}</Text>
+            <Text style={styles.restaurantName}>{delivery.restaurant_name}</Text>
+          </View>
+          <View style={styles.earningsBadge}>
+            <Text style={styles.earningsText}>BD {earnings.toFixed(3)}</Text>
+          </View>
         </View>
-        <View style={styles.earningsBadge}>
-          <Text style={styles.earningsText}>BD {delivery.earnings.toFixed(2)}</Text>
-        </View>
-      </View>
-
-      <View style={styles.customerRow}>
-        <Icon name="map-pin" size={14} color={colors.textSecondary} />
-        <Text style={styles.customerText}>{delivery.delivery_address}</Text>
-      </View>
 
       <View style={styles.addressRow}>
         <Icon name="map-pin" size={14} color={colors.textSecondary} />
-        <Text style={styles.addressText} numberOfLines={1}>
+        <Text style={styles.addressText} numberOfLines={2}>
           {delivery.delivery_address}
         </Text>
       </View>
@@ -74,10 +73,6 @@ const RiderHistoryScreen: React.FC = () => {
           <View style={styles.metaItem}>
             <Icon name="clock" size={12} color={colors.textDisabled} />
             <Text style={styles.metaText}>{delivery.time}</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Icon name="navigation" size={12} color={colors.textDisabled} />
-            <Text style={styles.metaText}>{delivery.distance} km</Text>
           </View>
         </View>
 
@@ -94,7 +89,8 @@ const RiderHistoryScreen: React.FC = () => {
         </View>
       </View>
     </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -257,16 +253,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary,
   },
-  customerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  customerText: {
-    fontSize: FONT_SIZE.md,
-    color: colors.textSecondary,
-  },
   addressRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -277,6 +263,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FONT_SIZE.sm,
     color: colors.textSecondary,
+    flexWrap: 'wrap',
   },
   cardFooter: {
     flexDirection: 'row',

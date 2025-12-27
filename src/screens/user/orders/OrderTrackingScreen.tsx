@@ -131,16 +131,12 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
   const updateStepFromStatus = (status: string, deliveryStatus?: string | null) => {
     console.log('Updating step - Status:', status, 'Delivery Status:', deliveryStatus);
     
-    // PRIORITY: Use delivery_status if it exists (more accurate for tracking)
+    // SIMPLIFIED: Use delivery_status if it exists (more accurate for tracking)
     if (deliveryStatus && deliveryStatus !== null) {
       const deliveryStatusMap: Record<string, number> = {
-        'assigned': 2,
-        'heading_to_restaurant': 2,
-        'arrived_at_restaurant': 2,
-        'picked_up': 3,
-        'heading_to_customer': 3,
-        'arrived_at_customer': 3,
-        'delivered': 4,
+        'assigned': 2,      // Rider assigned, waiting for pickup
+        'picked_up': 3,     // Out for delivery
+        'delivered': 4,     // Delivered
       };
       const step = deliveryStatusMap[deliveryStatus];
       if (step !== undefined) {
@@ -156,8 +152,6 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
       'confirmed': 1,
       'preparing': 1,
       'ready_for_pickup': 2,
-      'rider_assigned': 2,
-      'picked_up': 3,
       'out_for_delivery': 3,
       'delivered': 4,
     };
@@ -167,14 +161,12 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
   };
 
   const getSubtitle = (step: number) => {
-    if (step === 2 && orderData?.delivery_status) {
-      if (orderData.delivery_status === 'heading_to_restaurant') return 'Rider heading to restaurant';
-      if (orderData.delivery_status === 'arrived_at_restaurant') return 'Rider at restaurant';
+    // SIMPLIFIED: Just show simple subtitles
+    if (step === 2 && orderData?.delivery_status === 'assigned') {
+      return 'Rider is on the way to pick up your order';
     }
-    if (step === 3 && orderData?.delivery_status) {
-      if (orderData.delivery_status === 'picked_up') return 'Order picked up';
-      if (orderData.delivery_status === 'heading_to_customer') return 'Rider heading to you';
-      if (orderData.delivery_status === 'arrived_at_customer') return 'Rider has arrived';
+    if (step === 3 && orderData?.delivery_status === 'picked_up') {
+      return 'Rider is delivering your order';
     }
     return null;
   };
@@ -222,10 +214,6 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
 
   const handleContactSupport = () => {
     console.log('Contact support...');
-  };
-
-  const handleDeliveryComplete = () => {
-    navigation.navigate('DeliveryComplete');
   };
 
   if (loading || !orderData) {
@@ -359,17 +347,6 @@ const OrderTrackingScreen: React.FC<OrderTrackingScreenProps> = ({ route, naviga
           >
             <Icon name="message-circle" size={20} color={colors.primary} />
             <Text style={styles.supportButtonText}>Contact Support</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Temporary: Simulate Delivery Complete */}
-        <View style={styles.supportSection}>
-          <TouchableOpacity
-            style={styles.deliveryCompleteButton}
-            onPress={handleDeliveryComplete}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.deliveryCompleteText}>🎉 Simulate Delivery Complete</Text>
           </TouchableOpacity>
         </View>
 

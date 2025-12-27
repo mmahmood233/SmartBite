@@ -187,8 +187,8 @@ const CategoriesManagementScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.headerTitle}>Categories</Text>
-          <Text style={styles.headerSubtitle}>{categories.length} total categories</Text>
+          <Text style={styles.headerTitle}>{t('admin.categoriesManagement')}</Text>
+          <Text style={styles.headerSubtitle}>{categories.length} {t('admin.categoriesManagement').toLowerCase()}</Text>
         </View>
         <TouchableOpacity
           style={styles.addButton}
@@ -261,7 +261,7 @@ const CategoriesManagementScreen: React.FC = () => {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {editingCategory ? 'Edit Category' : 'Add Category'}
+                {editingCategory ? t('admin.categoryName') : t('admin.addCategory')}
               </Text>
               <TouchableOpacity onPress={() => setShowAddModal(false)}>
                 <Icon name="x" size={24} color={PartnerColors.light.text.primary} />
@@ -303,7 +303,7 @@ const CategoriesManagementScreen: React.FC = () => {
                   style={styles.saveButton}
                 >
                   <Text style={styles.saveButtonText}>
-                    {editingCategory ? 'Update Category' : 'Add Category'}
+                    {editingCategory ? t('common.update') : t('admin.addCategory')}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>

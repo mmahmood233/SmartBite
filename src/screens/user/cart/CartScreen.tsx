@@ -200,7 +200,15 @@ const CartScreen: React.FC = () => {
         {/* Restaurant Info Card */}
         <View style={styles.restaurantCard}>
           <View style={styles.restaurantThumbnail}>
-            <Text style={styles.thumbnailEmoji}>🍽️</Text>
+            {cart.restaurantLogo ? (
+              <Image 
+                source={{ uri: cart.restaurantLogo }} 
+                style={styles.restaurantLogoImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={styles.thumbnailEmoji}>🍽️</Text>
+            )}
           </View>
           <View style={styles.restaurantInfo}>
             <Text style={styles.restaurantName}>{cart.restaurantName || 'Restaurant'}</Text>
@@ -424,6 +432,11 @@ const styles = StyleSheet.create({
   },
   thumbnailEmoji: {
     fontSize: 24,
+  },
+  restaurantLogoImage: {
+    width: 48,
+    height: 48,
+    borderRadius: BORDER_RADIUS.sm,
   },
   restaurantInfo: {
     flex: 1,

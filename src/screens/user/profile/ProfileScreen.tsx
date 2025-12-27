@@ -40,7 +40,6 @@ interface MenuItem {
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { language, changeLanguage, t } = useLanguage();
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -119,11 +118,6 @@ const ProfileScreen: React.FC = () => {
     navigation.navigate('HelpSupport');
   };
 
-  const handleDarkModeToggle = (value: boolean) => {
-    setIsDarkMode(value);
-    // TODO: Apply dark mode theme
-    console.log('Dark Mode:', value);
-  };
 
   const handleLanguageSelect = async (lang: 'en' | 'ar') => {
     await changeLanguage(lang);
@@ -295,33 +289,6 @@ const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Partner Portal Test Button */}
-        <View style={[styles.section, styles.firstSection]}>
-          <TouchableOpacity
-            style={styles.partnerButton}
-            onPress={() => navigation.navigate('PartnerPortal')}
-            activeOpacity={0.9}
-          >
-            <LinearGradient
-              colors={['#00A896', '#4ECDC4']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.partnerGradient}
-            >
-              <View style={styles.partnerContent}>
-                <View style={styles.partnerLeft}>
-                  <Icon name="briefcase" size={24} color="#FFFFFF" />
-                  <View>
-                    <Text style={styles.partnerTitle}>Wajba Partner</Text>
-                    <Text style={styles.partnerSubtitle}>Restaurant Portal</Text>
-                  </View>
-                </View>
-                <Icon name="arrow-right" size={20} color="#FFFFFF" />
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-
         {/* My Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('profile.myAccount')}</Text>
@@ -336,21 +303,6 @@ const ProfileScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('settings.title')}</Text>
           
-          {/* Dark Mode Toggle */}
-          <View style={styles.preferenceCard}>
-            <View style={styles.menuLeft}>
-              <Icon name="moon" size={20} color={colors.primary} />
-              <Text style={styles.menuText}>{t('settings.darkMode')}</Text>
-            </View>
-            <Switch
-              value={isDarkMode}
-              onValueChange={handleDarkModeToggle}
-              trackColor={{ false: '#E0E0E0', true: colors.primary }}
-              thumbColor={isDarkMode ? '#FFFFFF' : '#F5F5F5'}
-              ios_backgroundColor="#E0E0E0"
-            />
-          </View>
-
           {/* Language Selector */}
           <TouchableOpacity
             style={styles.preferenceCard}

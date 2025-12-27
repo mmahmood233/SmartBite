@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, StatusBar, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather as Icon } from '@expo/vector-icons';
 
@@ -16,9 +16,11 @@ interface PartnerTopNavProps {
   onMenuPress?: () => void;
   showNotification?: boolean;
   hasNotification?: boolean;
+  unreadCount?: number; // Unread notification count
   onNotificationPress?: () => void;
   showBranding?: boolean; // Show Wajba Partner logo + avatar
   showDropdown?: boolean; // Show dropdown arrow next to title
+  restaurantLogo?: string | null; // Restaurant logo URL
 }
 
 const PartnerTopNav: React.FC<PartnerTopNavProps> = ({
@@ -27,9 +29,11 @@ const PartnerTopNav: React.FC<PartnerTopNavProps> = ({
   onMenuPress,
   showNotification = true,
   hasNotification = false,
+  unreadCount = 0,
   onNotificationPress,
   showBranding = false,
   showDropdown = false,
+  restaurantLogo = null,
 }) => {
   if (showBranding) {
     // Branded version with logo and avatar (for Overview)
@@ -55,12 +59,24 @@ const PartnerTopNav: React.FC<PartnerTopNavProps> = ({
           {showNotification && (
             <TouchableOpacity style={styles.notificationButton} onPress={onNotificationPress} activeOpacity={0.7}>
               <Icon name="bell" size={22} color="#333" />
-              {hasNotification && <View style={styles.notificationDot} />}
+              {unreadCount > 0 && (
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>{unreadCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           )}
-          <View style={styles.profileAvatar}>
-            <Text style={styles.profileAvatarText}>R</Text>
-          </View>
+          {restaurantLogo ? (
+            <Image 
+              source={{ uri: restaurantLogo }} 
+              style={styles.profileAvatar}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.profileAvatar}>
+              <Text style={styles.profileAvatarText}>R</Text>
+            </View>
+          )}
         </View>
       </View>
     );
@@ -82,7 +98,11 @@ const PartnerTopNav: React.FC<PartnerTopNavProps> = ({
       {showNotification ? (
         <TouchableOpacity style={styles.notificationButton} onPress={onNotificationPress} activeOpacity={0.7}>
           <Icon name="bell" size={22} color="#1A1A1A" />
-          {hasNotification && <View style={styles.notificationDot} />}
+          {unreadCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>{unreadCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       ) : (
         <View style={styles.notificationButton} />
@@ -131,6 +151,25 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 2,
     borderColor: '#FFFFFF',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    minWidth: 16,
+    height: 16,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   // Branded version styles
   headerLeft: {

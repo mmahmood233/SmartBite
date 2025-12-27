@@ -1,96 +1,65 @@
-@startuml Rider Sequence Diagram - Deliver Order
+@startuml Rider Order Delivery
 !theme plain
 
-title Wajba - Rider Deliver Order Sequence Diagram
+title Wajba - Rider Order Delivery Sequence Diagram
 
 actor Rider
 participant "Rider App" as App
-participant "Auth Service" as Auth
-participant "Order Service" as Order
-participant "Location Service" as Location
-participant "Notification Service" as Notify
-database "Database" as DB
+participant "Supabase Auth" as Auth
+participant "Supabase DB" as DB
 
 Rider -> App: Login
-App -> Auth: Authenticate
-Auth -> DB: Validate Credentials
-DB --> Auth: Rider Data
-Auth --> App: Login Success
+App -> Auth: signInWithPassword()
+Auth --> App: Session Token
 App --> Rider: Show Dashboard
 
-Rider -> App: Set Status to Online
-App -> Order: Update Rider Status
-Order -> DB: Save Status
-DB --> Order: Status Updated
-Order --> App: Status Online
-App --> Rider: Show Online Status
-
-Rider -> App: Update Location
-App -> Location: Send GPS Coordinates
-Location -> DB: Save Location
-DB --> Location: Location Saved
-
-App -> Order: Get Available Orders
-Order -> DB: Fetch Available Orders
-DB --> Order: Orders List
-Order --> App: Available Orders
+Rider -> App: View Available Orders
+App -> DB: SELECT * FROM deliveries WHERE status = 'pending'
+DB --> App: Available Orders
 App --> Rider: Display Orders
 
-Rider -> App: View Order Details
-App -> Order: Get Order Details
-Order -> DB: Fetch Order Info
-DB --> Order: Order Data
-Order --> App: Order Details
-App --> Rider: Show Details
-
 Rider -> App: Accept Delivery
-App -> Order: Accept Order
-Order -> DB: Assign Rider to Order
-DB --> Order: Order Assigned
-Order -> Notify: Notify Restaurant
-Order -> Notify: Notify Customer
-Order --> App: Order Accepted
-App --> Rider: Show Pickup Location
+App -> DB: UPDATE deliveries SET rider_id = ?, status = 'assigned'
+DB --> App: Order Assigned
+DB -> DB: Trigger: Notify Customer
+App --> Rider: Delivery Accepted
 
-Rider -> App: Navigate to Restaurant
-App -> Location: Update Location
-Location -> DB: Save Location
-DB --> Location: Location Updated
+== Status Flow ==
+
+Rider -> App: Heading to Restaurant
+App -> DB: UPDATE status = 'heading_to_restaurant'
+App -> DB: INSERT INTO rider_location_tracking
+DB --> App: Updated
 
 Rider -> App: Arrived at Restaurant
-App --> Rider: Confirm Pickup
+App -> DB: UPDATE status = 'arrived_at_restaurant'
+DB --> App: Updated
 
-Rider -> App: Mark as Picked Up
-App -> Order: Update Status to "Picked Up"
-Order -> DB: Save Status
-DB --> Order: Status Updated
-Order -> Notify: Notify Customer
-Order --> App: Pickup Confirmed
-App --> Rider: Show Delivery Location
+Rider -> App: Pick Up Order
+App -> DB: UPDATE status = 'picked_up'
+DB --> App: Updated
+DB -> DB: Trigger: Notify Customer
 
-Rider -> App: Navigate to Customer
-App -> Location: Update Location
-Location -> DB: Save Location
-DB --> Location: Location Updated
+Rider -> App: Heading to Customer
+App -> DB: UPDATE status = 'heading_to_customer'
+App -> DB: INSERT INTO rider_location_tracking
+DB --> App: Updated
 
-Rider -> App: Arrived at Delivery
-App --> Rider: Confirm Delivery
+Rider -> App: Arrived at Customer
+App -> DB: UPDATE status = 'arrived_at_customer'
+DB --> App: Updated
 
 Rider -> App: Mark as Delivered
-App -> Order: Update Status to "Delivered"
-Order -> DB: Save Status
-DB --> Order: Status Updated
-Order -> DB: Update Rider Earnings
-DB --> Order: Earnings Updated
-Order -> Notify: Notify Customer
-Order --> App: Delivery Confirmed
-App --> Rider: Show Earnings Updated
+App -> DB: UPDATE status = 'delivered'
+App -> DB: UPDATE orders SET status = 'delivered'
+App -> DB: UPDATE rider earnings
+DB --> App: Delivery Complete
+DB -> DB: Trigger: Notify Customer
+App --> Rider: Earnings Updated
 
 Rider -> App: View Earnings
-App -> Order: Get Earnings Data
-Order -> DB: Fetch Earnings
-DB --> Order: Earnings Data
-Order --> App: Earnings Info
+App -> DB: SELECT * FROM rider_earnings
+DB --> App: Earnings Data
 App --> Rider: Display Earnings
 
 @enduml

@@ -1,4 +1,4 @@
-@startuml Restaurant Partner Use Case Diagram
+@startuml Partner Use Case
 !theme plain
 skinparam actorStyle awesome
 
@@ -6,89 +6,75 @@ title Wajba - Restaurant Partner Use Case Diagram
 
 left to right direction
 
-actor "Restaurant Partner" as P
-actor "AI Service" as AI
+actor "Restaurant\nPartner" as P
 
-rectangle "Wajba System" {
+rectangle "Wajba Partner System" {
+  
   ' Authentication
   usecase "Login" as UC1
   
   ' Dashboard
   usecase "View Dashboard" as UC2
   usecase "View Statistics" as UC2A
-  usecase "View Recent Orders" as UC2B
+  usecase "View Orders" as UC2B
   
   ' Menu Management
-  usecase "Manage Menu Items" as UC3
-  usecase "Add Dish" as UC4
-  usecase "Upload Dish Image" as UC4A
-  usecase "Set Dish Price" as UC4B
-  usecase "Edit Dish" as UC5
-  usecase "Update Dish Details" as UC5A
-  usecase "Delete Dish" as UC6
-  usecase "Toggle Dish Availability" as UC7
-  
-  ' Category Management
-  usecase "Manage Categories" as UC8
-  usecase "Add Category" as UC9
-  usecase "Delete Category" as UC10
+  usecase "Manage Menu" as UC3
+  usecase "Add Dish" as UC3A
+  usecase "Edit Dish" as UC3B
+  usecase "Delete Dish" as UC3C
+  usecase "Toggle Availability" as UC3D
+  usecase "Upload Image" as UC3E
   
   ' Order Management
-  usecase "View Orders" as UC11
-  usecase "Filter Orders by Status" as UC11A
-  usecase "Update Order Status" as UC12
-  usecase "Accept Order" as UC12A
-  usecase "Reject Order" as UC12B
-  usecase "Mark as Ready" as UC12C
+  usecase "Manage Orders" as UC4
+  usecase "Accept Order" as UC4A
+  usecase "Reject Order" as UC4B
+  usecase "Start Preparing" as UC4C
+  usecase "Mark Ready" as UC4D
   
-  ' AI Assistant
-  usecase "Use AI Chat Assistant" as UC13
-  usecase "Ask Menu Questions" as UC13A
-  usecase "Get Business Insights" as UC13B
+  ' Business Info
+  usecase "Manage Business Info" as UC5
+  usecase "Update Details" as UC5A
+  usecase "Update Hours" as UC5B
   
-  ' Restaurant Info
-  usecase "View Restaurant Info" as UC14
+  ' Analytics
+  usecase "View Analytics" as UC6
+  usecase "View Revenue" as UC6A
+  usecase "View Performance" as UC6B
 }
 
 ' Partner relationships
 P --> UC1
 P --> UC2
 P --> UC3
-P --> UC8
-P --> UC11
-P --> UC12
-P --> UC13
-P --> UC14
+P --> UC4
+P --> UC5
+P --> UC6
 
 ' Dashboard includes
-UC2 ..> UC2A : <<include>>
-UC2 ..> UC2B : <<include>>
+UC2 .> UC2A : <<include>>
+UC2 .> UC2B : <<include>>
 
-' Menu Management includes
-UC3 ..> UC4 : <<include>>
-UC3 ..> UC5 : <<include>>
-UC3 ..> UC6 : <<include>>
-UC3 ..> UC7 : <<include>>
+' Menu Management
+UC3 .> UC3A : <<extend>>
+UC3 .> UC3B : <<extend>>
+UC3 .> UC3C : <<extend>>
+UC3 .> UC3D : <<extend>>
+UC3A .> UC3E : <<extend>>
 
-UC4 ..> UC4A : <<extend>>
-UC4 ..> UC4B : <<include>>
-UC5 ..> UC5A : <<include>>
+' Order Management
+UC4 .> UC4A : <<include>>
+UC4 .> UC4B : <<extend>>
+UC4 .> UC4C : <<include>>
+UC4 .> UC4D : <<include>>
 
-' Category Management includes
-UC8 ..> UC9 : <<include>>
-UC8 ..> UC10 : <<include>>
+' Business Info
+UC5 .> UC5A : <<include>>
+UC5 .> UC5B : <<extend>>
 
-' Order Management includes
-UC11 ..> UC11A : <<extend>>
-UC12 ..> UC12A : <<extend>>
-UC12 ..> UC12B : <<extend>>
-UC12 ..> UC12C : <<extend>>
-
-' AI Assistant includes
-UC13 ..> UC13A : <<extend>>
-UC13 ..> UC13B : <<extend>>
-
-' External actor relationships
-UC13 --> AI : <<uses>>
+' Analytics
+UC6 .> UC6A : <<include>>
+UC6 .> UC6B : <<include>>
 
 @enduml

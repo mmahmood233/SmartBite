@@ -49,16 +49,23 @@ export const useRiderHistory = (riderId: string, filter: 'all' | 'today' | 'week
       });
 
       // Transform data
-      const formattedHistory: DeliveryHistoryItem[] = filtered.map((item: any) => ({
-        id: item.id,
-        order_id: item.order_id,
-        restaurant_name: item.orders?.restaurants?.name || 'Unknown',
-        delivery_address: item.orders?.delivery_address || 'Unknown',
-        earnings: item.earnings || 0,
-        completed_at: item.completed_at,
-        rating: item.rating,
-        status: item.status,
-      }));
+      const formattedHistory: DeliveryHistoryItem[] = filtered.map((item: any) => {
+        const completedDate = new Date(item.completed_at || item.delivery_time);
+        
+        return {
+          id: item.id,
+          order_id: item.order_id,
+          restaurant_name: item.orders?.restaurants?.name || 'Unknown',
+          delivery_address: item.orders?.delivery_address || 'Unknown',
+          earnings: item.earnings || 0,
+          total_amount: item.orders?.total_amount || 0,
+          completed_at: item.completed_at,
+          date: completedDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+          time: completedDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+          rating: item.customer_rating || 0,
+          status: item.status,
+        };
+      });
 
       setHistory(formattedHistory);
     } catch (err: any) {

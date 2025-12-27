@@ -1,0 +1,191 @@
+@startuml SmartBite Architecture
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+
+' Title
+title SmartBite Food Delivery Platform - System Architecture
+
+' Client Layer
+package "Client Applications Layer" as ClientLayer #E3F2FD {
+    component "Customer App\n(React Native)" as CustomerApp #4CAF50
+    component "Partner App\n(React Native)" as PartnerApp #FF9800
+    component "Rider App\n(React Native)" as RiderApp #2196F3
+    component "Admin Portal\n(React Native)" as AdminApp #9C27B0
+}
+
+' API Gateway
+package "API Gateway" as APIGateway #FFF3E0 {
+    component "Supabase Client SDK" as SupabaseSDK #FFB74D
+    component "REST API" as RestAPI #FFB74D
+    component "Real-time Subscriptions" as Realtime #FFB74D
+}
+
+' Backend Services
+package "Backend Services (Supabase)" as Backend #E8F5E9 {
+    
+    package "Core Services" as CoreServices {
+        component "Authentication Service" as AuthService #66BB6A
+        component "Database Service\n(PostgreSQL)" as Database #66BB6A
+        component "Storage Service" as StorageService #66BB6A
+        component "Real-time Engine" as RealtimeEngine #66BB6A
+    }
+    
+    package "Business Logic" as BusinessLogic {
+        component "Order Service" as OrderService #81C784
+        component "Restaurant Service" as RestaurantService #81C784
+        component "User Service" as UserService #81C784
+        component "Rider Service" as RiderService #81C784
+        component "Payment Service" as PaymentService #81C784
+        component "Notification Service" as NotificationService #81C784
+        component "Analytics Service" as AnalyticsService #81C784
+    }
+    
+    package "Database Layer" as DBLayer {
+        database "PostgreSQL Database" as PostgreSQL #4CAF50 {
+            component "users" as UsersTable
+            component "restaurants" as RestaurantsTable
+            component "menu_items" as MenuItemsTable
+            component "orders" as OrdersTable
+            component "riders" as RidersTable
+            component "reviews" as ReviewsTable
+            component "notifications" as NotificationsTable
+            component "promotions" as PromotionsTable
+            component "categories" as CategoriesTable
+        }
+    }
+    
+    package "Security Layer" as SecurityLayer {
+        component "Row Level Security (RLS)" as RLS #A5D6A7
+        component "JWT Authentication" as JWT #A5D6A7
+        component "Role-Based Access Control" as RBAC #A5D6A7
+    }
+}
+
+' External Services
+package "External Services" as ExternalServices #FCE4EC {
+    component "Payment Gateway\n(Benefit Pay)" as PaymentGateway #EC407A
+    component "Google Maps API" as MapsAPI #EC407A
+    component "Push Notifications\n(FCM/APNS)" as PushNotifications #EC407A
+    component "SMS Service" as SMSService #EC407A
+    component "Email Service" as EmailService #EC407A
+}
+
+' Background Services
+package "Background Services" as BackgroundServices #F3E5F5 {
+    component "Order Timeout Service" as TimeoutService #AB47BC
+    component "Notification Triggers" as NotificationTriggers #AB47BC
+    component "Analytics Aggregation" as AnalyticsAggregation #AB47BC
+    component "Database Triggers" as DBTriggers #AB47BC
+}
+
+' Connections - Client to API Gateway
+CustomerApp --> SupabaseSDK
+PartnerApp --> SupabaseSDK
+RiderApp --> SupabaseSDK
+AdminApp --> SupabaseSDK
+
+SupabaseSDK --> RestAPI
+SupabaseSDK --> Realtime
+
+' Connections - API Gateway to Backend
+RestAPI --> AuthService
+RestAPI --> Database
+Realtime --> RealtimeEngine
+
+' Connections - Services to Business Logic
+AuthService --> UserService
+Database --> OrderService
+Database --> RestaurantService
+Database --> UserService
+Database --> RiderService
+Database --> PaymentService
+Database --> NotificationService
+Database --> AnalyticsService
+
+' Connections - Business Logic to Database Tables
+OrderService --> OrdersTable
+RestaurantService --> RestaurantsTable
+RestaurantService --> MenuItemsTable
+UserService --> UsersTable
+RiderService --> RidersTable
+NotificationService --> NotificationsTable
+AnalyticsService --> OrdersTable
+AnalyticsService --> RestaurantsTable
+AnalyticsService --> UsersTable
+
+' Connections - Security
+JWT --> AuthService
+RLS --> PostgreSQL
+RBAC --> AuthService
+
+' Connections - External Services
+PaymentService --> PaymentGateway
+OrderService --> MapsAPI
+NotificationService --> PushNotifications
+NotificationService --> SMSService
+NotificationService --> EmailService
+
+' Connections - Background Services
+TimeoutService --> OrdersTable
+NotificationTriggers --> NotificationsTable
+AnalyticsAggregation --> PostgreSQL
+DBTriggers --> PostgreSQL
+
+' Storage connections
+StorageService --> RestaurantsTable : "Restaurant Images"
+StorageService --> MenuItemsTable : "Menu Item Images"
+StorageService --> UsersTable : "Profile Pictures"
+
+' Real-time connections
+RealtimeEngine ..> OrdersTable : "Subscribe to changes"
+RealtimeEngine ..> NotificationsTable : "Subscribe to changes"
+
+' Notes
+note right of CustomerApp
+  Features:
+  - Browse Restaurants
+  - Order Food
+  - Track Orders
+  - Reviews & Ratings
+  - Multi-language (EN/AR)
+end note
+
+note right of PartnerApp
+  Features:
+  - Manage Restaurant
+  - Process Orders
+  - Menu Management
+  - Analytics Dashboard
+  - Multi-language (EN/AR)
+end note
+
+note right of RiderApp
+  Features:
+  - Accept Deliveries
+  - Navigation
+  - Order Status Updates
+  - Earnings Tracking
+  - Multi-language (EN/AR)
+end note
+
+note right of AdminApp
+  Features:
+  - Platform Management
+  - User Management
+  - Restaurant Approval
+  - Analytics & Reports
+  - Multi-language (EN/AR)
+end note
+
+note bottom of PostgreSQL
+  Database Features:
+  - Row Level Security
+  - Real-time Subscriptions
+  - Database Triggers
+  - Foreign Key Constraints
+  - Indexes for Performance
+end note
+
+@enduml

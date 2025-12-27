@@ -19,6 +19,7 @@ import { Feather as Icon } from '@expo/vector-icons';
 import { PartnerColors, PartnerSpacing, PartnerTypography } from '../../constants/partnerTheme';
 import { getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../../services/notification.service';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface Notification {
   id: string;
@@ -34,6 +35,7 @@ interface Notification {
 
 const AdminNotificationsScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -134,7 +136,7 @@ const AdminNotificationsScreen: React.FC = () => {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={PartnerColors.primary} />
-        <Text style={styles.loadingText}>Loading notifications...</Text>
+        <Text style={styles.loadingText}>{t('admin.notifications')}...</Text>
       </View>
     );
   }
@@ -149,7 +151,7 @@ const AdminNotificationsScreen: React.FC = () => {
           <Icon name="arrow-left" size={24} color={PartnerColors.light.text.primary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Notifications</Text>
+          <Text style={styles.headerTitle}>{t('admin.notifications')}</Text>
           {unreadCount > 0 && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
@@ -158,7 +160,7 @@ const AdminNotificationsScreen: React.FC = () => {
         </View>
         {unreadCount > 0 && (
           <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.markAllButton}>
-            <Text style={styles.markAllText}>Mark all</Text>
+            <Text style={styles.markAllText}>{t('admin.markAllAsRead')}</Text>
           </TouchableOpacity>
         )}
         {unreadCount === 0 && <View style={{ width: 60 }} />}
@@ -168,8 +170,8 @@ const AdminNotificationsScreen: React.FC = () => {
         {notifications.length === 0 ? (
           <View style={styles.emptyState}>
             <Icon name="bell-off" size={64} color="#D1D5DB" />
-            <Text style={styles.emptyTitle}>No Notifications</Text>
-            <Text style={styles.emptyText}>You're all caught up!</Text>
+            <Text style={styles.emptyTitle}>{t('admin.noNotifications')}</Text>
+            <Text style={styles.emptyText}>{t('admin.allCaughtUp')}</Text>
           </View>
         ) : (
           <View style={styles.notificationsList}>

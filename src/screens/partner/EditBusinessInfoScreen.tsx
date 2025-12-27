@@ -170,7 +170,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
         } as any);
 
         const { data, error } = await supabase.storage
-          .from('restaurant-logos')
+          .from('restaurant-images')
           .upload(filePath, formData, {
             contentType: `image/${fileExt}`,
             upsert: true,
@@ -180,7 +180,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
-          .from('restaurant-logos')
+          .from('restaurant-images')
           .getPublicUrl(filePath);
 
         setLogoUri(publicUrl);
@@ -237,6 +237,7 @@ const EditBusinessInfoModal: React.FC<EditBusinessInfoModalProps> = ({
       }
 
       // Update restaurant in database
+      // @ts-ignore - Supabase types
       const { error } = await supabase
         .from('restaurants')
         .update({

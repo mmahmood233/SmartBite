@@ -297,29 +297,6 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
             accessibilityLabel="Create your Wajba account"
           />
 
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>{t('auth.orSignUpWith')}</Text>
-            <View style={styles.divider} />
-          </View>
-
-          {/* Social Sign Up Buttons */}
-          <View style={styles.socialButtonsContainer}>
-            <SocialButton
-              icon="🍎"
-              label="Apple"
-              onPress={handleAppleSignUp}
-              accessibilityLabel="Sign up with Apple"
-            />
-            <SocialButton
-              icon="🔍"
-              label="Google"
-              onPress={handleGoogleSignUp}
-              accessibilityLabel="Sign up with Google"
-            />
-          </View>
-
           {/* Login Link */}
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account? </Text>

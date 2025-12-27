@@ -29,8 +29,14 @@ export const useRestaurantSearch = () => {
     try {
       // Search restaurants from Supabase
       const results = await searchRestaurants(query);
-      setSearchSuggestions(results.slice(0, 5)); // Show top 5 as suggestions
-      setSearchResults(results); // Store all results
+      // Transform results to include type property
+      const transformedResults = results.map(restaurant => ({
+        ...restaurant,
+        type: 'restaurant',
+        subtitle: restaurant.category || 'Restaurant'
+      }));
+      setSearchSuggestions(transformedResults.slice(0, 5)); // Show top 5 as suggestions
+      setSearchResults(transformedResults); // Store all results
     } catch (error) {
       console.error('Error searching restaurants:', error);
       setSearchSuggestions([]);

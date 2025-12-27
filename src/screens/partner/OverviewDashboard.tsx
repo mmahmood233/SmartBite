@@ -22,6 +22,7 @@ import { Feather as Icon } from '@expo/vector-icons';
 import PartnerTopNav from '../../components/partner/PartnerTopNav';
 import { supabase } from '../../lib/supabase';
 import { getOrderStats, getActiveOrders, PartnerOrder } from '../../services/partner-orders.service';
+import { getUserNotifications } from '../../services/notification.service';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -34,6 +35,8 @@ const OverviewDashboard: React.FC = () => {
   
   // State
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [stats, setStats] = useState<any>(null);
   const [activeOrders, setActiveOrders] = useState<PartnerOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,13 +59,20 @@ const OverviewDashboard: React.FC = () => {
         if (userData) {
           const { data: restaurant } = await supabase
             .from('restaurants')
-            .select('id')
+            .select('id, logo')
             .eq('partner_id', userData.id)
             .single();
 
           if (restaurant) {
             setRestaurantId(restaurant.id);
+            setRestaurantLogo(restaurant.logo);
           }
+        }
+
+        // Fetch notifications
+        if (user) {
+          const notifications = await getUserNotifications(user.id);
+          setUnreadCount(notifications.filter((n: any) => !n.read).length);
         }
       } catch (error) {
         console.error('Error fetching restaurant ID:', error);
@@ -224,7 +234,9 @@ const OverviewDashboard: React.FC = () => {
         showBranding={true}
         showDropdown={true}
         showNotification={true}
-        hasNotification={true}
+        unreadCount={unreadCount}
+        onNotificationPress={() => navigation.navigate('PartnerNotifications' as never)}
+        restaurantLogo={restaurantLogo}
       />
       
       {/* Date/Time Bar */}

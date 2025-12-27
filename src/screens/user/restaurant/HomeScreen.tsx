@@ -283,8 +283,14 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleSearchSuggestionPress = (suggestion: any) => {
-    const result = handleSuggestionPress(suggestion);
-    // Could navigate to restaurant detail here if needed
+    handleSuggestionPress(suggestion);
+    // Navigate to restaurant detail page
+    if (suggestion.type === 'restaurant') {
+      navigation.navigate('RestaurantDetail', { 
+        restaurantId: suggestion.id,
+        restaurantName: suggestion.name 
+      });
+    }
   };
 
   return (
@@ -418,9 +424,15 @@ const HomeScreen: React.FC = () => {
                     >
                       <Icon name={suggestion.icon} size={16} color="#FFFFFF" />
                     </LinearGradient>
+                  ) : suggestion.logo ? (
+                    <Image 
+                      source={{ uri: suggestion.logo }} 
+                      style={styles.suggestionLogo}
+                      resizeMode="cover"
+                    />
                   ) : (
                     <View style={styles.suggestionIcon}>
-                      <Icon name={suggestion.icon} size={16} color={colors.primary} />
+                      <Icon name="shopping-bag" size={16} color={colors.primary} />
                     </View>
                   )}
                   <View style={styles.suggestionContent}>
@@ -812,6 +824,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  suggestionLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   suggestionContent: {
     flex: 1,

@@ -1,7 +1,11 @@
-@startuml Admin Activity Diagram - Manage Users
+@startuml Admin Platform Management
 !theme plain
+skinparam ActivityBackgroundColor #E1BEE7
+skinparam ActivityBorderColor #9C27B0
+skinparam ActivityDiamondBackgroundColor #F3E5F5
+skinparam ActivityDiamondBorderColor #AB47BC
 
-title Wajba - Admin Manage Users Activity Diagram
+title Wajba - Admin Platform Management Activity Diagram
 
 start
 
@@ -9,126 +13,98 @@ start
 
 :View Dashboard;
 
-if (Navigate To?) then (User Management)
-  :Navigate to User Management;
+if (Management Section?) then (User Management)
+  :Navigate to Users;
   :View All Users;
   
-  if (Action?) then (Filter Users)
-  :Select Role Filter;
-  
-  if (Role?) then (Customer)
-    :Show Customers Only;
-  elseif (Role?) then (Partner)
-    :Show Partners Only;
-  elseif (Role?) then (Rider)
-    :Show Riders Only;
-  else (Admin)
-    :Show Admins Only;
+  if (Action?) then (Filter)
+    :Select Role Filter;
+    :Display Filtered Users;
+  elseif (Action?) then (Search)
+    :Enter Search Query;
+    :Display Results;
+  else (Delete)
+    :Select User;
+    if (Confirm?) then (yes)
+      :Delete User;
+      :Show Success;
+    endif
   endif
-  
-  :Display Filtered Users;
-  
-elseif (Action?) then (Search Users)
-  :Enter Search Query;
-  
-  if (Search By?) then (Name)
-    :Search by Name;
-  elseif (Search By?) then (Email)
-    :Search by Email;
-  else (Phone)
-    :Search by Phone;
-  endif
-  
-  :Display Search Results;
-  
-elseif (Action?) then (Delete User)
-  :Select User to Delete;
-  :Show Confirmation Dialog;
-  
-  if (Confirmed?) then (no)
-    :Cancel Deletion;
-  else (yes)
-    :Delete User from Database;
-    :Show Success Message;
-    :Refresh User List;
-  endif
-  
-elseif (Navigate To?) then (Restaurants)
-  :Navigate to Restaurants Management;
+
+elseif (Management Section?) then (Restaurants)
+  :Navigate to Restaurants;
   :View All Restaurants;
   
-  if (Restaurant Action?) then (Add Restaurant)
-    :Enter Restaurant Details;
-    :Upload Restaurant Images;
-    :Set Restaurant Info;
-    :Save Restaurant;
-    :Show Success Message;
-  elseif (Restaurant Action?) then (Edit Restaurant)
+  if (Action?) then (Approve)
+    :Review Restaurant;
+    :Approve/Reject;
+    :Notify Partner;
+  elseif (Action?) then (Edit)
     :Select Restaurant;
-    :Update Restaurant Details;
+    :Update Details;
     :Save Changes;
-    :Show Success Message;
-  else (Delete Restaurant)
+  else (Delete)
     :Select Restaurant;
-    :Confirm Deletion;
-    :Delete Restaurant;
-    :Show Success Message;
+    if (Confirm?) then (yes)
+      :Delete Restaurant;
+      :Show Success;
+    endif
   endif
+
+elseif (Management Section?) then (Categories)
+  :Navigate to Categories;
+  :View All Categories;
   
-elseif (Navigate To?) then (Promotions)
-  :Navigate to Promotions Management;
+  if (Action?) then (Add)
+    :Enter Category Name;
+    :Upload Icon;
+    :Save Category;
+  elseif (Action?) then (Edit)
+    :Select Category;
+    :Update Details;
+    :Save Changes;
+  else (Delete)
+    :Select Category;
+    if (Confirm?) then (yes)
+      :Delete Category;
+      :Show Success;
+    endif
+  endif
+
+elseif (Management Section?) then (Promotions)
+  :Navigate to Promotions;
   :View All Promotions;
   
-  if (Promotion Action?) then (Create Promotion)
-    :Enter Promotion Code;
-    :Set Discount Value;
-    :Set Validity Period;
-    :Set Usage Limit;
+  if (Action?) then (Create)
+    :Enter Promo Code;
+    :Set Discount;
+    :Set Validity;
     :Save Promotion;
-    :Show Success Message;
-  elseif (Promotion Action?) then (Edit Promotion)
+  elseif (Action?) then (Edit)
     :Select Promotion;
-    :Update Promotion Details;
+    :Update Details;
     :Save Changes;
-    :Show Success Message;
-  elseif (Promotion Action?) then (Delete Promotion)
-    :Select Promotion;
-    :Confirm Deletion;
-    :Delete Promotion;
-    :Show Success Message;
-  else (Toggle Status)
+  else (Toggle)
     :Select Promotion;
     :Toggle Active/Inactive;
     :Update Status;
-    :Show Success Message;
   endif
 
-else (Analytics Dashboard)
-  :Navigate to Analytics Dashboard;
+else (Analytics)
+  :Navigate to Analytics;
   
-  :Select Time Period;
-  
-  if (Period?) then (Week)
-    :Load Week Data;
-  elseif (Period?) then (Month)
-    :Load Month Data;
+  if (Time Period?) then (Week)
+    :Load Weekly Data;
+  elseif (Time Period?) then (Month)
+    :Load Monthly Data;
   else (Year)
-    :Load Year Data;
+    :Load Yearly Data;
   endif
   
-  :Fetch Analytics Data;
-  :Display Revenue Statistics;
-  :Display Order Statistics;
-  :Display User Statistics;
-  :Display Restaurant Statistics;
-  :Display Rider Statistics;
-  :Show Revenue Trends Chart;
-  :Show Orders Trends Chart;
-  
-  if (Refresh Data?) then (yes)
-    :Reload Analytics;
-  else (no)
-  endif
+  :Display Revenue Stats;
+  :Display Order Stats;
+  :Display User Stats;
+  :Show Charts;
 endif
 
 :Task Complete;

@@ -77,9 +77,20 @@ const CheckoutScreen: React.FC = () => {
         
         setUserProfile(profile);
         
+        // Load saved addresses and use default address if available
+        const addresses = await getUserAddresses();
+        setSavedAddresses(addresses);
+        
+        const defaultAddress = addresses.find(addr => addr.is_default);
+        
+        // Use default saved address if available, otherwise fall back to user profile
+        const addressToGeocode = defaultAddress 
+          ? formatAddress(defaultAddress)
+          : profile?.address;
+        
         // Geocode the address to get coordinates for map
-        if (profile?.address) {
-          const coords = await geocodeAddress(profile.address);
+        if (addressToGeocode) {
+          const coords = await geocodeAddress(addressToGeocode);
           if (coords) {
             setDeliveryCoords(coords);
           } else {
@@ -105,10 +116,12 @@ const CheckoutScreen: React.FC = () => {
     }
   };
 
+  // Get delivery address - prefer default saved address over user profile address
+  const defaultAddress = savedAddresses.find(addr => addr.is_default);
   const deliveryAddress = {
     name: userProfile?.full_name || 'User',
-    address: userProfile?.address || 'No address set',
-    phone: userProfile?.phone || 'No phone set',
+    address: defaultAddress ? formatAddress(defaultAddress) : (userProfile?.address || 'No address set'),
+    phone: defaultAddress?.phone || userProfile?.phone || 'No phone set',
     eta: '25–30 min',
   };
 
@@ -189,8 +202,10 @@ const CheckoutScreen: React.FC = () => {
       return;
     }
 
+    const defaultAddress = savedAddresses.find(addr => addr.is_default);
+    
     // Check if user has address and phone - REQUIRED
-    if (!userProfile?.address || !userProfile?.phone) {
+    if (!defaultAddress && !userProfile?.address) {
       Alert.alert(
         'Address Required',
         'Please add a delivery address before placing your order.',
@@ -222,8 +237,9 @@ const CheckoutScreen: React.FC = () => {
         subtotal: cart.subtotal,
         delivery_fee: cart.deliveryFee,
         total_amount: cart.total,
-        delivery_address: userProfile?.address,
-        delivery_phone: userProfile?.phone,
+        delivery_address_id: defaultAddress?.id || null,
+        delivery_address: defaultAddress ? formatAddress(defaultAddress) : userProfile?.address,
+        delivery_phone: defaultAddress?.phone || userProfile?.phone,
         delivery_notes: deliveryNotes || null,
         contactless_delivery: contactlessDelivery,
       },

@@ -1,0 +1,88 @@
+@startuml SmartBite Architecture
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+title SmartBite Food Delivery Platform - System Architecture
+
+' Client Layer
+package "Client Applications" #E3F2FD {
+    [Customer App] as CustomerApp #4CAF50
+    [Partner App] as PartnerApp #FF9800
+    [Rider App] as RiderApp #2196F3
+    [Admin Portal] as AdminApp #9C27B0
+}
+
+' Backend Layer
+package "Supabase Backend" #E8F5E9 {
+    [Authentication] as Auth #66BB6A
+    [PostgreSQL DB] as DB #66BB6A
+    [Storage] as Storage #66BB6A
+    [Real-time] as Realtime #66BB6A
+    
+    package "Business Services" {
+        [Order Service] as OrderSvc
+        [Restaurant Service] as RestSvc
+        [User Service] as UserSvc
+        [Rider Service] as RiderSvc
+        [Payment Service] as PaySvc
+        [Notification Service] as NotifSvc
+    }
+}
+
+' External Services
+package "External Services" #FCE4EC {
+    [Payment Gateway] as Payment #EC407A
+    [Google Maps] as Maps #EC407A
+    [Push Notifications] as Push #EC407A
+}
+
+' Connections
+CustomerApp --> Auth
+PartnerApp --> Auth
+RiderApp --> Auth
+AdminApp --> Auth
+
+Auth --> DB
+Storage --> DB
+Realtime --> DB
+
+OrderSvc --> DB
+RestSvc --> DB
+UserSvc --> DB
+RiderSvc --> DB
+PaySvc --> DB
+NotifSvc --> DB
+
+PaySvc --> Payment
+OrderSvc --> Maps
+NotifSvc --> Push
+
+CustomerApp ..> Realtime : "Real-time Updates"
+PartnerApp ..> Realtime : "Real-time Updates"
+RiderApp ..> Realtime : "Real-time Updates"
+
+note right of CustomerApp
+  Browse & Order Food
+  Track Orders
+  Multi-language (EN/AR)
+end note
+
+note right of PartnerApp
+  Manage Restaurant
+  Process Orders
+  Multi-language (EN/AR)
+end note
+
+note right of RiderApp
+  Accept Deliveries
+  Navigation
+  Multi-language (EN/AR)
+end note
+
+note right of AdminApp
+  Platform Management
+  Analytics & Reports
+  Multi-language (EN/AR)
+end note
+
+@enduml

@@ -1,83 +1,47 @@
-@startuml Rider Activity Diagram - Deliver Order
+@startuml Rider Order Delivery
 !theme plain
+skinparam ActivityBackgroundColor #BBDEFB
+skinparam ActivityBorderColor #2196F3
+skinparam ActivityDiamondBackgroundColor #E3F2FD
+skinparam ActivityDiamondBorderColor #64B5F6
 
-title Wajba - Rider Deliver Order Activity Diagram
+title Wajba - Rider Order Delivery Activity Diagram
 
 start
 
 :Login to Rider App;
 
-:View Dashboard;
-
-:Set Status to Online;
-
-:Update Current Location;
-
 :View Available Orders;
 
-if (Orders Available?) then (no)
-  :Wait for New Orders;
+if (Order Available?) then (yes)
+  :View Order Details;
+else (no)
+  :Wait for Orders;
   stop
-else (yes)
 endif
 
-:Browse Available Orders;
-
-:View Order Details;
-
-if (Accept Order?) then (no)
-  :Decline Order;
+if (Accept?) then (yes)
+  :Accept Delivery;
+else (no)
   stop
-else (yes)
 endif
-
-:Accept Delivery Request;
-
-:View Pickup Location;
 
 :Navigate to Restaurant;
 
-:Update Location (En Route);
+:Arrived at Restaurant;
 
-:Arrive at Restaurant;
-
-:Mark as "Picked Up";
-
-:Confirm Pickup;
-
-:View Delivery Location;
-
-:View Customer Info;
+:Pick Up Order;
 
 :Navigate to Customer;
 
-:Update Location (Delivering);
+:Arrived at Customer;
 
-:Arrive at Delivery Location;
+:Deliver Order;
 
-if (Customer Available?) then (no)
-  :Contact Customer;
-  :Wait for Customer;
-else (yes)
-endif
+:Mark as Delivered;
 
-:Hand Over Order;
+:Delivery Complete;
 
-:Mark as "Delivered";
-
-:Confirm Delivery;
-
-:Update Earnings;
-
-:View Updated Statistics;
-
-if (Continue Deliveries?) then (yes)
-  :Set Status to Online;
-  :View Available Orders;
-else (no)
-  :Set Status to Offline;
-  :View Earnings Summary;
-  stop
-endif
+stop
 
 @enduml

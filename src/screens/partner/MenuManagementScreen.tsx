@@ -22,6 +22,7 @@ import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getUserNotifications } from '../../services/notification.service';
 import {
   getDishes,
   getMenuCategories,
@@ -43,6 +44,8 @@ const strings = getStrings('en');
 const MenuManagementScreen: React.FC = () => {
   const { t } = useLanguage();
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -102,7 +105,7 @@ const MenuManagementScreen: React.FC = () => {
         if (userData) {
           const { data: restaurantData, error: restaurantError } = await supabase
             .from('restaurants')
-            .select('id, name')
+            .select('id, name, logo')
             .eq('partner_id', userData.id)
             .single();
 
@@ -112,7 +115,14 @@ const MenuManagementScreen: React.FC = () => {
           if (restaurantData) {
             console.log('Setting restaurant ID:', restaurantData.id, 'Name:', restaurantData.name);
             setRestaurantId(restaurantData.id);
+            setRestaurantLogo(restaurantData.logo);
           }
+        }
+
+        // Fetch notifications
+        if (user) {
+          const notifications = await getUserNotifications(user.id);
+          setUnreadCount(notifications.filter((n: any) => !n.read).length);
         }
       } catch (error) {
         console.error('Error fetching restaurant ID:', error);
@@ -483,8 +493,10 @@ const MenuManagementScreen: React.FC = () => {
         title={t('partner.menuTitle')}
         showBranding={true}
         showDropdown={false}
+        restaurantLogo={restaurantLogo}
         showNotification={true}
-        hasNotification={true}
+        unreadCount={unreadCount}
+        onNotificationPress={() => (window as any).navigation?.navigate('PartnerNotifications')}
       />
 
       {/* Compact Category Chips */}
@@ -529,7 +541,7 @@ const MenuManagementScreen: React.FC = () => {
                 selectedCategory === category.id && styles.categoryChipTextActive,
               ]}
             >
-              {t(`partner.${category.name}`) || category.name}
+              {category.name}
             </Text>
           </TouchableOpacity>
         ))}
@@ -556,12 +568,6 @@ const MenuManagementScreen: React.FC = () => {
             onChangeText={setSearchQuery}
           />
         </View>
-        <TouchableOpacity
-          style={styles.filterButton}
-          activeOpacity={0.7}
-        >
-          <Icon name="sliders" size={20} color="#00A896" />
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
@@ -606,7 +612,7 @@ const MenuManagementScreen: React.FC = () => {
 
                 <View style={styles.menuItemDetails}>
                   <View style={styles.menuItemHeader}>
-                    <Text style={styles.menuItemName}>{t(`partner.${item.name}`) || item.name}</Text>
+                    <Text style={styles.menuItemName}>{item.name}</Text>
                     <View style={styles.statusDot}>
                       <View
                         style={[
@@ -620,7 +626,7 @@ const MenuManagementScreen: React.FC = () => {
                   <View style={styles.menuItemMeta}>
                     <Text style={styles.menuItemPrice}>{t('units.currencySymbol')} {item.price.toFixed(3)}</Text>
                     <Text style={styles.menuItemMetaDot}>•</Text>
-                    <Text style={styles.menuItemCategory}>{item.menu_categories?.name ? (t(`partner.${item.menu_categories.name}`) || item.menu_categories.name) : t('partner.uncategorized')}</Text>
+                    <Text style={styles.menuItemCategory}>{item.menu_categories?.name || t('partner.uncategorized')}</Text>
                     {item.is_popular && (
                       <>
                         <Text style={styles.menuItemMetaDot}>•</Text>
@@ -815,7 +821,7 @@ const MenuManagementScreen: React.FC = () => {
             <ScrollView style={styles.categoryList} showsVerticalScrollIndicator={false}>
               {categories.map((category) => (
                 <View key={category.id} style={styles.categoryListItem}>
-                  <Text style={styles.categoryListItemText}>{t(`partner.${category.name}`) || category.name}</Text>
+                  <Text style={styles.categoryListItemText}>{category.name}</Text>
                   <TouchableOpacity
                     style={styles.deleteCategoryButton}
                     onPress={() => handleDeleteCategory(category.id, category.name)}
@@ -911,7 +917,7 @@ const MenuManagementScreen: React.FC = () => {
                           formData.category_id === cat.id && styles.categoryOptionTextActive,
                         ]}
                       >
-                        {t(`partner.${cat.name}`) || cat.name}
+                        {cat.name}
                       </Text>
                     </TouchableOpacity>
                   ))}

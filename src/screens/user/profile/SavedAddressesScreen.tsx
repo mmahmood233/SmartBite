@@ -60,7 +60,7 @@ const SavedAddressesScreen: React.FC = () => {
       if (!user) return;
 
       const { data, error } = await supabase
-        .from('addresses')
+        .from('user_addresses')
         .select('*')
         .eq('user_id', user.id)
         .order('is_default', { ascending: false })
@@ -116,7 +116,7 @@ const SavedAddressesScreen: React.FC = () => {
             setIsLoading(true);
             try {
               const { error } = await supabase
-                .from('addresses')
+                .from('user_addresses')
                 .delete()
                 .eq('id', id);
 

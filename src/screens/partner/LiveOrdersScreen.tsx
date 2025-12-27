@@ -25,6 +25,7 @@ import Snackbar, { SnackbarType } from '../../components/Snackbar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { supabase } from '../../lib/supabase';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getUserNotifications } from '../../services/notification.service';
 import {
   getPartnerOrders,
   getNewOrders,
@@ -52,6 +53,8 @@ const LiveOrdersScreen: React.FC = () => {
   
   // Data state
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [orders, setOrders] = useState<PartnerOrder[]>([]);
   const [newOrders, setNewOrders] = useState<PartnerOrder[]>([]);
   const [activeOrders, setActiveOrders] = useState<PartnerOrder[]>([]);
@@ -102,7 +105,7 @@ const LiveOrdersScreen: React.FC = () => {
         if (userData) {
           const { data: restaurant, error: restaurantError } = await supabase
             .from('restaurants')
-            .select('id, name')
+            .select('id, name, logo')
             .eq('partner_id', userData.id)
             .single();
 
@@ -112,9 +115,16 @@ const LiveOrdersScreen: React.FC = () => {
           if (restaurant) {
             console.log('Setting restaurant ID:', restaurant.id, 'Name:', restaurant.name);
             setRestaurantId(restaurant.id);
+            setRestaurantLogo(restaurant.logo);
           } else {
             console.log('No restaurant found for this partner');
           }
+        }
+
+        // Fetch notifications
+        if (user) {
+          const notifications = await getUserNotifications(user.id);
+          setUnreadCount(notifications.filter((n: any) => !n.read).length);
         }
       } catch (error) {
         console.error('Error fetching restaurant ID:', error);
@@ -309,8 +319,10 @@ const LiveOrdersScreen: React.FC = () => {
         title={t('partner.orders')}
         showBranding={true}
         showDropdown={false}
+        restaurantLogo={restaurantLogo}
         showNotification={true}
-        hasNotification={true}
+        unreadCount={unreadCount}
+        onNotificationPress={() => navigation.navigate('PartnerNotifications' as never)}
       />
 
       {/* Filter Tabs */}

@@ -118,7 +118,7 @@ const AddAddressScreen: React.FC<AddAddressScreenProps> = ({ navigation }) => {
 
       // Insert address
       const { error } = await supabase
-        .from('addresses')
+        .from('user_addresses')
         .insert({
           user_id: user.id,
           label: label,
@@ -128,6 +128,7 @@ const AddAddressScreen: React.FC<AddAddressScreenProps> = ({ navigation }) => {
           area: area,
           building: building,
           is_default: isDefault,
+          country: 'Bahrain',
         });
 
       if (error) throw error;

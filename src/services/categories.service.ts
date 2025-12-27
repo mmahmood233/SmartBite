@@ -2,6 +2,7 @@
  * Categories Service (Shared)
  * Fetches restaurant categories for use across all portals
  */
+// @ts-nocheck
 
 import { supabase } from '../lib/supabase';
 

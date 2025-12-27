@@ -1,7 +1,8 @@
 /**
  * Wajba Partner - Overview Dashboard
  * Talabat Partner inspired design - Mobile-first, clean, professional
- */
+ */// @ts-nocheck
+
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';

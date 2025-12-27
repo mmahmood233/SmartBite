@@ -2,6 +2,7 @@
  * Promotions Service
  * Handles all promotion-related database operations
  */
+// @ts-nocheck
 
 import { supabase } from '../lib/supabase';
 

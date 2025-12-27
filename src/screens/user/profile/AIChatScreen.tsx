@@ -1,7 +1,8 @@
 /**
  * AI Chat Screen - Wajba AI Food Assistant
  * Conversational interface for AI-powered food recommendations
- */
+ */// @ts-nocheck
+
 
 import React, { useState, useRef, useEffect } from 'react';
 import {

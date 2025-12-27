@@ -1,0 +1,178 @@
+@startuml Wajba-AI-Business-Assistant-Activity-Diagram
+
+title Wajba - AI Business Assistant Activity Diagram
+
+|Restaurant Partner|
+start
+:Access AI Business Assistant;
+
+:View Dashboard;
+
+partition "Chat with AI Assistant" {
+  :Ask Business Question;
+  
+  |AI Assistant|
+  :Process Query;
+  
+  :Analyze Restaurant Data;
+  
+  |Database|
+  :Fetch Restaurant Metrics;
+  
+  |AI Assistant|
+  :Generate Insights;
+  
+  :Provide Response;
+  
+  |Restaurant Partner|
+  :View AI Recommendations;
+}
+
+partition "Menu Optimization" {
+  |Restaurant Partner|
+  if (Request Menu Analysis?) then (Yes)
+    :Ask AI for Menu Suggestions;
+    
+    |AI Assistant|
+    :Analyze Sales Data;
+    
+    :Analyze Customer Preferences;
+    
+    :Identify Popular Items;
+    
+    :Identify Underperforming Items;
+    
+    :Generate Menu Recommendations;
+    
+    |Restaurant Partner|
+    :Review AI Suggestions;
+    
+    if (Apply Suggestions?) then (Yes)
+      :Update Menu Based on AI;
+      
+      |Backend API|
+      :Update Menu;
+      
+      |Database|
+      :Store Changes;
+    else (No)
+    endif
+  else (No)
+  endif
+}
+
+partition "Pricing Strategy" {
+  |Restaurant Partner|
+  if (Request Pricing Analysis?) then (Yes)
+    :Ask AI for Pricing Advice;
+    
+    |AI Assistant|
+    :Analyze Market Trends;
+    
+    :Analyze Competitor Pricing;
+    
+    :Analyze Order Patterns;
+    
+    :Calculate Optimal Prices;
+    
+    :Suggest Price Adjustments;
+    
+    |Restaurant Partner|
+    :Review Pricing Suggestions;
+    
+    if (Apply Changes?) then (Yes)
+      :Update Item Prices;
+      
+      |Backend API|
+      :Update Pricing;
+      
+      |Database|
+      :Store New Prices;
+    else (No)
+    endif
+  else (No)
+  endif
+}
+
+partition "Sales Analytics" {
+  |Restaurant Partner|
+  if (Request Sales Insights?) then (Yes)
+    :Ask AI for Sales Analysis;
+    
+    |AI Assistant|
+    :Analyze Sales Trends;
+    
+    :Identify Peak Hours;
+    
+    :Analyze Customer Behavior;
+    
+    :Generate Sales Report;
+    
+    :Provide Actionable Insights;
+    
+    |Restaurant Partner|
+    :View Sales Analytics;
+    
+    :Review Recommendations;
+  else (No)
+  endif
+}
+
+partition "Performance Predictions" {
+  |Restaurant Partner|
+  if (Request Forecasts?) then (Yes)
+    :Ask AI for Predictions;
+    
+    |AI Assistant|
+    :Analyze Historical Data;
+    
+    :Apply ML Models;
+    
+    :Predict Future Sales;
+    
+    :Predict Busy Periods;
+    
+    :Generate Forecast Report;
+    
+    |Restaurant Partner|
+    :View Predictions;
+    
+    :Plan Inventory Accordingly;
+  else (No)
+  endif
+}
+
+partition "Customer Insights" {
+  |Restaurant Partner|
+  if (Request Customer Analysis?) then (Yes)
+    :Ask AI about Customers;
+    
+    |AI Assistant|
+    :Analyze Customer Reviews;
+    
+    :Analyze Order History;
+    
+    :Identify Customer Preferences;
+    
+    :Generate Customer Insights;
+    
+    |Restaurant Partner|
+    :View Customer Analytics;
+    
+    :Adjust Strategy Based on Insights;
+  else (No)
+  endif
+}
+
+|Restaurant Partner|
+:Save AI Conversation;
+
+|Database|
+:Store Chat History;
+
+|Restaurant Partner|
+:Continue Business Operations;
+
+stop
+
+@enduml

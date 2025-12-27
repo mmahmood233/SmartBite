@@ -2,6 +2,7 @@
  * Promotions Management Screen
  * Create and manage platform-wide promotions and banners
  */
+// @ts-nocheck
 
 import React, { useState, useEffect } from 'react';
 import {

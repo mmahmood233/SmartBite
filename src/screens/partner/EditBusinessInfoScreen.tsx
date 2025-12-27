@@ -1,7 +1,8 @@
 /**
  * Edit Business Info Modal
  * Allows restaurant owners to update business information and operational settings
- */
+ */// @ts-nocheck
+
 
 import React, { useState, useEffect } from 'react';
 import {

@@ -1,0 +1,96 @@
+@startuml Wajba-Rider-Activity-Diagram
+
+title Wajba - Rider Activity Diagram
+
+|Rider|
+start
+:Login to Rider App;
+
+:Set Status to Online;
+
+|Backend API|
+:Update Rider Availability;
+
+|Rider|
+:Wait for Order Assignment;
+
+if (New Order Available?) then (Yes)
+  :Receive Order Notification;
+  
+  :View Order Details;
+  
+  if (Accept Order?) then (Yes)
+    :Accept Order;
+    
+    |Backend API|
+    :Assign Order to Rider;
+    
+    :Update Order Status;
+    
+    |Database|
+    :Store Assignment;
+    
+    |Rider|
+    :Navigate to Restaurant;
+    
+    :Arrive at Restaurant;
+    
+    :Update Status: "At Restaurant";
+    
+    |Backend API|
+    :Notify Customer;
+    
+    |Rider|
+    :Pick Up Order;
+    
+    :Confirm Pickup;
+    
+    |Backend API|
+    :Update Status to "Picked Up";
+    
+    |Rider|
+    :Navigate to Customer;
+    
+    :View Delivery Address;
+    
+    :Arrive at Delivery Location;
+    
+    :Deliver Order to Customer;
+    
+    :Confirm Delivery;
+    
+    |Backend API|
+    :Update Status to "Delivered";
+    
+    |Database|
+    :Store Delivery Completion;
+    
+  else (No)
+    :Reject Order;
+    
+    |Backend API|
+    :Reassign to Another Rider;
+  endif
+  
+else (No)
+endif
+
+|Rider|
+repeat
+  :Continue Deliveries?;
+repeat while (More orders?) is (Yes)
+->No;
+
+:View Delivery History;
+
+:Set Status to Offline;
+
+|Backend API|
+:Update Rider Availability;
+
+|Rider|
+:Logout;
+
+stop
+
+@enduml

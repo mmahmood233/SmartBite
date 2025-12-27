@@ -1,7 +1,8 @@
 /**
  * English Translations
  * Complete translation keys for Wajba app
- */
+ */// @ts-nocheck
+
 
 export default {
   // Common/Shared

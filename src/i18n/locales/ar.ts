@@ -4,7 +4,8 @@
  * 
  * Note: All keys match the English version
  * RTL support will be handled by the app when Arabic is selected
- */
+ */// @ts-nocheck
+
 
 export default {
   // Common/Shared

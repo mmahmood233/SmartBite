@@ -1,0 +1,52 @@
+@startuml Wajba-Restaurant-Activity-Diagram
+
+title Wajba - Restaurant/Partner Activity Diagram
+
+|Restaurant Partner|
+start
+:Login to Partner Portal;
+
+:View Dashboard;
+
+if (New Order?) then (Yes)
+  :Receive Order Notification;
+  
+  :Review Order Details;
+  
+  if (Accept Order?) then (Yes)
+    :Accept Order;
+    
+    |Backend API|
+    :Update Order Status to "Preparing";
+    
+    |Database|
+    :Store Status Update;
+    
+    |Restaurant Partner|
+    :Prepare Food;
+    
+    :Mark Order as Ready;
+    
+    |Backend API|
+    :Update Status to "Ready for Pickup";
+    
+    :Notify Rider;
+    
+  else (No)
+    :Reject Order;
+    
+    |Backend API|
+    :Cancel Order;
+    
+    :Notify Customer;
+  endif
+  
+else (No)
+endif
+
+|Restaurant Partner|
+:View Order History;
+
+stop
+
+@enduml

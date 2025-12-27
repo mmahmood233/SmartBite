@@ -1,0 +1,103 @@
+@startuml Wajba-Customer-Activity-Diagram
+
+title Wajba - Customer Activity Diagram
+
+|Customer|
+start
+:Open Wajba App;
+
+if (Use AI Assistant?) then (Yes)
+  :Open AI Chat;
+  
+  :Ask AI for Meal Recommendations;
+  
+  |AI Assistant|
+  :Analyze Customer Preferences;
+  
+  :Analyze Dietary Requirements;
+  
+  :Search Available Meals;
+  
+  :Generate Personalized Recommendations;
+  
+  |Mobile App|
+  :Display AI Suggestions;
+  
+  |Customer|
+  :View AI Recommended Meals;
+  
+  if (Select from AI Suggestions?) then (Yes)
+    :Choose Recommended Item;
+    
+    |Mobile App|
+    :Navigate to Restaurant;
+  else (No)
+    :Continue Browsing;
+  endif
+else (No)
+endif
+
+|Customer|
+:Browse Restaurants;
+
+:Select Restaurant;
+
+|Mobile App|
+:Display Menu;
+
+|Customer|
+:Select Food Items;
+
+:Add to Cart;
+
+repeat
+  :Continue Shopping?;
+repeat while (More items?) is (Yes)
+->No;
+
+:View Cart;
+
+:Proceed to Checkout;
+
+:Enter Delivery Address;
+
+:Select Payment Method;
+
+:Place Order;
+
+|Backend API|
+:Create Order;
+
+|Database|
+:Store Order;
+
+|Backend API|
+:Process Payment;
+
+:Confirm Order;
+
+|Mobile App|
+:Show Order Confirmation;
+
+|Customer|
+:Track Order Status;
+
+|Backend API|
+:Send Real-time Updates;
+
+|Customer|
+:Receive Order;
+
+if (Rate Order?) then (Yes)
+  :Submit Rating & Review;
+  |Backend API|
+  :Store Rating;
+else (No)
+endif
+
+|Customer|
+:View Order History;
+
+stop
+
+@enduml

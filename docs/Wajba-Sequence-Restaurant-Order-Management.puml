@@ -1,0 +1,113 @@
+@startuml Wajba-Sequence-Restaurant-Order-Management
+
+title Wajba - Restaurant Order Management Sequence Diagram
+
+actor "Restaurant Partner" as Partner
+participant "Partner Portal" as Portal
+participant "Order Service" as Order
+participant "Database" as DB
+participant "Notification Service" as Notify
+participant "Rider Service" as Rider
+
+Partner -> Portal: Login to Partner Portal
+Portal -> Order: authenticatePartner(credentials)
+Order -> DB: validatePartner()
+DB --> Order: partnerData
+Order --> Portal: authenticated
+Portal --> Partner: Show Dashboard
+
+Portal -> Order: checkNewOrders(restaurantId)
+Order -> DB: queryPendingOrders(restaurantId)
+DB --> Order: orderList
+
+alt New Order Available
+    Order -> Notify: sendOrderAlert(restaurantId)
+    Notify --> Partner: Order Notification
+    
+    Partner -> Portal: View Order Details
+    Portal -> Order: getOrderDetails(orderId)
+    Order -> DB: queryOrder(orderId)
+    DB --> Order: orderData
+    Order --> Portal: orderDetails
+    Portal --> Partner: Display Order Info
+    
+    Partner -> Portal: Review Items & Address
+    
+    alt Accept Order
+        Partner -> Portal: Tap "Accept Order"
+        Portal -> Order: acceptOrder(orderId)
+        
+        Order -> DB: updateOrderStatus(orderId, "preparing")
+        DB --> Order: success
+        
+        Order -> Notify: notifyCustomer(orderId, "preparing")
+        Notify --> Partner: Customer Notified
+        
+        Order -> Order: assignEstimatedPrepTime()
+        Order --> Portal: orderAccepted
+        Portal --> Partner: Show Preparing Status
+        
+        Partner -> Portal: Start Preparing Food
+        Partner -> Portal: Update Progress
+        
+        Partner -> Portal: Complete Preparation
+        Partner -> Portal: Tap "Ready for Pickup"
+        
+        Portal -> Order: markOrderReady(orderId)
+        Order -> DB: updateOrderStatus(orderId, "ready_for_pickup")
+        DB --> Order: success
+        
+        Order -> Rider: assignRider(orderId)
+        Rider -> DB: findAvailableRider()
+        DB --> Rider: riderId
+        Rider -> DB: assignOrderToRider(orderId, riderId)
+        DB --> Rider: assigned
+        
+        Rider -> Notify: notifyRider(riderId, orderId)
+        Notify --> Rider: Rider Alerted
+        
+        Order --> Portal: riderAssigned
+        Portal --> Partner: Rider Notified
+        
+        Partner -> Portal: Wait for Rider Arrival
+        
+        Partner -> Portal: Hand Over Order
+        Partner -> Portal: Confirm Handover
+        
+        Portal -> Order: confirmPickup(orderId)
+        Order -> DB: updateOrderStatus(orderId, "picked_up")
+        DB --> Order: success
+        
+        Order -> Notify: notifyCustomer(orderId, "picked_up")
+        Notify --> Partner: Customer Notified
+        
+        Order --> Portal: pickupConfirmed
+        Portal --> Partner: Order Handed Over
+        
+    else Reject Order
+        Partner -> Portal: Tap "Reject Order"
+        Portal -> Order: rejectOrder(orderId)
+        
+        Order -> DB: updateOrderStatus(orderId, "cancelled")
+        DB --> Order: success
+        
+        Order -> Notify: notifyCustomer(orderId, "cancelled")
+        Notify --> Partner: Customer Notified
+        
+        Order --> Portal: orderRejected
+        Portal --> Partner: Return to Dashboard
+    end
+    
+else No New Orders
+    Partner -> Portal: Wait for Orders
+    Portal --> Partner: Show Empty State
+    
+    Partner -> Portal: View Past Orders
+    Portal -> Order: getOrderHistory(restaurantId)
+    Order -> DB: queryCompletedOrders(restaurantId)
+    DB --> Order: orderHistory
+    Order --> Portal: historyData
+    Portal --> Partner: Display Order History
+end
+
+@enduml

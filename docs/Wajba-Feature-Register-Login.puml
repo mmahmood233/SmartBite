@@ -1,0 +1,67 @@
+@startuml Wajba-Feature-Register-Login
+
+title Wajba - Register/Login Feature
+
+|Customer|
+start
+:Open Auth Screen;
+
+if (Has account?) then (Yes)
+  :Enter Email + Password;
+  
+  |System|
+  :Validate Credentials;
+  
+  if (Valid?) then (Yes)
+    :Set Session Token;
+    
+    |Customer|
+    :Redirect to Dashboard;
+    
+    stop
+  else (No)
+    :Show Error Message;
+    
+    |Customer|
+    :Retry Login;
+    
+    stop
+  endif
+  
+else (No)
+  |Customer|
+  :Tap "Register";
+  
+  :Fill Name, Email, Password, Phone;
+  
+  |System|
+  :Validate Inputs;
+  
+  if (Valid?) then (Yes)
+    :Create Account Record;
+    
+    :Send Verification Email;
+    
+    |Customer|
+    :Confirm Email;
+    
+    :Complete Signup;
+    
+    |System|
+    :Set Session Token;
+    
+    |Customer|
+    :Redirect to Dashboard;
+    
+    stop
+  else (No)
+    :Show Error;
+    
+    |Customer|
+    :Fix Inputs;
+    
+    stop
+  endif
+endif
+
+@enduml

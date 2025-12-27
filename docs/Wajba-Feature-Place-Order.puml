@@ -1,0 +1,70 @@
+@startuml Wajba-Feature-Place-Order
+
+title Wajba - Place Order Feature
+
+|Customer|
+start
+:Browse Restaurants;
+
+:Select Restaurant;
+
+:View Menu;
+
+:Select Food Items;
+
+:Add to Cart;
+
+repeat
+  :Add More Items?;
+repeat while (Continue?) is (Yes)
+->No;
+
+:View Cart;
+
+:Proceed to Checkout;
+
+:Enter Delivery Address;
+
+|System|
+:Validate Address;
+
+if (Valid?) then (Yes)
+  |Customer|
+  :Select Payment Method;
+  
+  :Confirm Order;
+  
+  |System|
+  :Create Order Record;
+  
+  :Process Payment;
+  
+  if (Payment Success?) then (Yes)
+    :Update Order Status to "Confirmed";
+    
+    :Send Confirmation to Customer;
+    
+    :Notify Restaurant;
+    
+    |Customer|
+    :View Order Confirmation;
+    
+    stop
+  else (No)
+    :Show Payment Error;
+    
+    |Customer|
+    :Retry Payment;
+    
+    stop
+  endif
+else (No)
+  :Show Address Error;
+  
+  |Customer|
+  :Fix Address;
+  
+  stop
+endif
+
+@enduml

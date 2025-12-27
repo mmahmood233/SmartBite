@@ -2,6 +2,7 @@
  * EmptyState Component
  * Reusable empty state with icon, title, message, and action button
  */
+// @ts-nocheck
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';

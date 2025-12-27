@@ -1,0 +1,64 @@
+@startuml Wajba-Admin-Activity-Diagram
+
+title Wajba - Admin Activity Diagram
+
+|Admin|
+start
+:Login to Admin Portal;
+
+:View Dashboard;
+
+:Monitor System Overview;
+
+if (Manage Users?) then (Yes)
+  :View All Users;
+  
+  :Select User;
+  
+  :Edit/Deactivate User;
+  
+  |Backend API|
+  :Update User;
+  
+  |Database|
+  :Store Changes;
+  
+  |Admin|
+else (No)
+endif
+
+if (Manage Restaurants?) then (Yes)
+  :View All Restaurants;
+  
+  :Approve/Edit/Suspend Restaurant;
+  
+  |Backend API|
+  :Update Restaurant Status;
+  
+  |Database|
+  :Store Changes;
+  
+  |Admin|
+else (No)
+endif
+
+if (Manage Promotions?) then (Yes)
+  :View All Promotions;
+  
+  :Create/Edit/Delete Promotion;
+  
+  |Backend API|
+  :Update Promotion;
+  
+  |Database|
+  :Store Promotion Data;
+  
+  |Admin|
+else (No)
+endif
+
+:Logout;
+
+stop
+
+@enduml

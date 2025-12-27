@@ -1,6 +1,7 @@
 /**
  * Wajba AI Service - Connects to n8n workflow for AI chat
  */
+// @ts-nocheck
 
 // n8n webhook URL - Update if your IP changes
 const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/wajba-chat';

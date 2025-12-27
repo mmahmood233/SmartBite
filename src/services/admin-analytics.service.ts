@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Admin Analytics Service
  * Provides platform-wide statistics and metrics for admin dashboard

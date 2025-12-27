@@ -1,0 +1,59 @@
+@startuml Wajba-Sequence-Register-Login
+
+title Wajba - Register/Login Sequence Diagram
+
+actor Customer
+participant "Mobile App" as App
+participant "Auth Service" as Auth
+participant "Database" as DB
+participant "Email Service" as Email
+
+== Login Flow ==
+Customer -> App: Open Auth Screen
+Customer -> App: Enter Email + Password
+App -> Auth: validateCredentials(email, password)
+Auth -> DB: queryUser(email)
+DB --> Auth: userRecord
+
+alt Valid Credentials
+    Auth -> Auth: comparePassword()
+    Auth -> Auth: generateSessionToken()
+    Auth --> App: sessionToken
+    App -> App: storeSession()
+    App --> Customer: Redirect to Dashboard
+else Invalid Credentials
+    Auth --> App: error: Invalid credentials
+    App --> Customer: Show Error Message
+end
+
+== Register Flow ==
+Customer -> App: Tap "Register"
+Customer -> App: Fill Name, Email, Password, Phone
+App -> Auth: validateInputs(data)
+
+alt Valid Inputs
+    Auth -> DB: checkEmailExists(email)
+    DB --> Auth: emailNotExists
+    
+    Auth -> Auth: hashPassword()
+    Auth -> DB: createUser(userData)
+    DB --> Auth: userId
+    
+    Auth -> Email: sendVerificationEmail(email)
+    Email --> Customer: Verification Email
+    
+    Customer -> App: Click Verification Link
+    App -> Auth: verifyEmail(token)
+    Auth -> DB: updateUserStatus(verified)
+    DB --> Auth: success
+    
+    Auth -> Auth: generateSessionToken()
+    Auth --> App: sessionToken
+    App -> App: storeSession()
+    App --> Customer: Redirect to Dashboard
+else Invalid Inputs
+    Auth --> App: error: Validation failed
+    App --> Customer: Show Error Message
+end
+
+@enduml

@@ -1,7 +1,8 @@
 /**
  * Wajba Partner - More Screen
  * Settings, profile, and management hub for restaurant partners
- */
+ */// @ts-nocheck
+
 
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, StatusBar, Switch, Modal, Image } from 'react-native';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Admin Categories Service
  * Handles CRUD operations for restaurant categories

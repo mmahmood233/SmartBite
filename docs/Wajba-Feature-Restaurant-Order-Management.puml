@@ -1,0 +1,92 @@
+@startuml Wajba-Feature-Restaurant-Order-Management
+
+title Wajba - Restaurant Order Management Feature
+
+|Restaurant Partner|
+start
+:Login to Partner Portal;
+
+:View Dashboard;
+
+|System|
+:Check for New Orders;
+
+if (New Order Available?) then (Yes)
+  :Send Notification;
+  
+  |Restaurant Partner|
+  :Receive Order Alert;
+  
+  :View Order Details;
+  
+  :Review Items & Address;
+  
+  if (Accept Order?) then (Yes)
+    :Tap "Accept Order";
+    
+    |System|
+    :Update Order Status to "Preparing";
+    
+    :Notify Customer;
+    
+    :Assign Estimated Prep Time;
+    
+    |Restaurant Partner|
+    :Start Preparing Food;
+    
+    :Update Progress;
+    
+    :Complete Preparation;
+    
+    :Tap "Ready for Pickup";
+    
+    |System|
+    :Update Status to "Ready";
+    
+    :Notify Rider;
+    
+    :Send Alert to Rider;
+    
+    |Restaurant Partner|
+    :Wait for Rider Arrival;
+    
+    :Hand Over Order to Rider;
+    
+    :Confirm Handover;
+    
+    |System|
+    :Update Status to "Picked Up";
+    
+    :Notify Customer;
+    
+    |Restaurant Partner|
+    :View Order History;
+    
+    stop
+    
+  else (No)
+    :Tap "Reject Order";
+    
+    |System|
+    :Cancel Order;
+    
+    :Notify Customer;
+    
+    :Update Order Status;
+    
+    |Restaurant Partner|
+    :Return to Dashboard;
+    
+    stop
+  endif
+  
+else (No)
+  |Restaurant Partner|
+  :Wait for Orders;
+  
+  :View Past Orders;
+  
+  stop
+endif
+
+@enduml

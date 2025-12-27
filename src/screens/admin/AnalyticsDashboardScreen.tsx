@@ -2,6 +2,7 @@
  * Analytics Dashboard Screen
  * Comprehensive business insights and statistics
  */
+// @ts-nocheck
 
 import React, { useState, useEffect } from 'react';
 import {

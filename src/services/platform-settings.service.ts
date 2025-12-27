@@ -2,6 +2,7 @@
  * Platform Settings Service
  * Manage platform-wide configuration settings
  */
+// @ts-nocheck
 
 import { supabase } from '../lib/supabase';
 

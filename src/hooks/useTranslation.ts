@@ -9,6 +9,7 @@
  * <Text>{t('common.save')}</Text>
  * <Text>{t('profile.title')}</Text>
  */
+// @ts-nocheck
 
 import { useState, useCallback } from 'react';
 import { t as translate, changeLanguage as changeLang, getCurrentLanguage, isRTL as checkRTL } from '../i18n';

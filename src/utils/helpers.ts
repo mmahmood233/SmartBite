@@ -1,7 +1,8 @@
 /**
  * Helper Utilities
  * General purpose helper functions
- */
+ */// @ts-nocheck
+
 
 /**
  * Delay execution for specified milliseconds

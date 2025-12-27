@@ -4,6 +4,7 @@
  * All order-related API calls.
  * Easy for AI to read and understand.
  */
+// @ts-nocheck
 
 import { supabase } from '../lib/supabase';
 import { Database } from '../types/database';

@@ -1,0 +1,73 @@
+@startuml Wajba-Sequence-AI-Meal-Recommendation
+
+title Wajba - AI Meal Recommendation Sequence Diagram
+
+actor Customer
+participant "Mobile App" as App
+participant "AI Service" as AI
+participant "ML Model" as ML
+participant "Database" as DB
+participant "Restaurant Service" as Restaurant
+
+Customer -> App: Open Wajba App
+Customer -> App: Tap AI Assistant
+App --> Customer: Open AI Chat
+
+Customer -> App: Ask for Meal Recommendations
+App -> AI: getMealRecommendations(userId, query)
+
+AI -> DB: fetchCustomerProfile(userId)
+DB --> AI: customerData
+
+AI -> DB: fetchOrderHistory(userId)
+DB --> AI: orderHistory
+
+AI -> AI: analyzePreferences(orderHistory)
+AI -> AI: identifyDietaryRequirements(customerData)
+
+AI -> Restaurant: getAvailableMeals()
+Restaurant -> DB: queryAllMenuItems()
+DB --> Restaurant: menuItems
+Restaurant --> AI: availableMeals
+
+AI -> ML: generateRecommendations(preferences, meals, dietary)
+ML -> ML: applyCollaborativeFiltering()
+ML -> ML: calculateRelevanceScores()
+ML -> ML: rankByRelevance()
+ML --> AI: rankedRecommendations
+
+AI --> App: recommendedMeals
+App --> Customer: Display AI Suggestions
+
+alt Customer Likes Suggestions
+    Customer -> App: Select Recommended Item
+    App -> Restaurant: getRestaurantDetails(restaurantId)
+    Restaurant -> DB: queryRestaurant(restaurantId)
+    DB --> Restaurant: restaurantData
+    Restaurant --> App: restaurantInfo
+    
+    App --> Customer: Navigate to Restaurant
+    Customer -> App: Add Item to Cart
+    App -> App: updateCart()
+    App --> Customer: Item Added
+else Customer Wants Refinement
+    Customer -> App: Ask AI to Refine
+    App -> AI: refineRecommendations(feedback)
+    
+    AI -> ML: adjustParameters(feedback)
+    ML -> ML: regenerateRecommendations()
+    ML --> AI: newRecommendations
+    
+    AI --> App: refinedMeals
+    App --> Customer: Show New Suggestions
+    
+    alt Satisfied with Refinement
+        Customer -> App: Select Item
+        App --> Customer: Navigate to Restaurant
+    else Not Satisfied
+        Customer -> App: Browse Manually
+        App --> Customer: Show Restaurant List
+    end
+end
+
+@enduml

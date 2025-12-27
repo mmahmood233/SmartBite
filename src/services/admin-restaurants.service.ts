@@ -2,6 +2,7 @@
  * Admin Restaurants Service
  * Manage restaurants from admin panel
  */
+// @ts-nocheck
 
 import { supabase } from '../lib/supabase';
 

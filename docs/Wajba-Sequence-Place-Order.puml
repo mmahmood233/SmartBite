@@ -1,0 +1,73 @@
+@startuml Wajba-Sequence-Place-Order
+
+title Wajba - Place Order Sequence Diagram
+
+actor Customer
+participant "Mobile App" as App
+participant "Restaurant Service" as Restaurant
+participant "Order Service" as Order
+participant "Payment Service" as Payment
+participant "Database" as DB
+participant "Notification Service" as Notify
+
+Customer -> App: Browse Restaurants
+App -> Restaurant: getRestaurants()
+Restaurant -> DB: queryRestaurants()
+DB --> Restaurant: restaurantList
+Restaurant --> App: restaurantData
+App --> Customer: Display Restaurants
+
+Customer -> App: Select Restaurant
+App -> Restaurant: getMenu(restaurantId)
+Restaurant -> DB: queryMenuItems(restaurantId)
+DB --> Restaurant: menuItems
+Restaurant --> App: menuData
+App --> Customer: Display Menu
+
+Customer -> App: Select Food Items
+Customer -> App: Add to Cart
+App -> App: updateCart()
+
+Customer -> App: Proceed to Checkout
+Customer -> App: Enter Delivery Address
+App -> Order: validateAddress(address)
+
+alt Valid Address
+    Order --> App: addressValid
+    
+    Customer -> App: Select Payment Method
+    Customer -> App: Confirm Order
+    
+    App -> Order: createOrder(orderData)
+    Order -> DB: insertOrder()
+    DB --> Order: orderId
+    
+    Order -> Payment: processPayment(orderId, amount, method)
+    
+    alt Payment Success
+        Payment -> DB: recordPayment()
+        DB --> Payment: paymentId
+        Payment --> Order: paymentSuccess
+        
+        Order -> DB: updateOrderStatus(orderId, "confirmed")
+        DB --> Order: success
+        
+        Order -> Notify: notifyCustomer(orderId)
+        Notify --> Customer: Order Confirmation
+        
+        Order -> Notify: notifyRestaurant(orderId)
+        Notify --> Restaurant: New Order Alert
+        
+        Order --> App: orderConfirmed
+        App --> Customer: Show Order Confirmation
+    else Payment Failed
+        Payment --> Order: paymentFailed
+        Order --> App: error: Payment failed
+        App --> Customer: Show Payment Error
+    end
+else Invalid Address
+    Order --> App: error: Invalid address
+    App --> Customer: Show Address Error
+end
+
+@enduml

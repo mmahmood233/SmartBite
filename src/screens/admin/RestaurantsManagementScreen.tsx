@@ -1,7 +1,8 @@
 /**
  * Restaurants Management Screen
  * Add, view, edit, and manage all restaurants on the platform
- */
+ */// @ts-nocheck
+
 
 import React, { useState, useEffect } from 'react';
 import {

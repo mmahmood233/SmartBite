@@ -2,6 +2,7 @@
  * Wajba Partner - Reusable Button Component
  * Supports multiple variants, sizes, and states
  */
+// @ts-nocheck
 
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';

@@ -1,0 +1,135 @@
+@startuml SmartBite-Customer-Activity-Diagram
+
+title SmartBite - Customer Activity Diagram
+
+|Customer|
+start
+:Open App;
+
+:Browse Restaurants;
+
+:Select Restaurant;
+
+|Mobile App|
+:Show Restaurant Details;
+
+|Customer|
+:Browse Menu Items;
+
+:Select Items;
+
+:Add to Cart;
+
+|Mobile App|
+:Update Cart;
+
+|Customer|
+repeat
+  :Continue Shopping?;
+repeat while (More items?) is (Yes)
+->No;
+
+:View Cart;
+
+:Proceed to Checkout;
+
+:Select Delivery Address;
+
+|Customer|
+:Select Payment Method;
+
+:Place Order;
+
+|Backend API|
+:Create Order;
+
+|Database|
+:Validate & Store Order;
+:Return Order ID;
+
+|Backend API|
+:Process Payment;
+
+:Confirm Payment;
+
+:Update Order Status;
+
+|Database|
+:Status: Confirmed;
+
+|Backend API|
+:Assign Rider;
+
+|Rider|
+:Receive Order Assignment;
+:Accept Order;
+
+|Mobile App|
+:Show Order Confirmation;
+
+|Customer|
+:View Order Confirmation;
+
+:Track Order Status;
+
+|Backend API|
+:Get Real-time Updates;
+
+|Rider|
+:Update Status: Picked Up;
+
+|Backend API|
+:Send Status Update;
+
+|Mobile App|
+:Display Delivery Progress;
+
+|Customer|
+:View Delivery Progress;
+
+|Rider|
+:Update Status: On the Way;
+
+|Backend API|
+:Send Status Update;
+
+|Rider|
+:Deliver Order;
+:Update Status: Delivered;
+
+|Backend API|
+:Update Order Status;
+
+|Database|
+:Status: Delivered;
+
+|Customer|
+:Receive Order;
+
+if (Rate Order?) then (Yes)
+  :Submit Rating;
+  |Backend API|
+  :Store Rating;
+  |Database|
+  :Save Rating;
+else (No)
+endif
+
+|Customer|
+:View Order History;
+
+|Backend API|
+:Fetch Past Orders;
+
+|Database|
+:Return Order History;
+
+|Mobile App|
+:Display Order History;
+
+|Customer|
+:View Order Details;
+
+stop
+
+@enduml

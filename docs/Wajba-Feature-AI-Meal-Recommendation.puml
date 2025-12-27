@@ -1,0 +1,76 @@
+@startuml Wajba-Feature-AI-Meal-Recommendation
+
+title Wajba - AI Meal Recommendation Feature
+
+|Customer|
+start
+:Open Wajba App;
+
+:Tap AI Assistant;
+
+:Open AI Chat;
+
+:Ask for Meal Recommendations;
+
+|AI Assistant|
+:Receive Query;
+
+:Analyze Customer Profile;
+
+:Check Order History;
+
+:Identify Preferences;
+
+:Check Dietary Requirements;
+
+|Database|
+:Fetch Available Meals;
+
+:Fetch Restaurant Data;
+
+|AI Assistant|
+:Apply ML Model;
+
+:Generate Personalized Recommendations;
+
+:Rank by Relevance;
+
+|Mobile App|
+:Display AI Suggestions;
+
+|Customer|
+:View Recommended Meals;
+
+if (Like Suggestions?) then (Yes)
+  :Select Recommended Item;
+  
+  |Mobile App|
+  :Navigate to Restaurant;
+  
+  :Add Item to Cart;
+  
+  |Customer|
+  :Proceed to Checkout;
+  
+  stop
+else (No)
+  :Ask AI to Refine;
+  
+  |AI Assistant|
+  :Adjust Recommendations;
+  
+  :Show New Suggestions;
+  
+  |Customer|
+  if (Satisfied?) then (Yes)
+    :Select Item;
+    
+    stop
+  else (No)
+    :Browse Manually;
+    
+    stop
+  endif
+endif
+
+@enduml

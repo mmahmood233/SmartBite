@@ -401,7 +401,7 @@ SELECT * FROM date_night_restaurants WHERE price_range = 'mid-range';
 
 1. ✅ **Migration Created** - Run migration to add columns
 2. ⏳ **Seed Data** - Populate with realistic data
-3. ⏳ **Update n8n Workflow** - Use new fields for AI context
+3. ✅ **Direct OpenAI Integration** - Using OpenAI API directly (no n8n)
 4. ⏳ **Update TypeScript Types** - Reflect new schema
 5. ⏳ **Test AI Queries** - Verify accuracy
 
@@ -415,3 +415,273 @@ SELECT * FROM date_night_restaurants WHERE price_range = 'mid-range';
 ✅ **Scalable** - Easy to add new tags/categories
 ✅ **Performance** - GIN indexes for array queries
 ✅ **User-Friendly** - Natural language maps to tags
+
+---
+
+## AI Inference Rules (Maximize Existing Schema)
+
+These rules enable the AI to make **intelligent inferences** from existing database fields without requiring new columns. This allows handling complex queries using only current schema.
+
+### Restaurant Field Inferences
+
+#### From `ambiance` Array:
+```javascript
+['romantic', 'cozy'] → Infer: Date-friendly, conversation-friendly, intimate
+['casual', 'family-friendly'] → Infer: Kids welcome, relaxed, shareable food
+['sports-bar', 'lively'] → Infer: Game day, loud, group-friendly
+['fine-dining', 'upscale'] → Infer: Special occasions, instagram-worthy
+['modern', 'trendy'] → Infer: Instagram-worthy, younger crowd
+['cozy', 'warm'] → Infer: Comfort food, good for bad weather
+['quiet'] → Infer: Business meetings, conversation-friendly
+```
+
+#### From `price_range`:
+```javascript
+'budget' → Infer: Quick bites, students, value-focused, casual
+'mid-range' → Infer: Everyday dining, balanced quality/price
+'premium' → Infer: Special occasions, impressive, high quality
+'luxury' → Infer: Celebrations, exceptional service, instagram-worthy
+```
+
+#### From `cuisine_types` Array:
+```javascript
+['fast-food'] → Infer: Quick service (<15 min), grab-and-go
+['italian', 'mediterranean'] → Infer: Date-friendly, wine pairing
+['japanese', 'sushi'] → Infer: Fresh, light, sophisticated
+['american', 'bbq'] → Infer: Hearty, comfort food, filling
+['healthy', 'fitness'] → Infer: Post-workout, calorie-conscious
+['cafe', 'bakery'] → Infer: Morning, coffee, work-friendly
+```
+
+#### From `features` Array:
+```javascript
+['outdoor-seating'] → Infer: Weather-dependent, romantic evenings
+['live-sports'] → Infer: Game day, loud, group-friendly
+['wifi'] → Infer: Work-friendly, study spot, solo dining OK
+['kids-menu'] → Infer: Family-friendly, patient staff
+['late-night'] → Infer: Night owls, comfort food
+```
+
+#### From `suitable_for` Array:
+```javascript
+['date-night'] → Infer: Romantic, not messy food, shareable desserts
+['business-meeting'] → Infer: Professional, quiet, clean food
+['family-gathering'] → Infer: Large tables, shareable platters
+['sports-watching'] → Infer: TVs, wings/beer, casual
+['celebration'] → Infer: Special, impressive, desserts
+```
+
+---
+
+### Dish Field Inferences
+
+#### From `dietary_tags` Array:
+```javascript
+['high-protein'] → Infer: Post-workout, muscle building, satisfying
+['low-calorie'] → Infer: Weight loss, light, guilt-free
+['keto-friendly'] → Infer: Low-carb, high-fat, diet-specific
+['vegan', 'vegetarian'] → Infer: Plant-based, ethical, healthy
+```
+
+#### From `flavor_profile` Array:
+```javascript
+['rich', 'creamy'] → Infer: Comfort food, indulgent, heavy
+['light', 'fresh'] → Infer: Healthy, refreshing, summer-appropriate
+['spicy', 'hot'] → Infer: Adventurous, warming
+['sweet'] → Infer: Dessert, treat, kids-friendly
+['savory', 'umami'] → Infer: Satisfying, main course
+['smoky'] → Infer: BBQ, grilled, hearty
+```
+
+#### From `preparation_time`:
+```javascript
+Under 10 min → Infer: Grab-and-go, urgent hunger
+10-20 min → Infer: Quick service, lunch-appropriate
+20-30 min → Infer: Standard dining, made-to-order
+30+ min → Infer: Fine dining, complex dishes
+```
+
+#### From `calories`:
+```javascript
+Under 300 → Infer: Light meal, snack, appetizer
+300-500 → Infer: Moderate meal, balanced
+500-800 → Infer: Full meal, satisfying
+800+ → Infer: Heavy meal, indulgent, sharing
+```
+
+---
+
+### Contextual Inference Rules
+
+#### Weather Context:
+**Hot Weather:**
+- Recommend: Salads, cold drinks, ice cream, light meals
+- Prefer: Outdoor seating, refreshing cuisines
+- Avoid: Heavy soups, hot dishes
+
+**Cold Weather:**
+- Recommend: Soups, hot meals, comfort food
+- Prefer: Cozy ambiance, hearty dishes
+- Avoid: Salads only, cold dishes
+
+#### Time of Day Context:
+**Morning (6-11 AM):**
+- Recommend: Breakfast items, coffee, pastries
+- Prefer: Cafes, bakeries
+- Avoid: Heavy dinners, late-night food
+
+**Afternoon (11 AM-5 PM):**
+- Recommend: Lunch items, moderate portions
+- Prefer: Casual dining, quick service
+- Avoid: Breakfast-only items
+
+**Evening (5-10 PM):**
+- Recommend: Dinner items, full meals
+- Prefer: Full-service restaurants
+- Avoid: Breakfast items
+
+**Late Night (10 PM+):**
+- Recommend: Comfort food, quick bites
+- Prefer: Late-night features, delivery
+- Avoid: Fine dining (likely closed)
+
+#### Social Context Inference:
+**First Date:**
+- Combine: Romantic ambiance + mid-range price + conversation-friendly
+- Prefer: NOT messy food (no ribs, wings, spaghetti)
+- Include: Shareable desserts
+- Avoid: Fast food, loud venues, very expensive
+
+**Family with Kids:**
+- Combine: Family-friendly + kids menu + casual
+- Prefer: Shareable platters, familiar foods
+- Avoid: Fine dining, quiet venues, exotic foods
+
+**Solo Dining:**
+- Combine: Wifi + counter seating + quick service
+- Prefer: Casual, individual portions
+- Avoid: Romantic settings, sharing-only menus
+
+**Business Meeting:**
+- Combine: Professional + quiet + clean food + mid-range
+- Prefer: Table service, no-mess dishes
+- Avoid: Messy food, loud venues, very casual
+
+#### Mood-Based Inference:
+**"Comfort Me" (bad day, stress):**
+- Combine: Comfort food + cozy ambiance + familiar flavors
+- Prefer: Rich, creamy, sweet flavors
+- Examples: Mac & cheese, pizza, ice cream, burgers
+
+**"Celebrate" (achievement, birthday):**
+- Combine: Premium/luxury + impressive + instagram-worthy
+- Prefer: Special dishes, desserts, fine dining
+- Examples: Steaks, seafood, fancy desserts
+
+**"Healthy Kick" (fitness, diet):**
+- Combine: Healthy tags + low-calorie + high-protein
+- Prefer: Grilled, fresh, light
+- Examples: Salads, grilled chicken, smoothies
+
+**"Adventure" (try something new):**
+- Combine: Exotic cuisines + unique dishes + high spice
+- Prefer: Unfamiliar flavors, fusion
+- Examples: Sushi, Thai curry, fusion dishes
+
+---
+
+### Complex Query Examples
+
+#### Query: "Romantic but not expensive"
+```sql
+WHERE 'date-night' = ANY(r.suitable_for)
+  AND r.ambiance && ARRAY['romantic', 'cozy']
+  AND r.price_range IN ('budget', 'mid-range')
+  AND r.noise_level IN ('quiet', 'moderate')
+ORDER BY r.rating DESC
+```
+**Inference:** Date-friendly + affordable + conversation-friendly
+
+#### Query: "Quick healthy lunch"
+```sql
+WHERE 'lunch' = ANY(d.meal_types)
+  AND d.preparation_time <= 20
+  AND d.calories < 500
+  AND ('low-calorie' = ANY(d.dietary_tags) OR 'high-protein' = ANY(d.dietary_tags))
+ORDER BY d.health_score DESC
+```
+**Inference:** Fast + nutritious + appropriate timing
+
+#### Query: "Comfort food after bad day"
+```sql
+WHERE d.flavor_profile && ARRAY['rich', 'creamy', 'sweet']
+  AND r.ambiance && ARRAY['cozy', 'warm']
+  AND d.calories > 500
+ORDER BY r.rating DESC
+```
+**Inference:** Indulgent + comforting + satisfying
+
+#### Query: "First date, impressive but affordable"
+```sql
+WHERE 'date-night' = ANY(r.suitable_for)
+  AND r.price_range = 'mid-range'
+  AND r.ambiance && ARRAY['romantic']
+  AND d.category IN ('Main Course', 'Dessert')
+  AND NOT (d.name ILIKE '%ribs%' OR d.name ILIKE '%wings%')
+ORDER BY r.rating DESC
+```
+**Inference:** Romantic + affordable + not messy + impressive
+
+#### Query: "Group watching game"
+```sql
+WHERE 'sports-watching' = ANY(r.suitable_for)
+  OR 'live-sports' = ANY(r.features)
+  AND r.ambiance && ARRAY['lively', 'sports-bar']
+  AND d.is_shareable = TRUE
+ORDER BY r.rating DESC
+```
+**Inference:** Sports venue + shareable food + lively atmosphere
+
+---
+
+### Implementation Guidelines
+
+**1. Always Combine Multiple Signals:**
+- Don't rely on single field
+- Cross-reference ambiance + price + cuisine + features
+- Build complete picture from available data
+
+**2. Use Probabilistic Reasoning:**
+- "Romantic ambiance" → Likely good for dates (90% confidence)
+- "Budget price" → Likely casual (80% confidence)
+- "Outdoor seating" → Weather-dependent (100% confidence)
+
+**3. Handle Edge Cases:**
+- If no exact match, find closest alternatives
+- Explain why recommendation fits (transparency)
+- Offer multiple options with different trade-offs
+
+**4. Learn from Context:**
+- Time of day affects recommendations
+- Weather influences outdoor seating preference
+- User history suggests preferences
+
+**5. Be Proactive:**
+- Anticipate unstated needs
+- Suggest complementary items
+- Warn about potential issues (messy food on date)
+
+---
+
+### Key Takeaway
+
+**You DON'T need new database columns to be smart!**
+
+By intelligently combining existing fields (`ambiance`, `price_range`, `cuisine_types`, `features`, `dietary_tags`, `flavor_profile`, etc.), the AI can:
+- ✅ Handle complex queries
+- ✅ Understand social context
+- ✅ Match mood and occasion
+- ✅ Consider time and weather
+- ✅ Make personalized recommendations
+
+**The secret is INFERENCE, not more data!**

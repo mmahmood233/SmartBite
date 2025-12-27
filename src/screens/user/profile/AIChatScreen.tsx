@@ -142,7 +142,7 @@ const AIChatScreen: React.FC = () => {
         .eq('id', user?.id)
         .single();
 
-      // Call n8n AI service
+      // Call AI service
       const aiResult = await sendAIMessage(userMessageText, {
         userId: user?.id,
         userName: profile?.full_name || 'Guest',
@@ -396,52 +396,34 @@ const AIChatScreen: React.FC = () => {
       );
     }
 
-    // Try to parse JSON if the text looks like JSON
+    // Use recommendations from AI service directly (no JSON parsing needed)
+    // If we have recommendations, clean the text to remove numbered lists (they'll show as cards)
     let displayText = msg.text;
-    let jsonRecommendations: DishRecommendation[] = [];
+    const allRecommendations = msg.recommendations || [];
     
-    if (msg.text.trim().startsWith('{')) {
-      try {
-        const parsed = JSON.parse(msg.text);
-        if (parsed.message) {
-          displayText = parsed.message;
-          
-          // Convert restaurants to recommendations
-          if (parsed.restaurants && Array.isArray(parsed.restaurants)) {
-            jsonRecommendations = parsed.restaurants.map((restaurant: any) => ({
-              id: restaurant.id,
-              name: restaurant.name,
-              restaurant: restaurant.name,
-              restaurantId: restaurant.id,
-              price: restaurant.minimum_order || 0,
-              image: restaurant.image_url || '',
-              rating: restaurant.rating || 4.5,
-              eta: restaurant.delivery_time || '30-40 min',
-            }));
-          }
-          
-          // Convert menu_items to recommendations
-          if (parsed.menu_items && Array.isArray(parsed.menu_items)) {
-            jsonRecommendations = parsed.menu_items.map((item: any) => ({
-              id: item.id,
-              name: item.name,
-              restaurant: item.restaurant || 'Restaurant',
-              restaurantId: item.restaurant_id,
-              price: item.price,
-              image: item.image_url || '',
-              rating: 4.5,
-              eta: '20-30 min',
-            }));
-          }
+    if (allRecommendations.length > 0) {
+      // Remove numbered list items (1., 2., 3., etc.) since they'll be shown as cards
+      // Keep only the introductory text before the list
+      const lines = displayText.split('\n');
+      const cleanedLines = [];
+      let foundList = false;
+      
+      for (const line of lines) {
+        // Check if this line is a numbered list item
+        if (line.match(/^\d+\.\s+\*\*/)) {
+          foundList = true;
+          continue; // Skip this line
         }
-      } catch (e) {
-        // If parsing fails, just show the text as is
-        console.log('Failed to parse JSON in message:', e);
+        // If we haven't found a list yet, or this is a non-list line after intro
+        if (!foundList || line.trim() === '') {
+          cleanedLines.push(line);
+        }
       }
+      
+      displayText = cleanedLines.join('\n').trim();
     }
-
-    const parsedOptions = extractOptions(displayText);
-    const allRecommendations = [...(msg.recommendations || []), ...jsonRecommendations];
+    
+    const parsedOptions = extractOptions(msg.text); // Use original text for parsing options
 
     return (
       <View key={msg.id} style={styles.aiMessageContainer}>
@@ -457,7 +439,7 @@ const AIChatScreen: React.FC = () => {
           <View style={styles.aiBubble}>
             <Text style={styles.aiText}>{displayText}</Text>
           </View>
-          {parsedOptions.length > 0 && (
+          {parsedOptions.length > 0 && allRecommendations.length === 0 && (
             <View style={styles.optionChipsContainer}>
               {parsedOptions.map((opt, index) => (
                 <TouchableOpacity

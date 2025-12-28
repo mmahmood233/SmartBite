@@ -4,106 +4,11 @@
 // @ts-nocheck
 
 import { supabase } from '../lib/supabase';
+import { AI_KNOWLEDGE_BASE } from './ai-knowledge-base';
 
 // OpenAI API configuration
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
-
-// Inline AI Knowledge Base (embedded directly in code for React Native compatibility)
-const AI_KNOWLEDGE_BASE = `
-===========================================
-WAJBA AI ASSISTANT - COMPREHENSIVE KNOWLEDGE BASE
-===========================================
-
-CUISINE TYPES & CHARACTERISTICS:
-
-ITALIAN: Pasta, Pizza, Risotto, Lasagna | Tomato-based, cheese-heavy | Lunch, Dinner | Mid-range to Premium
-CHINESE: Fried rice, Noodles, Dumplings, Sweet & sour | Savory, umami-rich, stir-fried | Lunch, Dinner | Budget to Mid-range
-AMERICAN/FAST FOOD: Burgers, Fried chicken, Steaks, Sandwiches | Hearty, fried, comfort food | Lunch, Dinner, Snacks | Budget to Mid-range
-MEXICAN: Tacos, Burritos, Quesadillas, Nachos | Spicy, cheese-heavy | Lunch, Dinner, Snacks | Budget to Mid-range
-MIDDLE EASTERN/ARABIC: Shawarma, Kebabs, Falafel, Grilled meats | Grilled, aromatic spices, healthy | Lunch, Dinner | Budget to Mid-range
-INDIAN: Curry, Biryani, Tandoori, Samosas | Spicy, aromatic, vegetarian-friendly | Lunch, Dinner | Budget to Mid-range
-JAPANESE: Sushi, Ramen, Teriyaki, Tempura | Fresh, light, balanced, seafood-heavy | Lunch, Dinner | Mid-range to Premium
-THAI: Pad Thai, Curry, Tom Yum, Fried rice | Sweet, sour, salty, spicy balance | Lunch, Dinner | Budget to Mid-range
-
-MEAL TIMING RULES:
-
-BREAKFAST (6-11 AM): Coffee, Eggs, Pancakes, Breakfast sandwiches, Pastries | NOT: Heavy pasta, Steaks, Dinner meals
-LUNCH (11 AM-3 PM): Sandwiches, Burgers, Pasta, Salads, Rice bowls, Pizza | NOT: Just coffee/drinks, Only desserts
-DINNER (5-10 PM): Full meals, Steaks, Seafood, Pasta, Curry, Grilled meats | NOT: Just breakfast items, Light snacks only
-SNACKS (Anytime): Fries, Wings, Nachos, Small sandwiches, Desserts | Light items
-
-DIETARY RESTRICTIONS:
-
-VEGETARIAN: Can eat vegetables, dairy, eggs | Cannot eat meat, fish | Recommend: Veggie pasta, pizza, salads, falafel
-VEGAN: Can eat vegetables, grains, beans | Cannot eat animal products | Recommend: Vegan pasta, stir-fry, hummus, tofu
-HALAL: Can eat halal meat, chicken, fish | Cannot eat pork, alcohol | Recommend: Halal chicken, shawarma, kebabs, grilled meats
-GLUTEN-FREE: Can eat rice, meat, vegetables | Cannot eat wheat, bread, pasta | Recommend: Rice bowls, grilled meats, salads
-KETO/LOW-CARB: High fat, moderate protein, very low carbs | Avoid bread, pasta, rice | Recommend: Grilled meats, salads, eggs
-HIGH-PROTEIN: 20g+ protein per meal | Recommend: Grilled chicken, steak, fish, eggs, protein bowls
-LOW-CALORIE: Under 500 cal per meal | Recommend: Salads, grilled fish, steamed vegetables, light wraps
-
-OCCASIONS & CONTEXTS:
-
-DATE NIGHT: Romantic, quiet, intimate | Recommend: Fine dining, Italian, Mediterranean, Upscale | Avoid: Fast food, loud places
-FAMILY: Family-friendly, kids menu | Recommend: Pizza, American, Buffets | Need: Kids menu, family portions
-SPORTS: Lively, TVs, energetic | Recommend: Wings, Burgers, Nachos, Fries | Need: Live sports, bar seating
-QUICK BITE: Fast service, under 15 min | Recommend: Fast food, Sandwiches, Wraps | Prep time: Under 15 min
-POST-WORKOUT: High protein, recovery | Recommend: Grilled chicken, Protein bowls, Smoothies, Eggs | Need: 20g+ protein
-
-SPICE LEVELS:
-
-LEVEL 0 (No Spice): Plain pasta, Cheese pizza, Grilled chicken, Salads, Most American food
-LEVEL 1-2 (Mild): Mild curry, Light Mexican, Mild wings, Teriyaki
-LEVEL 3 (Medium): Medium curry, Standard Mexican, Medium wings, Some Thai
-LEVEL 4-5 (Hot/Very Hot): Spicy curry (vindaloo), Hot wings (buffalo, habanero), Spicy Thai, Jalapeño dishes, Szechuan
-
-PRICE RANGES:
-
-BUDGET (Under BD 5): Fast food burgers, Pizza slices, Sandwiches, Shawarma, Fried rice
-MID-RANGE (BD 5-15): Full pizza, Restaurant pasta, Grilled chicken, Curry, Sushi rolls, Rice bowls
-PREMIUM (BD 15-30): Steaks, Seafood platters, Fine dining pasta, Premium sushi
-LUXURY (BD 30+): High-end steaks, Lobster, Fine dining tasting menus
-
-FOOD PAIRING:
-
-PIZZA pairs with: Garlic bread, Wings, Salad
-BURGERS pair with: Fries, Onion rings, Coleslaw, Milkshakes
-PASTA pairs with: Garlic bread, Caesar salad, Tiramisu
-SUSHI pairs with: Miso soup, Edamame, Green tea
-CURRY pairs with: Naan bread, Rice, Samosas, Mango lassi
-TACOS pair with: Guacamole, Salsa, Chips, Mexican rice
-STEAK pairs with: Mashed potatoes, Grilled vegetables, Salad
-
-RECOMMENDATION LOGIC:
-
-"LUNCH" → Recommend MAIN COURSES (pasta, burgers, rice bowls, salads) | NOT coffee/snacks | Moderate portions | Under 30 min prep
-"DINNER" → Recommend FULL MEALS (steaks, seafood, pasta, curry) | Larger portions | Can be 30-45 min prep
-"ITALIAN FOOD" → ONLY Italian dishes (pasta, pizza, risotto) | NOT other cuisines | Mention Italian restaurants
-"HEALTHY" → Grilled not fried | Include calories | Recommend salads, grilled meats, vegetables | Avoid heavy sauces
-"QUICK/FAST" → Prep time under 15 min | Fast food, sandwiches, wraps | Quick service restaurants
-"SPICY" → Spice level 3-5 | Curry, wings, Thai, Mexican | Mention spice level | Offer mild alternatives
-"CHEAP/BUDGET" → Under BD 5 | Fast food, simple dishes
-"VEGETARIAN" → NO meat/fish | Veggie pasta, pizza, salads, falafel
-"VEGAN" → NO animal products | Vegan pasta, stir-fry, hummus, tofu
-
-COMMON QUERIES:
-
-"I'm hungry" → Ask: What type? Meal time? Preferences?
-"Something good" → Recommend top-rated across categories
-"Surprise me" → Diverse options from different cuisines
-"Comfort food" → Burgers, pizza, pasta, fried chicken
-"Light meal" → Salads, soups, small portions
-"Filling meal" → Large portions, protein-heavy, rice/pasta
-
-CRITICAL RULES:
-1. When user asks for "lunch" or "dinner" → Recommend MAIN COURSES, not snacks or drinks
-2. When user asks for specific cuisine → Only recommend dishes from that cuisine type
-3. Always check category and meal_types fields for appropriate recommendations
-4. Cross-reference this knowledge with actual available dishes in database
-5. NEVER recommend something not in the database
-`;
-
 
 export interface AIMessage {
   role: 'user' | 'assistant';
@@ -462,16 +367,16 @@ Remember: ONLY recommend from the available data. Be specific, accurate, and hel
     }
 
     // Determine if user wants restaurants or specific dishes
-    const wantsRestaurants = message.toLowerCase().includes('restaurant') || 
-                            message.toLowerCase().includes('place') || 
-                            message.toLowerCase().includes('where to eat') ||
-                            message.toLowerCase().includes('show me');
+    // ONLY show restaurant cards if explicitly asking for restaurants/places
+    const wantsRestaurants = (message.toLowerCase().includes('restaurant') || 
+                             message.toLowerCase().includes('place') || 
+                             message.toLowerCase().includes('where to eat') ||
+                             message.toLowerCase().includes('where can i') ||
+                             message.toLowerCase().includes('show me restaurants')) &&
+                             !message.toLowerCase().match(/\b(food|dish|meal|eat|spicy|healthy|cheap|expensive|dessert|pizza|burger|sushi|pasta|noodles|curry|taco|salad|sandwich|breakfast|lunch|dinner|snack)\b/);
     
-    const wantsSpecificFood = message.toLowerCase().match(/\b(dessert|pizza|burger|sushi|pasta|noodles|curry|taco|salad|sandwich|breakfast|lunch|dinner)\b/);
-    
-    // Add restaurants as recommendations only if appropriate
-    // Skip restaurant cards if user is asking for specific food items
-    if (wantsRestaurants || !wantsSpecificFood) {
+    // Add restaurants as recommendations ONLY if explicitly requested
+    if (wantsRestaurants) {
       mentionedRestaurants.slice(0, 3).forEach(restaurant => {
         const minOrder = parseFloat(restaurant.min_order) || 5;
         const prepTime = restaurant.avg_prep_time || '30-40 min';
@@ -543,76 +448,9 @@ Remember: ONLY recommend from the available data. Be specific, accurate, and hel
       const dishNameLower = dish.name.toLowerCase();
       const responseLower = aiResponse.toLowerCase();
       
-      // PRIORITY 1: Exact dish name match in AI response - ALWAYS include
-      if (responseLower.includes(dishNameLower)) return true;
-      
-      // PRIORITY 2: Contextually relevant dishes from mentioned restaurants
-      if (mentionedRestaurantIds.size > 0 && mentionedRestaurantIds.has(dish.restaurant_id)) {
-        
-        // UNIVERSAL RELEVANCE CHECKS - Apply to ALL queries
-        
-        // 1. CUISINE TYPE MATCHING - If user asks for specific cuisine, ONLY show that cuisine
-        const hasCuisineQuery = queryIntent.italian || queryIntent.chinese || queryIntent.japanese || 
-                                queryIntent.mexican || queryIntent.indian || queryIntent.thai || 
-                                queryIntent.korean || queryIntent.american || queryIntent.arabic;
-        
-        if (hasCuisineQuery) {
-          const restaurantCuisine = dish.restaurants?.cuisine_types || [];
-          const cuisineMatch = 
-            (queryIntent.italian && restaurantCuisine.some(c => c.toLowerCase().includes('italian'))) ||
-            (queryIntent.chinese && restaurantCuisine.some(c => c.toLowerCase().includes('chinese'))) ||
-            (queryIntent.japanese && restaurantCuisine.some(c => c.toLowerCase().includes('japanese'))) ||
-            (queryIntent.mexican && restaurantCuisine.some(c => c.toLowerCase().includes('mexican'))) ||
-            (queryIntent.indian && restaurantCuisine.some(c => c.toLowerCase().includes('indian'))) ||
-            (queryIntent.thai && restaurantCuisine.some(c => c.toLowerCase().includes('thai'))) ||
-            (queryIntent.korean && restaurantCuisine.some(c => c.toLowerCase().includes('korean'))) ||
-            (queryIntent.american && restaurantCuisine.some(c => c.toLowerCase().includes('american'))) ||
-            (queryIntent.arabic && restaurantCuisine.some(c => c.toLowerCase().includes('arabic') || c.toLowerCase().includes('middle')));
-          
-          if (!cuisineMatch) return false; // Wrong cuisine type
-        }
-        
-        // 2. MEAL TYPE MATCHING - If user asks for specific meal, ONLY show that meal type
-        if (queryIntent.breakfast && !dish.meal_types?.includes('breakfast')) return false;
-        if (queryIntent.lunch && !dish.meal_types?.includes('lunch') && !dish.meal_types?.includes('dinner')) return false;
-        if (queryIntent.dinner && !dish.meal_types?.includes('dinner')) return false;
-        if (queryIntent.snack && !dish.meal_types?.includes('snack') && !dish.meal_types?.includes('appetizer')) return false;
-        
-        // 3. DESSERT STRICT FILTERING - If user asks for dessert, ONLY show desserts
-        if (queryIntent.dessert) {
-          const isDessert = dish.meal_types?.includes('dessert') || 
-                           dish.category?.toLowerCase().includes('dessert') ||
-                           dish.category?.toLowerCase().includes('sweet');
-          if (!isDessert) return false;
-        }
-        
-        // 4. DIETARY RESTRICTIONS - Must match if specified
-        if (queryIntent.vegetarian && !dish.is_vegetarian) return false;
-        if (queryIntent.vegan && !dish.is_vegan) return false;
-        
-        // 5. HEALTHY FILTERING - Exclude unhealthy items
-        if (queryIntent.healthy) {
-          if (dish.price > 15) return false;
-          if (dish.calories && dish.calories > 700) return false;
-          if (!dish.dietary_tags?.some(tag => ['healthy', 'low-calorie', 'high-protein', 'grilled'].includes(tag))) {
-            return false;
-          }
-        }
-        
-        // 6. BUDGET FILTERING - Respect price limits
-        if (queryIntent.userBudget && dish.price > queryIntent.userBudget) return false;
-        if (queryIntent.budget && dish.price > 10) return false;
-        
-        // 7. SPEED FILTERING - Check prep time
-        if (queryIntent.quick && dish.preparation_time && dish.preparation_time > 20) return false;
-        
-        // 8. PRICE REASONABLENESS - For lunch/casual queries, exclude luxury items
-        if ((queryIntent.lunch || queryIntent.quick) && dish.price > 20) return false;
-        
-        return true; // Passed all relevance checks
-      }
-      
-      return false;
+      // ONLY include dishes that are explicitly mentioned by name in the AI response
+      // This ensures cards match exactly what the AI recommends in text
+      return responseLower.includes(dishNameLower);
     }) || [];
 
     console.log(`🍽️ Found ${mentionedDishes.length} mentioned dishes`);
